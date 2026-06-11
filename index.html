@@ -192,7 +192,7 @@
 
                 <div class="card" style="padding: 16px; flex: 1; display: flex; flex-direction: column; max-height: 400px;">
                     <div class="section-header">
-                        <div class="section-title">📚 로스팅 로그 (DB저장)</div>
+                        <div class="section-title">📚 로스팅 로그 (DB 실시간 동기화)</div>
                         <button id="btnClearHistory" class="btn-reset">전체 삭제</button>
                     </div>
                     <div id="historyContainer" style="overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 12px; padding-right: 4px;">
@@ -208,7 +208,6 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // 용준님이 복사해주신 파이어베이스 정보 적용
         const firebaseConfig = {
             apiKey: "AIzaSyBHtXxGLGEvDIbhiZffwTokk3YdCBHEuxU",
             authDomain: "rosting-dtr.firebaseapp.com",
@@ -220,7 +219,7 @@
         };
 
         const appId = 'my-personal-roaster';
-        let db, auth, currentUser = null;
+        let db, auth;
         let dbLogs = []; 
 
         try {
@@ -228,21 +227,22 @@
             auth = getAuth(app);
             db = getFirestore(app);
 
-            signInAnonymously(auth).catch((error) => {
-                document.getElementById('historyContainer').innerHTML = '<div class="empty-msg" style="color: var(--red); font-size: 0.9rem; text-align: center; margin-top: 20px;">인증 오류: 파이어베이스 인증(익명 로그인) 설정을 켜주세요.</div>';
+            // 비동기 익명 인증은 유지하되 실시간 리스트는 공용 경로를 바라봅니다.
+            signInAnonymously(auth).then(() => {
+                loadHistoryFromDB();
+            }).catch((error) => {
+                console.error("Auth Error", error);
+                loadHistoryFromDB(); // 인증 오류나도 우선 DB 조회를 시도하도록 유도
             });
 
-            onAuthStateChanged(auth, (user) => {
-                currentUser = user;
-                if (user) loadHistoryFromDB();
-            });
         } catch (error) {
-            document.getElementById('historyContainer').innerHTML = '<div class="empty-msg" style="color: var(--red); font-size: 0.9rem; text-align: center; margin-top: 20px;">Firebase 셋팅이 완료되지 않았습니다.</div>';
+            document.getElementById('historyContainer').innerHTML = '<div class="empty-msg" style="color: var(--red); font-size: 0.9rem; text-align: center; margin-top: 20px;">Firebase 설정 오류가 발생했습니다.</div>';
         }
 
+        // 모든 기기가 공통의 저장소 경로를 바라보게 설정하여 맥북-아이패드 완전 동기화 구현
         function loadHistoryFromDB() {
-            if (!currentUser || !db) return;
-            const logsRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'roastingLogs');
+            if (!db) return;
+            const logsRef = collection(db, 'artifacts', appId, 'users', 'Samuel', 'roastingLogs');
             
             onSnapshot(logsRef, (snapshot) => {
                 dbLogs = [];
@@ -252,7 +252,7 @@
                 dbLogs.sort((a, b) => b.timestamp - a.timestamp);
                 renderHistory();
             }, (err) => {
-                document.getElementById('historyContainer').innerHTML = '<div class="empty-msg" style="color: var(--red); font-size: 0.9rem; text-align: center; margin-top: 20px;">DB 읽기 오류: 파이어베이스 Firestore 테스트 모드를 확인해주세요.</div>';
+                document.getElementById('historyContainer').innerHTML = '<div class="empty-msg" style="color: var(--red); font-size: 0.9rem; text-align: center; margin-top: 20px;">DB 연결 실패: 파이어베이스 콘솔에서 [Firestore Database]를 개설(테스트 모드)했는지 확인해주세요.</div>';
             });
         }
 
@@ -357,10 +357,10 @@
             const dateStr = `${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
             const titleStr = `${dateStr} - ${beanName}`;
 
-            if (!currentUser || !db) return; 
+            if (!db) return; 
             
             try {
-                const logsRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'roastingLogs');
+                const logsRef = collection(db, 'artifacts', appId, 'users', 'Samuel', 'roastingLogs');
                 await addDoc(logsRef, {
                     title: titleStr,
                     logText: finalLog,
@@ -372,7 +372,7 @@
         function renderHistory() {
             els.historyContainer.innerHTML = '';
             if (dbLogs.length === 0) {
-                els.historyContainer.innerHTML = '<div class="empty-msg" style="color: var(--text-dim); font-size: 0.9rem; text-align: center; margin-top: 20px;">로스팅 배출 완료 시 기록이 안전하게 보관됩니다.</div>';
+                els.historyContainer.innerHTML = '<div class="empty-msg" style="color: var(--text-dim); font-size: 0.9rem; text-align: center; margin-top: 20px;">로스팅 배출 완료 시 데이터베이스에 실시간으로 기록됩니다.</div>';
                 return;
             }
 
@@ -417,9 +417,9 @@
                 delBtn.textContent = '삭제';
                 delBtn.onclick = async (e) => {
                     e.stopPropagation();
-                    if(confirm("이 로그를 완전히 삭제할까요? (복구 불가)")) {
+                    if(confirm("이 로그를 완전히 삭제할까요? (모든 기기에서 삭제됩니다)")) {
                         try {
-                            const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'roastingLogs', log.id);
+                            const docRef = doc(db, 'artifacts', appId, 'users', 'Samuel', 'roastingLogs', log.id);
                             await deleteDoc(docRef);
                         } catch(err) {}
                     }
@@ -438,11 +438,11 @@
         }
 
         els.btnClearHistory.onclick = async () => {
-            if (!currentUser || !db || dbLogs.length === 0) return;
-            if(confirm("정말 모든 로스팅 기록을 DB에서 삭제하시겠습니까?")) {
+            if (!db || dbLogs.length === 0) return;
+            if(confirm("정말 모든 로스팅 기록을 모든 기기의 DB에서 영구 삭제하시겠습니까?")) {
                 for(let log of dbLogs) {
                     try {
-                        const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'roastingLogs', log.id);
+                        const docRef = doc(db, 'artifacts', appId, 'users', 'Samuel', 'roastingLogs', log.id);
                         deleteDoc(docRef); 
                     } catch(e) {}
                 }
@@ -546,7 +546,7 @@
 
             if (state.crackTime) t += `💥 1차 크랙 : ${fmtShort(state.crackTime)}
 `;
-            if (state.endTime) t += `🏁 배출 완료 : ${fmtShort(state.endTime)}
+            if (state.endTime) t += `🏁 배출 완료 : ${fmtShort(fmtShort(state.endTime))}
 `;
             
             if (state.crackTime && state.endTime) {
