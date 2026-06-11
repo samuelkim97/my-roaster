@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>☕ 프로페셔널 수동 로스터 대시보드</title>
+    <style>
+        :root {
+            --bg: #100d0b; --bg-card: #1c1613; --bg-card2: #261e19;
+            --text: #e8d5c4; --text-dim: #a89888;
+            --accent: #d4853a; --accent-bright: #f0a050;
+            --green: #5a9e6f; --green-bright: #7ecf95;
+            --blue: #5a7e9e; --red: #c05545; --crack: #ff6b4a;
+            --drying: #e5b869; --maillard: #c26e43;
+            --font: -apple-system, 'Apple SD Gothic Neo', sans-serif;
+            --mono: 'SF Mono', 'JetBrains Mono', monospace;
+            --radius: 12px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; display: flex; justify-content: center; padding: 20px 16px; }
+        .app-container { width: 100%; max-width: 1100px; display: flex; flex-direction: column; gap: 16px; }
+
+        .card { background: var(--bg-card); border-radius: var(--radius); padding: 20px; border: 1px solid #3a3028; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .section-title { font-size: 1.05rem; font-weight: bold; color: var(--accent-bright); }
+        input, textarea { background: #0a0806; border: 1px solid #4a3a2a; color: #fff; border-radius: 8px; font-family: var(--font); outline: none; transition: 0.2s; }
+        input:focus, textarea:focus { border-color: var(--accent-bright); }
+
+        input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"] { -moz-appearance: textfield; }
+
+        .meta-header { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; }
+        .info-group { display: flex; gap: 12px; align-items: center; flex: 1; min-width: 300px;}
+        .date-display { font-size: 1.05rem; font-weight: 700; color: var(--accent-bright); white-space: nowrap; }
+        .bean-input { flex: 1; padding: 10px 14px; font-size: 0.95rem; }
+        
+        .weight-group { display: flex; align-items: center; gap: 8px; background: #0a0806; padding: 8px 12px; border-radius: 8px; border: 1px solid #3a3028; }
+        .weight-input { width: 70px; background: transparent; border: none; border-bottom: 1px solid #4a3a2a; text-align: center; font-size: 1rem; border-radius: 0; padding: 2px; }
+        .wl-result { font-weight: bold; color: var(--green-bright); font-family: var(--mono); margin-left: 8px; font-size: 1.1rem; }
+
+        .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        @media (min-width: 800px) { .dashboard-grid { grid-template-columns: 1fr 1fr; } }
+
+        .timer-display { font-size: 5rem; font-weight: 800; font-family: var(--mono); color: #f5e6d8; text-align: center; line-height: 1; margin: 10px 0 20px; }
+        .timer-display.crack-phase { color: #ffab8a; text-shadow: 0 0 20px rgba(255,107,74,0.3); }
+        .timer-stats { display: flex; gap: 12px; justify-content: center; }
+        .stat-box { background: var(--bg-card2); padding: 10px 16px; border-radius: 8px; flex: 1; text-align: center; }
+        .stat-label { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 4px; }
+        .stat-val { font-size: 1.4rem; font-weight: bold; font-family: var(--mono); color: var(--accent-bright); }
+        
+        #dtrInput { width: 70px; background: transparent; border: none; border-bottom: 1px dashed var(--accent); color: var(--accent-bright); font-family: var(--mono); font-size: 1.4rem; font-weight: bold; text-align: center; padding: 0; outline: none; transition: 0.2s; cursor: text; }
+        #dtrInput:focus { background: rgba(255,255,255,0.05); border-radius: 4px; border-bottom-color: var(--text); color: #fff; }
+        #dtrInput::placeholder { color: var(--text-dim); font-weight: normal; }
+
+        .btn { padding: 14px; border-radius: 10px; border: none; cursor: pointer; font-size: 1.05rem; font-weight: bold; transition: 0.2s; display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 10px; }
+        .btn:active { transform: scale(0.98); }
+        .btn-start { background: var(--green); color: #fff; justify-content: center; }
+        .btn-start.running { background: var(--bg-card2); border: 1px solid var(--red); color: var(--red); }
+        .btn-crack { background: var(--bg-card2); border: 1px solid var(--crack); color: var(--crack); }
+        .btn-crack.done { background: var(--crack); color: #fff; }
+        .btn-end { background: var(--bg-card2); border: 1px solid var(--blue); color: var(--blue); margin-bottom: 0; }
+        .btn-end.done { background: var(--blue); color: #fff; }
+        .btn-shortcut { font-size: 0.75rem; opacity: 0.8; font-family: var(--mono); background: rgba(0,0,0,0.3); padding: 3px 6px; border-radius: 4px; }
+
+        .checkpoint-grid { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+        .cp-btn { flex: 1; min-width: 50px; padding: 10px 0; border-radius: 8px; border: 1px solid #3a3028; background: var(--bg-card2); color: var(--text-dim); cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: 0.2s; }
+        .cp-btn:hover { border-color: var(--accent); color: #fff; }
+        .cp-btn .cp-temp { font-size: 1.1rem; font-weight: bold; }
+        .cp-btn .cp-time { font-size: 0.85rem; font-family: var(--mono); margin-top: 2px; }
+        .cp-btn.checked { border-color: var(--accent-bright); background: rgba(240,160,80,0.15); color: var(--accent-bright); }
+
+        .bottom-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        @media (min-width: 800px) { .bottom-grid { grid-template-columns: 1.5fr 1fr; } }
+        
+        .side-panel { display: flex; flex-direction: column; gap: 16px; }
+        canvas { width: 100%; height: 420px; background: #0a0806; border-radius: 8px; border: 1px solid #2a221c; }
+        
+        .memo-input { width: 100%; height: 80px; padding: 12px; resize: vertical; }
+        .log-content { flex: 1; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: #e8d5c4; background: #0a0806; padding: 16px; border-radius: 8px; overflow-y: auto; white-space: pre-wrap; border: 1px solid #2a221c; height: 160px;}
+        
+        .btn-copy { background: var(--bg-card2); border: 1px solid #4a3a2a; color: var(--text); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; transition: 0.2s; }
+        .btn-copy:hover { border-color: var(--accent-bright); }
+        .btn-copy.copied { background: var(--green); color: white; border-color: var(--green); }
+        .btn-reset { background: transparent; border: none; color: var(--text-dim); cursor: pointer; font-size: 0.8rem; text-decoration: underline; margin-right: 8px; }
+        .btn-reset:hover { color: var(--red); }
+
+        .ref-selector { display: flex; align-items: center; gap: 8px; background: var(--bg-card2); padding: 4px 10px; border-radius: 6px; border: 1px solid #3a3028; }
+        .radio-label { font-size: 0.8rem; color: var(--text-dim); cursor: pointer; display: flex; align-items: center; gap: 4px; transition: 0.2s; }
+        .radio-label input { accent-color: var(--accent-bright); cursor: pointer; margin: 0; }
+        .radio-label:hover { color: var(--text); }
+
+        .history-item { background: #0a0806; border: 1px solid #2a221c; border-radius: 8px; overflow: hidden; transition: 0.2s; }
+        .history-item.expanded { border-color: var(--accent); }
+        .hist-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; cursor: pointer; background: rgba(255,255,255,0.02); }
+        .hist-header:hover { background: rgba(255,255,255,0.05); }
+        .hist-title { font-size: 0.85rem; font-weight: bold; color: var(--accent-bright); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%; display: flex; align-items: center; gap: 6px; }
+        .hist-title::before { content: '▶'; font-size: 0.65rem; color: var(--text-dim); transition: transform 0.2s; }
+        .history-item.expanded .hist-title::before { transform: rotate(90deg); color: var(--accent); }
+        .hist-actions { display: flex; gap: 4px; }
+        .hist-btn { background: var(--bg-card2); border: 1px solid #4a3a2a; color: var(--text); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; transition: 0.2s; }
+        .hist-btn:hover { border-color: var(--accent-bright); color: #fff; }
+        .hist-btn.delete:hover { border-color: var(--red); color: var(--red); }
+        .hist-body { padding: 12px; font-family: var(--mono); font-size: 0.8rem; color: #e8d5c4; white-space: pre-wrap; line-height: 1.5; border-top: 1px solid #2a221c; display: none; }
+        
+        .loading-db { font-size: 0.85rem; color: var(--accent); text-align: center; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="card meta-header">
+            <div class="info-group">
+                <div class="date-display" id="dateDisplay">📅 --</div>
+                <input type="text" id="beanInput" class="bean-input" placeholder="생두 종류 / 로스팅 목표 (예: 에티오피아 G1 약배전)">
+            </div>
+            <div class="weight-group">
+                <span style="font-size:0.85rem; color:var(--text-dim)">⚖️ 중량:</span>
+                <input type="number" id="greenWeight" class="weight-input" placeholder="생두(g)">
+                <span style="color:#4a3a2a">▶</span>
+                <input type="number" id="roastedWeight" class="weight-input" placeholder="원두(g)">
+                <div class="wl-result">WL: <span id="wlValue">--</span>%</div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="section-title" style="text-align: center;">⏱️ 로스팅 타이머</div>
+                <div class="timer-display" id="timerDisplay">00:00.0</div>
+                <div class="timer-stats">
+                    <div class="stat-box">
+                        <div class="stat-label">발현 시간 (Dev)</div>
+                        <div class="stat-val" id="devTimeDisplay">--</div>
+                    </div>
+                    <div class="stat-box" title="배출을 잊었을 때 여기에 원하는 DTR을 입력하면 배출 시간이 자동 계산됩니다!">
+                        <div class="stat-label">현재/목표 DTR <span style="color: var(--accent); cursor: help;">(수정가능)</span></div>
+                        <div style="display: flex; justify-content: center; align-items: baseline;">
+                            <input type="number" id="dtrInput" placeholder="--.-" step="0.1">
+                            <span style="font-size: 1rem; color: var(--accent-bright); margin-left: 2px;">%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <button class="btn btn-start" id="btnStart">▶ 시작 / 일시정지 <span class="btn-shortcut">Space</span></button>
+                <button class="btn btn-crack" id="btnCrack">💥 1차 크랙 <span class="btn-shortcut">C</span></button>
+                <button class="btn btn-end" id="btnEnd">🏁 배출 완료 <span class="btn-shortcut">E</span></button>
+                
+                <div class="checkpoint-grid" id="cpGrid"></div>
+            </div>
+        </div>
+
+        <div class="bottom-grid">
+            <div class="card canvas-card" style="display: flex; flex-direction: column;">
+                <div class="section-header">
+                    <div class="section-title">📉 로스팅 프로파일 곡선</div>
+                    <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+                        <div class="ref-selector">
+                            <span style="font-size: 0.75rem; color: var(--text-dim);">가이드:</span>
+                            <label class="radio-label"><input type="radio" name="guide" value="none" checked> 없음</label>
+                            <label class="radio-label"><input type="radio" name="guide" value="W"> 워시드 (W)</label>
+                            <label class="radio-label"><input type="radio" name="guide" value="N"> 내추럴 (N)</label>
+                        </div>
+                        <div style="font-size:0.75rem; color:var(--text-dim); display:flex; gap:10px;">
+                            <span style="color:var(--drying)">■ 건조</span>
+                            <span style="color:var(--maillard)">■ 메일라드</span>
+                            <span style="color:var(--crack)">■ 발현</span>
+                        </div>
+                    </div>
+                </div>
+                <canvas id="roastCanvas"></canvas>
+            </div>
+            
+            <div class="side-panel">
+                <div class="card" style="padding: 16px;">
+                    <div class="section-header" style="margin-bottom: 8px;">
+                        <div class="section-title">📝 메모</div>
+                    </div>
+                    <textarea id="memoInput" class="memo-input" placeholder="날씨, 생두 상태, 로스팅 특이사항 등을 기록하세요."></textarea>
+                </div>
+
+                <div class="card" style="padding: 16px; display: flex; flex-direction: column;">
+                    <div class="section-header">
+                        <div class="section-title">📋 현재 리포트</div>
+                        <div>
+                            <button id="btnReset" class="btn-reset">초기화</button>
+                            <button id="btnCopy" class="btn-copy">복사</button>
+                        </div>
+                    </div>
+                    <div class="log-content" id="logContent" style="height: 120px;">기록 대기 중...</div>
+                </div>
+
+                <div class="card" style="padding: 16px; flex: 1; display: flex; flex-direction: column; max-height: 400px;">
+                    <div class="section-header">
+                        <div class="section-title">📚 로스팅 로그 (DB저장)</div>
+                        <button id="btnClearHistory" class="btn-reset">전체 삭제</button>
+                    </div>
+                    <div id="historyContainer" style="overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 12px; padding-right: 4px;">
+                        <div class="loading-db">Firebase DB 연결 상태를 확인 중입니다...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        let firebaseConfig = {
+            apiKey: "AIzaSyBHtXxGLGEvDIbhiZffwTokk3YdCBHEuxU",
+            authDomain: "rosting-dtr.firebaseapp.com",
+            projectId: "rosting-dtr",
+            storageBucket: "rosting-dtr.firebasestorage.app",
+            messagingSenderId: "120070275012",
+            appId: "1:120070275012:web:131427ee42ee2771912e91"
+        };
+
+        if (typeof __firebase_config !== 'undefined') {
+            firebaseConfig = JSON.parse(__firebase_config);
+        }
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'my-personal-roaster';
+
+        let db, auth, currentUser = null;
+        let dbLogs = []; 
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+
+            const initAuth = async () => {
+                try {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (error) {
+                    document.getElementById('historyContainer').innerHTML = '<div class="empty-msg" style="color: var(--red); font-size: 0.9rem; text-align: center; margin-top: 20px;">인증 오류: Firebase 설정값을 확인해주세요.</div>';
+                }
+            };
+            
+            initAuth();
+
+            onAuthStateChanged(auth, (user) => {
+                currentUser = user;
+                if (user) loadHistoryFromDB();
+            });
+        } catch (error) {
+            document.getElementById('historyContainer').innerHTML = '<div class="empty-msg" style="color: var(--red); font-size: 0.9rem; text-align: center; margin-top: 20px;">Firebase 셋팅이 완료되지 않았습니다. 코드를 확인해주세요.</div>';
+        }
+
+        function loadHistoryFromDB() {
+            if (!currentUser || !db) return;
+            const logsRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'roastingLogs');
+            
+            onSnapshot(logsRef, (snapshot) => {
+                dbLogs = [];
+                snapshot.forEach(doc => {
+                    dbLogs.push({ id: doc.id, ...doc.data() });
+                });
+                dbLogs.sort((a, b) => b.timestamp - a.timestamp);
+                renderHistory();
+            }, (err) => {
+                document.getElementById('historyContainer').innerHTML = '<div class="empty-msg" style="color: var(--red); font-size: 0.9rem; text-align: center; margin-top: 20px;">데이터베이스 권한 설정(테스트 모드)을 확인해주세요.</div>';
+            });
+        }
+
+        const els = {
+            timer: document.getElementById('timerDisplay'),
+            dtrInput: document.getElementById('dtrInput'),
+            dev: document.getElementById('devTimeDisplay'),
+            start: document.getElementById('btnStart'),
+            crack: document.getElementById('btnCrack'),
+            end: document.getElementById('btnEnd'),
+            log: document.getElementById('logContent'),
+            canvas: document.getElementById('roastCanvas'),
+            ctx: document.getElementById('roastCanvas').getContext('2d'),
+            bean: document.getElementById('beanInput'),
+            gw: document.getElementById('greenWeight'),
+            rw: document.getElementById('roastedWeight'),
+            wl: document.getElementById('wlValue'),
+            memo: document.getElementById('memoInput'),
+            cpGrid: document.getElementById('cpGrid'),
+            historyContainer: document.getElementById('historyContainer'),
+            btnClearHistory: document.getElementById('btnClearHistory')
+        };
+
+        const today = new Date();
+        document.getElementById('dateDisplay').textContent = `${today.getFullYear()}.${String(today.getMonth()+1).padStart(2,'0')}.${String(today.getDate()).padStart(2,'0')}`;
+
+        const state = {
+            isRunning: false, startTime: null, elapsed: 0, crackTime: null, endTime: null, animId: null,
+            cp: { 100: null, 120: null, 140: null, 150: null, 170: null }
+        };
+
+        const refData = {
+            'W': [
+                {time: 0, temp: 50}, {time: 94000, temp: 100}, {time: 193000, temp: 150},
+                {time: 235000, temp: 170}, {time: 362000, temp: 198, type: 'crack'}, {time: 421000, temp: 208, type: 'end'}
+            ],
+            'N': [
+                {time: 0, temp: 50}, {time: 51000, temp: 100}, {time: 176000, temp: 150},
+                {time: 283000, temp: 170}, {time: 538000, temp: 198, type: 'crack'}, {time: 599000, temp: 208, type: 'end'}
+            ]
+        };
+
+        document.querySelectorAll('input[name="guide"]').forEach(radio => {
+            radio.addEventListener('change', drawCanvas);
+        });
+
+        Object.keys(state.cp).forEach(temp => {
+            const btn = document.createElement('button');
+            btn.className = 'cp-btn';
+            btn.innerHTML = `<span class="cp-temp">${temp}°C</span><span class="cp-time" id="cpTime${temp}">--</span>`;
+            btn.onclick = () => recordCp(temp);
+            els.cpGrid.appendChild(btn);
+        });
+
+        const fmtMs = ms => ms === null ? '--' : `${String(Math.floor(ms/60000)).padStart(2,'0')}:${String(Math.floor((ms/1000)%60)).padStart(2,'0')}.${Math.floor((ms/100)%10)}`;
+        const fmtShort = ms => ms === null ? '--' : `${String(Math.floor(ms/60000)).padStart(2,'0')}:${String(Math.floor(ms/1000)%60).padStart(2,'0')}`;
+
+        function toggleTimer() {
+            if (state.isRunning) {
+                state.isRunning = false;
+                els.start.classList.remove('running');
+                cancelAnimationFrame(state.animId);
+            } else {
+                if (state.endTime !== null) resetAll();
+                state.isRunning = true;
+                state.startTime = Date.now() - state.elapsed;
+                els.start.classList.add('running');
+                state.animId = requestAnimationFrame(loop);
+            }
+        }
+
+        function loop() {
+            if (state.isRunning) {
+                state.elapsed = Date.now() - state.startTime;
+                updateUI();
+                state.animId = requestAnimationFrame(loop);
+            }
+        }
+
+        function recordCp(temp) {
+            if (!state.isRunning && state.elapsed === 0) return;
+            if (state.cp[temp] === null) {
+                state.cp[temp] = state.elapsed;
+                updateUI();
+            }
+        }
+
+        function resetAll() {
+            state.isRunning = false; state.elapsed = 0; state.crackTime = null; state.endTime = null;
+            Object.keys(state.cp).forEach(k => state.cp[k] = null);
+            els.start.classList.remove('running');
+            els.crack.classList.remove('done');
+            els.end.classList.remove('done');
+            els.dtrInput.value = '';
+            updateUI();
+        }
+
+        async function saveToHistoryDB() {
+            const finalLog = els.log.textContent;
+            const beanName = els.bean.value || '미입력 원두';
+            const now = new Date();
+            const dateStr = `${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            const titleStr = `${dateStr} - ${beanName}`;
+
+            if (!currentUser || !db) return; 
+            
+            try {
+                const logsRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'roastingLogs');
+                await addDoc(logsRef, {
+                    title: titleStr,
+                    logText: finalLog,
+                    timestamp: Date.now()
+                });
+            } catch(e) {}
+        }
+
+        function renderHistory() {
+            els.historyContainer.innerHTML = '';
+            if (dbLogs.length === 0) {
+                els.historyContainer.innerHTML = '<div class="empty-msg" style="color: var(--text-dim); font-size: 0.9rem; text-align: center; margin-top: 20px;">로스팅 배출 완료 시 기록이 안전하게 보관됩니다.</div>';
+                return;
+            }
+
+            dbLogs.forEach(log => {
+                const histDiv = document.createElement('div');
+                histDiv.className = 'history-item';
+                
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'hist-header';
+                headerDiv.onclick = (e) => {
+                    if (e.target.tagName !== 'BUTTON') {
+                        const isHidden = bodyDiv.style.display === 'none';
+                        bodyDiv.style.display = isHidden ? 'block' : 'none';
+                        histDiv.classList.toggle('expanded', isHidden);
+                    }
+                };
+                
+                const titleSpan = document.createElement('div');
+                titleSpan.className = 'hist-title';
+                titleSpan.textContent = log.title;
+
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'hist-actions';
+
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'hist-btn';
+                copyBtn.textContent = '복사';
+                copyBtn.onclick = function(e) {
+                    e.stopPropagation(); 
+                    const ta = document.createElement('textarea');
+                    ta.value = log.logText;
+                    document.body.appendChild(ta); ta.select();
+                    try { 
+                        document.execCommand('copy'); 
+                        this.textContent = '✅'; setTimeout(() => { this.textContent = '복사'; }, 2000);
+                    } catch(err) {}
+                    document.body.removeChild(ta);
+                };
+
+                const delBtn = document.createElement('button');
+                delBtn.className = 'hist-btn delete';
+                delBtn.textContent = '삭제';
+                delBtn.onclick = async (e) => {
+                    e.stopPropagation();
+                    if(confirm("이 로그를 완전히 삭제할까요? (복구 불가)")) {
+                        try {
+                            const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'roastingLogs', log.id);
+                            await deleteDoc(docRef);
+                        } catch(err) {}
+                    }
+                };
+
+                actionsDiv.appendChild(copyBtn); actionsDiv.appendChild(delBtn);
+                headerDiv.appendChild(titleSpan); headerDiv.appendChild(actionsDiv);
+
+                const bodyDiv = document.createElement('div');
+                bodyDiv.className = 'hist-body';
+                bodyDiv.textContent = log.logText;
+
+                histDiv.appendChild(headerDiv); histDiv.appendChild(bodyDiv);
+                els.historyContainer.appendChild(histDiv);
+            });
+        }
+
+        els.btnClearHistory.onclick = async () => {
+            if (!currentUser || !db || dbLogs.length === 0) return;
+            if(confirm("정말 모든 로스팅 기록을 DB에서 삭제하시겠습니까?")) {
+                for(let log of dbLogs) {
+                    try {
+                        const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'roastingLogs', log.id);
+                        deleteDoc(docRef); 
+                    } catch(e) {}
+                }
+            }
+        };
+
+        els.dtrInput.addEventListener('change', (e) => {
+            if (!state.crackTime) { alert('1차 크랙 시간이 먼저 기록되어야 DTR 역계산이 가능합니다.'); updateUI(); return; }
+            const val = parseFloat(e.target.value);
+            if (isNaN(val) || val <= 0 || val >= 100) { updateUI(); return; }
+            
+            state.endTime = state.crackTime / (1 - (val / 100));
+            state.elapsed = state.endTime; 
+            
+            if (state.isRunning) toggleTimer(); 
+            els.dtrInput.blur(); 
+
+            if (!els.end.classList.contains('done')) {
+                els.end.classList.add('done');
+                updateUI(); 
+                saveToHistoryDB();
+            } else { updateUI(); }
+        });
+
+        els.crack.onclick = () => {
+            if (state.crackTime || (!state.isRunning && !state.elapsed)) return;
+            state.crackTime = state.elapsed; els.crack.classList.add('done'); updateUI();
+        };
+
+        els.end.onclick = () => {
+            if (state.endTime || (!state.isRunning && !state.elapsed)) return;
+            state.endTime = state.elapsed; els.end.classList.add('done');
+            if (state.isRunning) toggleTimer();
+            updateUI(); 
+            saveToHistoryDB(); 
+        };
+
+        els.start.onclick = toggleTimer;
+        document.getElementById('btnReset').onclick = resetAll;
+        
+        function calcWL() {
+            const g = parseFloat(els.gw.value), r = parseFloat(els.rw.value);
+            els.wl.textContent = (g > 0 && r > 0 && g > r) ? ((g - r) / g * 100).toFixed(1) : '--';
+            updateLog();
+        }
+        [els.gw, els.rw, els.bean, els.memo].forEach(el => el.addEventListener('input', () => {
+            if(el !== els.memo && el !== els.bean) calcWL(); updateLog();
+        }));
+
+        function updateUI() {
+            els.timer.textContent = fmtMs(state.elapsed);
+            els.timer.classList.toggle('crack-phase', state.crackTime && !state.endTime && state.isRunning);
+
+            const curTime = state.endTime || state.elapsed;
+            if (state.crackTime) {
+                const dev = curTime - state.crackTime;
+                els.dev.textContent = fmtMs(dev);
+                if (document.activeElement !== els.dtrInput) els.dtrInput.value = curTime > 0 ? (dev / curTime * 100).toFixed(1) : '';
+            } else {
+                els.dev.textContent = '--';
+                if (document.activeElement !== els.dtrInput) els.dtrInput.value = '';
+            }
+
+            Object.keys(state.cp).forEach(t => {
+                const tEl = document.getElementById(`cpTime${t}`);
+                tEl.textContent = fmtMs(state.cp[t]);
+                tEl.parentElement.classList.toggle('checked', state.cp[t] !== null);
+            });
+
+            updateLog(); drawCanvas();
+        }
+
+        function updateLog() {
+            if (!state.elapsed && !state.endTime) {
+                els.log.textContent = "아직 기록이 없습니다. 스페이스바를 눌러 시작하세요."; return;
+            }
+
+            let t = `[로스팅 프로파일 리포트]
+---------------------------------
+`;
+            t += `📅 일시: ${new Date().toLocaleString('ko-KR')}
+`;
+            t += `☕ 원두: ${els.bean.value || '미입력'}
+`;
+            if (els.gw.value && els.rw.value) t += `⚖️ 중량: 투입 ${els.gw.value}g -> 배출 ${els.rw.value}g
+📉 수율(WL): ${els.wl.textContent}%
+`;
+            t += `---------------------------------
+
+[구간 기록]
+`;
+            
+            let prev = 0;
+            [100, 120, 140, 150, 170].forEach(temp => {
+                if (state.cp[temp]) {
+                    t += `- ${temp}°C : ${fmtShort(state.cp[temp])} (+${fmtShort(state.cp[temp]-prev)})
+`;
+                    prev = state.cp[temp];
+                }
+            });
+
+            if (state.crackTime) t += `💥 1차 크랙 : ${fmtShort(state.crackTime)}
+`;
+            if (state.endTime) t += `🏁 배출 완료 : ${fmtShort(state.endTime)}
+`;
+            
+            if (state.crackTime && state.endTime) {
+                const dev = state.endTime - state.crackTime;
+                const finalDtr = els.dtrInput.value || (dev/state.endTime*100).toFixed(1);
+                t += `
+[최종 결과]
+⏱️ 총 시간: ${fmtShort(state.endTime)} | 🔥 발현: ${fmtShort(dev)} | 📊 DTR: ${finalDtr}%
+`;
+            }
+
+            if (els.memo.value) t += `
+[메모]
+${els.memo.value}
+`;
+            els.log.textContent = t;
+        }
+
+        document.getElementById('btnCopy').onclick = function() {
+            const ta = document.createElement("textarea"); ta.value = els.log.textContent;
+            document.body.appendChild(ta); ta.select();
+            try { 
+                document.execCommand('copy'); 
+                this.textContent = '✅ 완료!'; this.classList.add('copied');
+                setTimeout(() => { this.textContent = '복사'; this.classList.remove('copied'); }, 2000);
+            } catch(e) {} document.body.removeChild(ta);
+        };
+
+        function drawCanvas() {
+            const w = els.canvas.width = els.canvas.offsetWidth * 2, h = els.canvas.height = els.canvas.offsetHeight * 2;
+            const ctx = els.ctx; ctx.clearRect(0, 0, w, h);
+            
+            const pad = { t: 40, r: 40, b: 60, l: 80 };
+            const pw = w - pad.l - pad.r, ph = h - pad.t - pad.b;
+
+            const guide = document.querySelector('input[name="guide"]:checked').value;
+            let guideMaxT = (guide !== 'none' && refData[guide]) ? refData[guide][refData[guide].length - 1].time : 0;
+
+            const maxT = Math.max(state.elapsed, guideMaxT + 60000, 600000); 
+            const getX = ms => pad.l + (ms / maxT) * pw, getY = temp => pad.t + ph - ((temp - 50) / 200) * ph; 
+
+            const cx = getX(state.elapsed), x150 = state.cp[150] ? getX(state.cp[150]) : null, xC = state.crackTime ? getX(state.crackTime) : null, xE = state.endTime ? getX(state.endTime) : null;
+
+            const dx = x150 || (state.elapsed > 0 ? cx : 0);
+            if (dx > pad.l) { ctx.fillStyle = 'rgba(229, 184, 105, 0.08)'; ctx.fillRect(pad.l, pad.t, dx - pad.l, ph); }
+            if (x150) { const mx = xC || (state.elapsed > state.cp[150] ? cx : x150); if (mx > x150) { ctx.fillStyle = 'rgba(194, 110, 67, 0.1)'; ctx.fillRect(x150, pad.t, mx - x150, ph); } }
+            if (xC) { const vx = xE || (state.elapsed > state.crackTime ? cx : xC); if (vx > xC) { ctx.fillStyle = 'rgba(255, 107, 74, 0.1)'; ctx.fillRect(xC, pad.t, vx - xC, ph); } }
+
+            ctx.lineWidth = 1; ctx.font = '22px "SF Mono", monospace'; ctx.fillStyle = '#6a5a4a'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+            [50, 100, 150, 200, 250].forEach(t => { 
+                let y = getY(t); ctx.strokeStyle = '#2a221c'; ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w-pad.r, y); ctx.stroke();
+                ctx.fillText(t + '°', pad.l - 15, y); 
+            });
+            ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+            for(let m = 0; m <= maxT; m += 120000) {
+                let x = getX(m); ctx.strokeStyle = '#2a221c'; ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, h - pad.b); ctx.stroke();
+                ctx.fillText(Math.floor(m / 60000) + 'm', x, h - pad.b + 15);
+            }
+            ctx.strokeStyle = '#5a4a3a'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, h - pad.b); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(pad.l, h - pad.b); ctx.lineTo(w - pad.r, h - pad.b); ctx.stroke();
+
+            if (guide !== 'none' && refData[guide]) {
+                const rPts = refData[guide]; ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)'; ctx.lineWidth = 3; ctx.setLineDash([8, 8]); 
+                ctx.beginPath(); ctx.moveTo(getX(rPts[0].time), getY(rPts[0].temp));
+                for (let i = 1; i < rPts.length; i++) {
+                    let prev = rPts[i-1], curr = rPts[i];
+                    let cpX = getX(prev.time) + (getX(curr.time) - getX(prev.time)) / 2;
+                    ctx.bezierCurveTo(cpX, getY(prev.temp), cpX, getY(curr.temp), getX(curr.time), getY(curr.temp));
+                }
+                ctx.stroke(); ctx.setLineDash([]); 
+
+                rPts.forEach(p => {
+                    if(p.time === 0) return; let x = getX(p.time), y = getY(p.temp);
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.15)'; ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'; ctx.font = '14px "SF Pro Display", sans-serif';
+                    ctx.fillText(p.type === 'crack' ? 'C' : (p.type === 'end' ? 'D' : `${p.temp}°`), x, y - 12);
+                });
+            }
+
+            let pts = [{time: 0, temp: 50}];
+            [100, 120, 140, 150, 170].forEach(t => { if(state.cp[t]) pts.push({time: state.cp[t], temp: t}); });
+            if (state.crackTime) pts.push({time: state.crackTime, temp: 198, type: 'crack'});
+            if (state.endTime) pts.push({time: state.endTime, temp: 208, type: 'end'});
+            pts.sort((a,b) => a.time - b.time);
+
+            if(state.isRunning && !state.endTime) {
+                let lp = pts[pts.length-1], estTemp = Math.min(240, lp.temp + ((state.elapsed - lp.time) / 60000) * 10);
+                pts.push({time: state.elapsed, temp: estTemp, type: 'est'});
+            }
+
+            if (pts.length > 1) {
+                ctx.strokeStyle = '#f0a050'; ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                ctx.beginPath(); ctx.moveTo(getX(pts[0].time), getY(pts[0].temp));
+                for (let i = 1; i < pts.length; i++) {
+                    let prev = pts[i-1], curr = pts[i];
+                    let cpX = getX(prev.time) + (getX(curr.time) - getX(prev.time)) / 2;
+                    ctx.bezierCurveTo(cpX, getY(prev.temp), cpX, getY(curr.temp), getX(curr.time), getY(curr.temp));
+                }
+                ctx.stroke();
+            }
+
+            pts.forEach(p => {
+                if(p.time === 0 || p.type === 'est') return;
+                let sp = p.type === 'crack' || p.type === 'end';
+                ctx.fillStyle = p.type === 'crack' ? '#ff6b4a' : (p.type === 'end' ? '#5a9e6f' : '#1c1613');
+                ctx.strokeStyle = p.type === 'crack' ? '#ff6b4a' : (p.type === 'end' ? '#5a9e6f' : '#f0a050');
+                let x = getX(p.time), y = getY(p.temp);
+
+                ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(x, y, sp ? 10 : 8, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = '#e8d5c4'; ctx.font = '20px "SF Pro Display", sans-serif';
+                ctx.fillText(p.type === 'crack' ? 'Crack' : (p.type === 'end' ? 'Drop' : `${p.temp}°`), x, y - 22);
+            });
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return; 
+            if(e.code === 'Space') { e.preventDefault(); toggleTimer(); }
+            if(e.key.toLowerCase() === 'c') els.crack.click();
+            if(e.key.toLowerCase() === 'e') els.end.click();
+            if(e.key.toLowerCase() === 'r') resetAll();
+            if(['1','2','3','4','5'].includes(e.key)) recordCp([100, 120, 140, 150, 170][parseInt(e.key)-1]);
+        });
+        
+        window.addEventListener('resize', drawCanvas);
+        drawCanvas();
+    </script>
+</body>
+</html>
