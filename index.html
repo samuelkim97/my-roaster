@@ -205,23 +205,21 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        let firebaseConfig = {
+        // 용준님이 복사해주신 파이어베이스 정보 적용
+        const firebaseConfig = {
             apiKey: "AIzaSyBHtXxGLGEvDIbhiZffwTokk3YdCBHEuxU",
             authDomain: "rosting-dtr.firebaseapp.com",
             projectId: "rosting-dtr",
             storageBucket: "rosting-dtr.firebasestorage.app",
             messagingSenderId: "120070275012",
-            appId: "1:120070275012:web:131427ee42ee2771912e91"
+            appId: "1:120070275012:web:131427ee42ee2771912e91",
+            measurementId: "G-VLC65HM1L2"
         };
 
-        if (typeof __firebase_config !== 'undefined') {
-            firebaseConfig = JSON.parse(__firebase_config);
-        }
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'my-personal-roaster';
-
+        const appId = 'my-personal-roaster';
         let db, auth, currentUser = null;
         let dbLogs = []; 
 
@@ -230,26 +228,16 @@
             auth = getAuth(app);
             db = getFirestore(app);
 
-            const initAuth = async () => {
-                try {
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                } catch (error) {
-                    document.getElementById('historyContainer').innerHTML = '<div class="empty-msg" style="color: var(--red); font-size: 0.9rem; text-align: center; margin-top: 20px;">인증 오류: Firebase 설정값을 확인해주세요.</div>';
-                }
-            };
-            
-            initAuth();
+            signInAnonymously(auth).catch((error) => {
+                document.getElementById('historyContainer').innerHTML = '<div class="empty-msg" style="color: var(--red); font-size: 0.9rem; text-align: center; margin-top: 20px;">인증 오류: 파이어베이스 인증(익명 로그인) 설정을 켜주세요.</div>';
+            });
 
             onAuthStateChanged(auth, (user) => {
                 currentUser = user;
                 if (user) loadHistoryFromDB();
             });
         } catch (error) {
-            document.getElementById('historyContainer').innerHTML = '<div class="empty-msg" style="color: var(--red); font-size: 0.9rem; text-align: center; margin-top: 20px;">Firebase 셋팅이 완료되지 않았습니다. 코드를 확인해주세요.</div>';
+            document.getElementById('historyContainer').innerHTML = '<div class="empty-msg" style="color: var(--red); font-size: 0.9rem; text-align: center; margin-top: 20px;">Firebase 셋팅이 완료되지 않았습니다.</div>';
         }
 
         function loadHistoryFromDB() {
@@ -264,7 +252,7 @@
                 dbLogs.sort((a, b) => b.timestamp - a.timestamp);
                 renderHistory();
             }, (err) => {
-                document.getElementById('historyContainer').innerHTML = '<div class="empty-msg" style="color: var(--red); font-size: 0.9rem; text-align: center; margin-top: 20px;">데이터베이스 권한 설정(테스트 모드)을 확인해주세요.</div>';
+                document.getElementById('historyContainer').innerHTML = '<div class="empty-msg" style="color: var(--red); font-size: 0.9rem; text-align: center; margin-top: 20px;">DB 읽기 오류: 파이어베이스 Firestore 테스트 모드를 확인해주세요.</div>';
             });
         }
 
