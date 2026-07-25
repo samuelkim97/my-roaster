@@ -27,8 +27,14 @@
         input, textarea { background: #0a0806; border: 1px solid #4a3a2a; color: #fff; border-radius: 8px; font-family: var(--font); outline: none; transition: 0.2s; }
         input:focus, textarea:focus { border-color: var(--accent-bright); }
 
-        input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
+        /* 온도 입력기 전용 화살표 표시 (웹킷 기반) */
+        .temp-input::-webkit-outer-spin-button, 
+        .temp-input::-webkit-inner-spin-button { 
+            -webkit-appearance: auto; 
+            margin-left: 5px; 
+            cursor: pointer;
+        }
 
         .meta-header { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; }
         .info-group { display: flex; gap: 12px; align-items: center; flex: 1; min-width: 300px;}
@@ -37,6 +43,7 @@
         
         .weight-group { display: flex; align-items: center; gap: 8px; background: #0a0806; padding: 8px 12px; border-radius: 8px; border: 1px solid #3a3028; }
         .weight-input { width: 70px; background: transparent; border: none; border-bottom: 1px solid #4a3a2a; text-align: center; font-size: 1rem; border-radius: 0; padding: 2px; }
+        .weight-input::-webkit-outer-spin-button, .weight-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .wl-result { font-weight: bold; color: var(--green-bright); font-family: var(--mono); margin-left: 8px; font-size: 1.1rem; }
 
         .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
@@ -50,6 +57,7 @@
         .stat-val { font-size: 1.4rem; font-weight: bold; font-family: var(--mono); color: var(--accent-bright); }
         
         #dtrInput { width: 70px; background: transparent; border: none; border-bottom: 1px dashed var(--accent); color: var(--accent-bright); font-family: var(--mono); font-size: 1.4rem; font-weight: bold; text-align: center; padding: 0; outline: none; transition: 0.2s; cursor: text; }
+        #dtrInput::-webkit-outer-spin-button, #dtrInput::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         #dtrInput:focus { background: rgba(255,255,255,0.05); border-radius: 4px; border-bottom-color: var(--text); color: #fff; }
         #dtrInput::placeholder { color: var(--text-dim); font-weight: normal; }
 
@@ -63,12 +71,16 @@
         .btn-end.done { background: var(--blue); color: #fff; }
         .btn-shortcut { font-size: 0.75rem; opacity: 0.8; font-family: var(--mono); background: rgba(0,0,0,0.3); padding: 3px 6px; border-radius: 4px; }
 
-        .checkpoint-grid { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
-        .cp-btn { flex: 1; min-width: 50px; padding: 10px 0; border-radius: 8px; border: 1px solid #3a3028; background: var(--bg-card2); color: var(--text-dim); cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: 0.2s; }
-        .cp-btn:hover { border-color: var(--accent); color: #fff; }
-        .cp-btn .cp-temp { font-size: 1.1rem; font-weight: bold; }
-        .cp-btn .cp-time { font-size: 0.85rem; font-family: var(--mono); margin-top: 2px; }
-        .cp-btn.checked { border-color: var(--accent-bright); background: rgba(240,160,80,0.15); color: var(--accent-bright); }
+        /* 신규 커스텀 온도 입력기 스타일 */
+        .custom-cp-container { display: flex; gap: 8px; align-items: stretch; margin-top: 10px; background: var(--bg-card2); padding: 8px 12px; border-radius: 8px; border: 1px solid #3a3028;}
+        .temp-input { flex: 1; text-align: center; font-size: 1.2rem; font-weight: bold; padding: 8px; background: #0a0806; border: 1px solid #4a3a2a; color: #fff; border-radius: 6px; }
+        .temp-input:focus { border-color: var(--accent-bright); }
+        .btn-record { background: #3a2e26; color: var(--accent-bright); font-weight: bold; border: 1px solid #4a3a2a; padding: 0 20px; border-radius: 6px; cursor: pointer; font-size: 1rem; transition: 0.2s; }
+        .btn-record:hover { background: var(--accent-bright); color: #100d0b; }
+        .dynamic-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        .tag { background: #1c1613; color: var(--text); padding: 6px 10px; border-radius: 6px; font-size: 0.9rem; display: flex; gap: 8px; align-items: center; border: 1px solid #3a3028;}
+        .tag .time { color: var(--accent); font-family: var(--mono); font-weight: bold; }
+        .tag-delete { background: none; border: none; color: var(--red); cursor: pointer; font-size: 1rem; padding: 0 4px; line-height: 1; }
 
         .bottom-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
         @media (min-width: 800px) { .bottom-grid { grid-template-columns: 1.5fr 1fr; } }
@@ -108,6 +120,7 @@
 </head>
 <body>
     <div class="app-container">
+        <!-- 메타 정보 -->
         <div class="card meta-header">
             <div class="info-group">
                 <div class="date-display" id="dateDisplay">📅 --</div>
@@ -123,6 +136,7 @@
         </div>
 
         <div class="dashboard-grid">
+            <!-- 타이머 -->
             <div class="card">
                 <div class="section-title" style="text-align: center;">⏱️ 로스팅 타이머</div>
                 <div class="timer-display" id="timerDisplay">00:00.0</div>
@@ -141,16 +155,29 @@
                 </div>
             </div>
 
+            <!-- 컨트롤 및 온도 기록기 -->
             <div class="card">
                 <button class="btn btn-start" id="btnStart">▶ 시작 / 일시정지 <span class="btn-shortcut">Space</span></button>
                 <button class="btn btn-crack" id="btnCrack">💥 1차 크랙 <span class="btn-shortcut">C</span></button>
                 <button class="btn btn-end" id="btnEnd">🏁 배출 완료 <span class="btn-shortcut">E</span></button>
                 
-                <div class="checkpoint-grid" id="cpGrid"></div>
+                <!-- 신규: 커스텀 온도 기록기 -->
+                <div style="margin-top: 20px;">
+                    <div class="section-title" style="font-size: 0.9rem;">📍 온도 구간 기록 (수동입력 / 5도 스크롤)</div>
+                    <div class="custom-cp-container">
+                        <input type="number" id="customTempInput" class="temp-input" value="100" step="5" placeholder="온도">
+                        <span style="display: flex; align-items: center; color: var(--text-dim); font-weight: bold;">°C</span>
+                        <button id="btnRecordTemp" class="btn-record">기록</button>
+                    </div>
+                    <div id="dynamicTags" class="dynamic-tags">
+                        <!-- 기록된 온도 태그들이 여기에 생성됩니다 -->
+                    </div>
+                </div>
             </div>
         </div>
 
         <div class="bottom-grid">
+            <!-- 캔버스 그래프 -->
             <div class="card canvas-card" style="display: flex; flex-direction: column;">
                 <div class="section-header">
                     <div class="section-title">📉 로스팅 프로파일 곡선</div>
@@ -171,6 +198,7 @@
                 <canvas id="roastCanvas"></canvas>
             </div>
             
+            <!-- 메모 및 리포트 패널 -->
             <div class="side-panel">
                 <div class="card" style="padding: 16px;">
                     <div class="section-header" style="margin-bottom: 8px;">
@@ -203,6 +231,7 @@
         </div>
     </div>
 
+    <!-- Firebase SDK 주입 및 앱 실행 제어 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -227,19 +256,17 @@
             auth = getAuth(app);
             db = getFirestore(app);
 
-            // 비동기 익명 인증은 유지하되 실시간 리스트는 공용 경로를 바라봅니다.
             signInAnonymously(auth).then(() => {
                 loadHistoryFromDB();
             }).catch((error) => {
                 console.error("Auth Error", error);
-                loadHistoryFromDB(); // 인증 오류나도 우선 DB 조회를 시도하도록 유도
+                loadHistoryFromDB(); 
             });
 
         } catch (error) {
             document.getElementById('historyContainer').innerHTML = '<div class="empty-msg" style="color: var(--red); font-size: 0.9rem; text-align: center; margin-top: 20px;">Firebase 설정 오류가 발생했습니다.</div>';
         }
 
-        // 모든 기기가 공통의 저장소 경로를 바라보게 설정하여 맥북-아이패드 완전 동기화 구현
         function loadHistoryFromDB() {
             if (!db) return;
             const logsRef = collection(db, 'artifacts', appId, 'users', 'Samuel', 'roastingLogs');
@@ -252,7 +279,7 @@
                 dbLogs.sort((a, b) => b.timestamp - a.timestamp);
                 renderHistory();
             }, (err) => {
-                document.getElementById('historyContainer').innerHTML = '<div class="empty-msg" style="color: var(--red); font-size: 0.9rem; text-align: center; margin-top: 20px;">DB 연결 실패: 파이어베이스 콘솔에서 [Firestore Database]를 개설(테스트 모드)했는지 확인해주세요.</div>';
+                document.getElementById('historyContainer').innerHTML = '<div class="empty-msg" style="color: var(--red); font-size: 0.9rem; text-align: center; margin-top: 20px;">DB 연결 실패: 파이어베이스 규칙 설정을 확인해주세요.</div>';
             });
         }
 
@@ -271,7 +298,11 @@
             rw: document.getElementById('roastedWeight'),
             wl: document.getElementById('wlValue'),
             memo: document.getElementById('memoInput'),
-            cpGrid: document.getElementById('cpGrid'),
+            
+            customTempInput: document.getElementById('customTempInput'),
+            btnRecordTemp: document.getElementById('btnRecordTemp'),
+            dynamicTags: document.getElementById('dynamicTags'),
+            
             historyContainer: document.getElementById('historyContainer'),
             btnClearHistory: document.getElementById('btnClearHistory')
         };
@@ -281,9 +312,10 @@
 
         const state = {
             isRunning: false, startTime: null, elapsed: 0, crackTime: null, endTime: null, animId: null,
-            cp: { 100: null, 120: null, 140: null, 150: null, 170: null }
+            recordedTemps: [] // {temp: 100, time: 60000} 형태로 자유롭게 저장
         };
 
+        // 가이드 레퍼런스 하드코딩 데이터 (다음 스텝에서 동적으로 바꿀 예정입니다!)
         const refData = {
             'W': [
                 {time: 0, temp: 50}, {time: 94000, temp: 100}, {time: 193000, temp: 150},
@@ -297,14 +329,6 @@
 
         document.querySelectorAll('input[name="guide"]').forEach(radio => {
             radio.addEventListener('change', drawCanvas);
-        });
-
-        Object.keys(state.cp).forEach(temp => {
-            const btn = document.createElement('button');
-            btn.className = 'cp-btn';
-            btn.innerHTML = `<span class="cp-temp">${temp}°C</span><span class="cp-time" id="cpTime${temp}">--</span>`;
-            btn.onclick = () => recordCp(temp);
-            els.cpGrid.appendChild(btn);
         });
 
         const fmtMs = ms => ms === null ? '--' : `${String(Math.floor(ms/60000)).padStart(2,'0')}:${String(Math.floor((ms/1000)%60)).padStart(2,'0')}.${Math.floor((ms/100)%10)}`;
@@ -332,17 +356,60 @@
             }
         }
 
-        function recordCp(temp) {
+        // [신규] 자유 온도 기록 로직
+        function recordCustomTemp() {
             if (!state.isRunning && state.elapsed === 0) return;
-            if (state.cp[temp] === null) {
-                state.cp[temp] = state.elapsed;
-                updateUI();
+            const tempVal = parseInt(els.customTempInput.value);
+            if (isNaN(tempVal)) return;
+
+            // 이미 같은 온도가 기록되어 있다면 덮어쓰기, 없다면 새로 추가
+            const existingIdx = state.recordedTemps.findIndex(t => t.temp === tempVal);
+            if (existingIdx >= 0) {
+                state.recordedTemps[existingIdx].time = state.elapsed;
+            } else {
+                state.recordedTemps.push({ temp: tempVal, time: state.elapsed });
             }
+            
+            // 온도 오름차순으로 정렬
+            state.recordedTemps.sort((a, b) => a.temp - b.temp);
+            
+            // 다음 기록을 위해 센스있게 5도 자동 증가시켜두기!
+            els.customTempInput.value = tempVal + 5;
+            
+            updateUI();
+        }
+
+        els.btnRecordTemp.onclick = recordCustomTemp;
+        
+        // 엔터키 쳤을 때도 바로 기록되도록
+        els.customTempInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') recordCustomTemp();
+        });
+
+        function deleteTemp(tempVal) {
+            state.recordedTemps = state.recordedTemps.filter(t => t.temp !== tempVal);
+            updateUI();
+        }
+
+        function renderTempTags() {
+            els.dynamicTags.innerHTML = '';
+            state.recordedTemps.forEach(item => {
+                const tag = document.createElement('div');
+                tag.className = 'tag';
+                tag.innerHTML = `
+                    <span>${item.temp}°C</span>
+                    <span class="time">${fmtShort(item.time)}</span>
+                    <button class="tag-delete" title="삭제">×</button>
+                `;
+                tag.querySelector('.tag-delete').onclick = () => deleteTemp(item.temp);
+                els.dynamicTags.appendChild(tag);
+            });
         }
 
         function resetAll() {
             state.isRunning = false; state.elapsed = 0; state.crackTime = null; state.endTime = null;
-            Object.keys(state.cp).forEach(k => state.cp[k] = null);
+            state.recordedTemps = [];
+            els.customTempInput.value = 100; // 초기화 시 100도로 원복
             els.start.classList.remove('running');
             els.crack.classList.remove('done');
             els.end.classList.remove('done');
@@ -364,6 +431,13 @@
                 await addDoc(logsRef, {
                     title: titleStr,
                     logText: finalLog,
+                    // 다음 단계를 위해 객체 형태의 데이터도 함께 보관해 둡니다
+                    rawData: {
+                        bean: beanName,
+                        recordedTemps: state.recordedTemps,
+                        crackTime: state.crackTime,
+                        endTime: state.endTime
+                    },
                     timestamp: Date.now()
                 });
             } catch(e) {}
@@ -506,13 +580,9 @@
                 if (document.activeElement !== els.dtrInput) els.dtrInput.value = '';
             }
 
-            Object.keys(state.cp).forEach(t => {
-                const tEl = document.getElementById(`cpTime${t}`);
-                tEl.textContent = fmtMs(state.cp[t]);
-                tEl.parentElement.classList.toggle('checked', state.cp[t] !== null);
-            });
-
-            updateLog(); drawCanvas();
+            renderTempTags();
+            updateLog(); 
+            drawCanvas();
         }
 
         function updateLog() {
@@ -535,18 +605,16 @@
 [구간 기록]
 `;
             
-            let prev = 0;
-            [100, 120, 140, 150, 170].forEach(temp => {
-                if (state.cp[temp]) {
-                    t += `- ${temp}°C : ${fmtShort(state.cp[temp])} (+${fmtShort(state.cp[temp]-prev)})
+            let prevTime = 0;
+            state.recordedTemps.forEach(item => {
+                t += `- ${item.temp}°C : ${fmtShort(item.time)} (+${fmtShort(item.time - prevTime)})
 `;
-                    prev = state.cp[temp];
-                }
+                prevTime = item.time;
             });
 
             if (state.crackTime) t += `💥 1차 크랙 : ${fmtShort(state.crackTime)}
 `;
-            if (state.endTime) t += `🏁 배출 완료 : ${fmtShort(fmtShort(state.endTime))}
+            if (state.endTime) t += `🏁 배출 완료 : ${fmtShort(state.endTime)}
 `;
             
             if (state.crackTime && state.endTime) {
@@ -588,13 +656,19 @@ ${els.memo.value}
             const maxT = Math.max(state.elapsed, guideMaxT + 60000, 600000); 
             const getX = ms => pad.l + (ms / maxT) * pw, getY = temp => pad.t + ph - ((temp - 50) / 200) * ph; 
 
-            const cx = getX(state.elapsed), x150 = state.cp[150] ? getX(state.cp[150]) : null, xC = state.crackTime ? getX(state.crackTime) : null, xE = state.endTime ? getX(state.endTime) : null;
+            // 드라잉 / 메일라드 / 발현 음영 처리 (150도 기준)
+            const cx = getX(state.elapsed);
+            let t150 = state.recordedTemps.find(t => t.temp === 150);
+            const x150 = t150 ? getX(t150.time) : null;
+            const xC = state.crackTime ? getX(state.crackTime) : null;
+            const xE = state.endTime ? getX(state.endTime) : null;
 
             const dx = x150 || (state.elapsed > 0 ? cx : 0);
             if (dx > pad.l) { ctx.fillStyle = 'rgba(229, 184, 105, 0.08)'; ctx.fillRect(pad.l, pad.t, dx - pad.l, ph); }
-            if (x150) { const mx = xC || (state.elapsed > state.cp[150] ? cx : x150); if (mx > x150) { ctx.fillStyle = 'rgba(194, 110, 67, 0.1)'; ctx.fillRect(x150, pad.t, mx - x150, ph); } }
+            if (x150) { const mx = xC || (state.elapsed > t150.time ? cx : x150); if (mx > x150) { ctx.fillStyle = 'rgba(194, 110, 67, 0.1)'; ctx.fillRect(x150, pad.t, mx - x150, ph); } }
             if (xC) { const vx = xE || (state.elapsed > state.crackTime ? cx : xC); if (vx > xC) { ctx.fillStyle = 'rgba(255, 107, 74, 0.1)'; ctx.fillRect(xC, pad.t, vx - xC, ph); } }
 
+            // 그리드 그리기
             ctx.lineWidth = 1; ctx.font = '22px "SF Mono", monospace'; ctx.fillStyle = '#6a5a4a'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
             [50, 100, 150, 200, 250].forEach(t => { 
                 let y = getY(t); ctx.strokeStyle = '#2a221c'; ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w-pad.r, y); ctx.stroke();
@@ -609,6 +683,7 @@ ${els.memo.value}
             ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, h - pad.b); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(pad.l, h - pad.b); ctx.lineTo(w - pad.r, h - pad.b); ctx.stroke();
 
+            // 가이드 점선
             if (guide !== 'none' && refData[guide]) {
                 const rPts = refData[guide]; ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)'; ctx.lineWidth = 3; ctx.setLineDash([8, 8]); 
                 ctx.beginPath(); ctx.moveTo(getX(rPts[0].time), getY(rPts[0].temp));
@@ -627,8 +702,10 @@ ${els.memo.value}
                 });
             }
 
+            // 신규: 자유롭게 기록된 점들 렌더링
             let pts = [{time: 0, temp: 50}];
-            [100, 120, 140, 150, 170].forEach(t => { if(state.cp[t]) pts.push({time: state.cp[t], temp: t}); });
+            state.recordedTemps.forEach(t => pts.push({time: t.time, temp: t.temp}));
+            
             if (state.crackTime) pts.push({time: state.crackTime, temp: 198, type: 'crack'});
             if (state.endTime) pts.push({time: state.endTime, temp: 208, type: 'end'});
             pts.sort((a,b) => a.time - b.time);
@@ -668,7 +745,6 @@ ${els.memo.value}
             if(e.key.toLowerCase() === 'c') els.crack.click();
             if(e.key.toLowerCase() === 'e') els.end.click();
             if(e.key.toLowerCase() === 'r') resetAll();
-            if(['1','2','3','4','5'].includes(e.key)) recordCp([100, 120, 140, 150, 170][parseInt(e.key)-1]);
         });
         
         window.addEventListener('resize', drawCanvas);
