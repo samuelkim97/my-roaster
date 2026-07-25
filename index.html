@@ -10,7 +10,7 @@
             --text: #e8d5c4; --text-dim: #a89888;
             --accent: #d4853a; --accent-bright: #f0a050;
             --green: #5a9e6f; --green-bright: #7ecf95;
-            --blue: #5a7e9e; --red: #c05545; --crack: #ff6b4a;
+            --blue: #5a7e9e; --blue-bright: #7ebaf5; --red: #c05545; --crack: #ff6b4a;
             --drying: #e5b869; --maillard: #c26e43;
             --font: -apple-system, 'Apple SD Gothic Neo', sans-serif;
             --mono: 'SF Mono', 'JetBrains Mono', monospace;
@@ -21,22 +21,16 @@
         body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; display: flex; justify-content: center; padding: 20px 16px; }
         .app-container { width: 100%; max-width: 1100px; display: flex; flex-direction: column; gap: 16px; }
 
-        .card { background: var(--bg-card); border-radius: var(--radius); padding: 20px; border: 1px solid #3a3028; }
+        .card { background: var(--bg-card); border-radius: var(--radius); padding: 20px; border: 1px solid #3a3028; display: flex; flex-direction: column;}
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .section-title { font-size: 1.05rem; font-weight: bold; color: var(--accent-bright); }
         input, textarea { background: #0a0806; border: 1px solid #4a3a2a; color: #fff; border-radius: 8px; font-family: var(--font); outline: none; transition: 0.2s; }
         input:focus, textarea:focus { border-color: var(--accent-bright); }
 
         input[type="number"] { -moz-appearance: textfield; }
-        /* 온도 입력기 전용 화살표 표시 (웹킷 기반) */
-        .temp-input::-webkit-outer-spin-button, 
-        .temp-input::-webkit-inner-spin-button { 
-            -webkit-appearance: auto; 
-            margin-left: 5px; 
-            cursor: pointer;
-        }
+        .temp-input::-webkit-outer-spin-button, .temp-input::-webkit-inner-spin-button { -webkit-appearance: auto; margin-left: 5px; cursor: pointer; }
 
-        .meta-header { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; }
+        .meta-header { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; flex-direction: row;}
         .info-group { display: flex; gap: 12px; align-items: center; flex: 1; min-width: 300px;}
         .date-display { font-size: 1.05rem; font-weight: 700; color: var(--accent-bright); white-space: nowrap; }
         .bean-input { flex: 1; padding: 10px 14px; font-size: 0.95rem; }
@@ -51,15 +45,21 @@
 
         .timer-display { font-size: 5rem; font-weight: 800; font-family: var(--mono); color: #f5e6d8; text-align: center; line-height: 1; margin: 10px 0 20px; }
         .timer-display.crack-phase { color: #ffab8a; text-shadow: 0 0 20px rgba(255,107,74,0.3); }
-        .timer-stats { display: flex; gap: 12px; justify-content: center; }
-        .stat-box { background: var(--bg-card2); padding: 10px 16px; border-radius: 8px; flex: 1; text-align: center; }
-        .stat-label { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 4px; }
-        .stat-val { font-size: 1.4rem; font-weight: bold; font-family: var(--mono); color: var(--accent-bright); }
+        .timer-stats { display: flex; gap: 12px; justify-content: center; margin-bottom: 12px;}
+        .stat-box { background: var(--bg-card2); padding: 10px 12px; border-radius: 8px; flex: 1; text-align: center; display: flex; flex-direction: column; justify-content: center;}
+        .stat-label { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 4px; }
+        .stat-val { font-size: 1.3rem; font-weight: bold; font-family: var(--mono); color: var(--accent-bright); }
         
-        #dtrInput { width: 70px; background: transparent; border: none; border-bottom: 1px dashed var(--accent); color: var(--accent-bright); font-family: var(--mono); font-size: 1.4rem; font-weight: bold; text-align: center; padding: 0; outline: none; transition: 0.2s; cursor: text; }
+        #dtrInput { width: 60px; background: transparent; border: none; border-bottom: 1px dashed var(--accent); color: var(--accent-bright); font-family: var(--mono); font-size: 1.3rem; font-weight: bold; text-align: center; padding: 0; outline: none; transition: 0.2s; cursor: text; }
         #dtrInput::-webkit-outer-spin-button, #dtrInput::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         #dtrInput:focus { background: rgba(255,255,255,0.05); border-radius: 4px; border-bottom-color: var(--text); color: #fff; }
-        #dtrInput::placeholder { color: var(--text-dim); font-weight: normal; }
+
+        /* 신규: 페이즈 트래커 */
+        .phase-tracker { display: flex; gap: 6px; background: #0a0806; padding: 8px; border-radius: 8px; border: 1px solid #2a221c; margin-top: auto;}
+        .phase-badge { flex: 1; text-align: center; font-size: 0.8rem; padding: 8px 0; border-radius: 4px; color: #55483f; background: #1c1613; font-weight: bold; transition: 0.3s; }
+        .phase-badge.active.drying { background: var(--drying); color: #000; box-shadow: 0 0 10px rgba(229,184,105,0.3); }
+        .phase-badge.active.maillard { background: var(--maillard); color: #fff; box-shadow: 0 0 10px rgba(194,110,67,0.3); }
+        .phase-badge.active.dev { background: var(--crack); color: #fff; box-shadow: 0 0 10px rgba(255,107,74,0.3); }
 
         .btn { padding: 14px; border-radius: 10px; border: none; cursor: pointer; font-size: 1.05rem; font-weight: bold; transition: 0.2s; display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 10px; }
         .btn:active { transform: scale(0.98); }
@@ -71,25 +71,25 @@
         .btn-end.done { background: var(--blue); color: #fff; }
         .btn-shortcut { font-size: 0.75rem; opacity: 0.8; font-family: var(--mono); background: rgba(0,0,0,0.3); padding: 3px 6px; border-radius: 4px; }
 
-        /* 신규 커스텀 온도 입력기 스타일 */
         .custom-cp-container { display: flex; gap: 8px; align-items: stretch; margin-top: 10px; background: var(--bg-card2); padding: 8px 12px; border-radius: 8px; border: 1px solid #3a3028;}
         .temp-input { flex: 1; text-align: center; font-size: 1.2rem; font-weight: bold; padding: 8px; background: #0a0806; border: 1px solid #4a3a2a; color: #fff; border-radius: 6px; }
         .temp-input:focus { border-color: var(--accent-bright); }
         .btn-record { background: #3a2e26; color: var(--accent-bright); font-weight: bold; border: 1px solid #4a3a2a; padding: 0 20px; border-radius: 6px; cursor: pointer; font-size: 1rem; transition: 0.2s; }
         .btn-record:hover { background: var(--accent-bright); color: #100d0b; }
-        .dynamic-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        
+        .dynamic-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; max-height: 90px; overflow-y: auto;}
         .tag { background: #1c1613; color: var(--text); padding: 6px 10px; border-radius: 6px; font-size: 0.9rem; display: flex; gap: 8px; align-items: center; border: 1px solid #3a3028;}
         .tag .time { color: var(--accent); font-family: var(--mono); font-weight: bold; }
         .tag-delete { background: none; border: none; color: var(--red); cursor: pointer; font-size: 1rem; padding: 0 4px; line-height: 1; }
 
         .bottom-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
-        @media (min-width: 800px) { .bottom-grid { grid-template-columns: 1.5fr 1fr; } }
+        @media (min-width: 800px) { .bottom-grid { grid-template-columns: 1.6fr 1fr; } }
         
         .side-panel { display: flex; flex-direction: column; gap: 16px; }
         canvas { width: 100%; height: 420px; background: #0a0806; border-radius: 8px; border: 1px solid #2a221c; }
         
         .memo-input { width: 100%; height: 80px; padding: 12px; resize: vertical; }
-        .log-content { flex: 1; font-family: var(--mono); font-size: 0.9rem; line-height: 1.6; color: #e8d5c4; background: #0a0806; padding: 16px; border-radius: 8px; overflow-y: auto; white-space: pre-wrap; border: 1px solid #2a221c; height: 160px;}
+        .log-content { flex: 1; font-family: var(--mono); font-size: 0.85rem; line-height: 1.5; color: #e8d5c4; background: #0a0806; padding: 12px; border-radius: 8px; overflow-y: auto; white-space: pre-wrap; border: 1px solid #2a221c; height: 140px;}
         
         .btn-copy { background: var(--bg-card2); border: 1px solid #4a3a2a; color: var(--text); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; transition: 0.2s; }
         .btn-copy:hover { border-color: var(--accent-bright); }
@@ -102,11 +102,13 @@
         .radio-label input { accent-color: var(--accent-bright); cursor: pointer; margin: 0; }
         .radio-label:hover { color: var(--text); }
 
-        .history-item { background: #0a0806; border: 1px solid #2a221c; border-radius: 8px; overflow: hidden; transition: 0.2s; }
+        /* 수정: 로그 히스토리 컨테이너 (스크롤 및 고정 높이 적용) */
+        #historyContainer { height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px; }
+        .history-item { background: #0a0806; border: 1px solid #2a221c; border-radius: 8px; overflow: hidden; transition: 0.2s; flex-shrink: 0; } /* flex-shrink: 0 으로 찌그러짐 방지 */
         .history-item.expanded { border-color: var(--accent); }
-        .hist-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; cursor: pointer; background: rgba(255,255,255,0.02); }
+        .hist-header { display: flex; justify-content: space-between; align-items: center; padding: 12px; cursor: pointer; background: rgba(255,255,255,0.02); }
         .hist-header:hover { background: rgba(255,255,255,0.05); }
-        .hist-title { font-size: 0.85rem; font-weight: bold; color: var(--accent-bright); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%; display: flex; align-items: center; gap: 6px; }
+        .hist-title { font-size: 0.85rem; font-weight: bold; color: var(--accent-bright); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%; display: flex; align-items: center; gap: 6px; }
         .hist-title::before { content: '▶'; font-size: 0.65rem; color: var(--text-dim); transition: transform 0.2s; }
         .history-item.expanded .hist-title::before { transform: rotate(90deg); color: var(--accent); }
         .hist-actions { display: flex; gap: 4px; }
@@ -116,6 +118,12 @@
         .hist-body { padding: 12px; font-family: var(--mono); font-size: 0.8rem; color: #e8d5c4; white-space: pre-wrap; line-height: 1.5; border-top: 1px solid #2a221c; display: none; }
         
         .loading-db { font-size: 0.85rem; color: var(--accent); text-align: center; margin-top: 20px; }
+        
+        /* 스크롤바 디자인 */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #100d0b; }
+        ::-webkit-scrollbar-thumb { background: #3a3028; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
     </style>
 </head>
 <body>
@@ -136,22 +144,35 @@
         </div>
 
         <div class="dashboard-grid">
-            <!-- 타이머 -->
+            <!-- 타이머 및 신규 요약 패널 -->
             <div class="card">
-                <div class="section-title" style="text-align: center;">⏱️ 로스팅 타이머</div>
+                <div class="section-title" style="text-align: center; margin-bottom: 10px;">⏱️ 로스팅 타이머</div>
                 <div class="timer-display" id="timerDisplay">00:00.0</div>
+                
                 <div class="timer-stats">
                     <div class="stat-box">
                         <div class="stat-label">발현 시간 (Dev)</div>
                         <div class="stat-val" id="devTimeDisplay">--</div>
                     </div>
                     <div class="stat-box" title="배출을 잊었을 때 여기에 원하는 DTR을 입력하면 배출 시간이 자동 계산됩니다!">
-                        <div class="stat-label">현재/목표 DTR <span style="color: var(--accent); cursor: help;">(수정가능)</span></div>
+                        <div class="stat-label">목표 DTR <span style="color: var(--accent); cursor: help;">(역계산)</span></div>
                         <div style="display: flex; justify-content: center; align-items: baseline;">
                             <input type="number" id="dtrInput" placeholder="--.-" step="0.1">
                             <span style="font-size: 1rem; color: var(--accent-bright); margin-left: 2px;">%</span>
                         </div>
                     </div>
+                    <!-- 신규: 실시간 RoR 박스 -->
+                    <div class="stat-box">
+                        <div class="stat-label">구간 RoR</div>
+                        <div class="stat-val" id="rorDisplay" style="color: var(--blue-bright);">--</div>
+                    </div>
+                </div>
+
+                <!-- 신규: 페이즈 트래커 -->
+                <div class="phase-tracker">
+                    <div class="phase-badge drying" id="phaseDrying">1. 건조</div>
+                    <div class="phase-badge maillard" id="phaseMaillard">2. 메일라드</div>
+                    <div class="phase-badge dev" id="phaseDev">3. 발현</div>
                 </div>
             </div>
 
@@ -161,53 +182,49 @@
                 <button class="btn btn-crack" id="btnCrack">💥 1차 크랙 <span class="btn-shortcut">C</span></button>
                 <button class="btn btn-end" id="btnEnd">🏁 배출 완료 <span class="btn-shortcut">E</span></button>
                 
-                <!-- 신규: 커스텀 온도 기록기 -->
-                <div style="margin-top: 20px;">
+                <div style="margin-top: auto; padding-top: 10px;">
                     <div class="section-title" style="font-size: 0.9rem;">📍 온도 구간 기록 (수동입력 / 5도 스크롤)</div>
                     <div class="custom-cp-container">
                         <input type="number" id="customTempInput" class="temp-input" value="100" step="5" placeholder="온도">
                         <span style="display: flex; align-items: center; color: var(--text-dim); font-weight: bold;">°C</span>
-                        <button id="btnRecordTemp" class="btn-record">기록</button>
+                        <button id="btnRecordTemp" class="btn-record">기록 (Enter)</button>
                     </div>
-                    <div id="dynamicTags" class="dynamic-tags">
-                        <!-- 기록된 온도 태그들이 여기에 생성됩니다 -->
-                    </div>
+                    <div id="dynamicTags" class="dynamic-tags"></div>
                 </div>
             </div>
         </div>
 
         <div class="bottom-grid">
-            <!-- 캔버스 그래프 -->
+            <!-- 전문가용 캔버스 그래프 -->
             <div class="card canvas-card" style="display: flex; flex-direction: column;">
                 <div class="section-header">
-                    <div class="section-title">📉 로스팅 프로파일 곡선</div>
+                    <div class="section-title">📉 프로페셔널 로스팅 프로파일</div>
                     <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
                         <div class="ref-selector">
                             <span style="font-size: 0.75rem; color: var(--text-dim);">가이드:</span>
                             <label class="radio-label"><input type="radio" name="guide" value="none" checked> 없음</label>
-                            <label class="radio-label"><input type="radio" name="guide" value="W"> 워시드 (W)</label>
-                            <label class="radio-label"><input type="radio" name="guide" value="N"> 내추럴 (N)</label>
+                            <label class="radio-label"><input type="radio" name="guide" value="W"> 워시드</label>
+                            <label class="radio-label"><input type="radio" name="guide" value="N"> 내추럴</label>
                         </div>
-                        <div style="font-size:0.75rem; color:var(--text-dim); display:flex; gap:10px;">
-                            <span style="color:var(--drying)">■ 건조</span>
-                            <span style="color:var(--maillard)">■ 메일라드</span>
-                            <span style="color:var(--crack)">■ 발현</span>
+                        <div style="font-size:0.75rem; color:var(--text-dim); display:flex; gap:10px; font-weight: bold;">
+                            <span style="color:var(--accent-bright)">■ 온도(BT)</span>
+                            <span style="color:var(--blue-bright)">■ RoR</span>
                         </div>
                     </div>
                 </div>
                 <canvas id="roastCanvas"></canvas>
             </div>
             
-            <!-- 메모 및 리포트 패널 -->
+            <!-- 리포트 및 로그 패널 -->
             <div class="side-panel">
                 <div class="card" style="padding: 16px;">
                     <div class="section-header" style="margin-bottom: 8px;">
                         <div class="section-title">📝 메모</div>
                     </div>
-                    <textarea id="memoInput" class="memo-input" placeholder="날씨, 생두 상태, 로스팅 특이사항 등을 기록하세요."></textarea>
+                    <textarea id="memoInput" class="memo-input" placeholder="날씨, 생두 상태 등을 기록하세요."></textarea>
                 </div>
 
-                <div class="card" style="padding: 16px; display: flex; flex-direction: column;">
+                <div class="card" style="padding: 16px;">
                     <div class="section-header">
                         <div class="section-title">📋 현재 리포트</div>
                         <div>
@@ -215,15 +232,16 @@
                             <button id="btnCopy" class="btn-copy">복사</button>
                         </div>
                     </div>
-                    <div class="log-content" id="logContent" style="height: 120px;">기록 대기 중...</div>
+                    <div class="log-content" id="logContent">기록 대기 중...</div>
                 </div>
 
-                <div class="card" style="padding: 16px; flex: 1; display: flex; flex-direction: column; max-height: 400px;">
+                <div class="card" style="padding: 16px; flex: 1;">
                     <div class="section-header">
-                        <div class="section-title">📚 로스팅 로그 (DB 실시간 동기화)</div>
+                        <div class="section-title">📚 최근 로스팅 로그 (최대 20개)</div>
                         <button id="btnClearHistory" class="btn-reset">전체 삭제</button>
                     </div>
-                    <div id="historyContainer" style="overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 12px; padding-right: 4px;">
+                    <!-- 스크롤 컨테이너 -->
+                    <div id="historyContainer">
                         <div class="loading-db">Firebase DB 연결 상태를 확인 중입니다...</div>
                     </div>
                 </div>
@@ -231,11 +249,11 @@
         </div>
     </div>
 
-    <!-- Firebase SDK 주입 및 앱 실행 제어 -->
+    <!-- Firebase SDK (query, orderBy, limit 추가) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBHtXxGLGEvDIbhiZffwTokk3YdCBHEuxU",
@@ -255,31 +273,22 @@
             const app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
-
-            signInAnonymously(auth).then(() => {
-                loadHistoryFromDB();
-            }).catch((error) => {
-                console.error("Auth Error", error);
-                loadHistoryFromDB(); 
-            });
-
+            signInAnonymously(auth).then(() => loadHistoryFromDB()).catch(() => loadHistoryFromDB());
         } catch (error) {
-            document.getElementById('historyContainer').innerHTML = '<div class="empty-msg" style="color: var(--red); font-size: 0.9rem; text-align: center; margin-top: 20px;">Firebase 설정 오류가 발생했습니다.</div>';
+            document.getElementById('historyContainer').innerHTML = '<div class="empty-msg" style="color: var(--red); text-align: center;">Firebase 설정 오류가 발생했습니다.</div>';
         }
 
         function loadHistoryFromDB() {
             if (!db) return;
-            const logsRef = collection(db, 'artifacts', appId, 'users', 'Samuel', 'roastingLogs');
+            // 수정: query와 limit(20)을 사용하여 최근 20개만 불러오기
+            const logsRef = query(collection(db, 'artifacts', appId, 'users', 'Samuel', 'roastingLogs'), orderBy('timestamp', 'desc'), limit(20));
             
             onSnapshot(logsRef, (snapshot) => {
                 dbLogs = [];
-                snapshot.forEach(doc => {
-                    dbLogs.push({ id: doc.id, ...doc.data() });
-                });
-                dbLogs.sort((a, b) => b.timestamp - a.timestamp);
+                snapshot.forEach(doc => { dbLogs.push({ id: doc.id, ...doc.data() }); });
                 renderHistory();
             }, (err) => {
-                document.getElementById('historyContainer').innerHTML = '<div class="empty-msg" style="color: var(--red); font-size: 0.9rem; text-align: center; margin-top: 20px;">DB 연결 실패: 파이어베이스 규칙 설정을 확인해주세요.</div>';
+                document.getElementById('historyContainer').innerHTML = '<div class="empty-msg" style="color: var(--red); text-align: center;">DB 연결 실패: 규칙 설정을 확인해주세요.</div>';
             });
         }
 
@@ -287,6 +296,7 @@
             timer: document.getElementById('timerDisplay'),
             dtrInput: document.getElementById('dtrInput'),
             dev: document.getElementById('devTimeDisplay'),
+            rorDisplay: document.getElementById('rorDisplay'),
             start: document.getElementById('btnStart'),
             crack: document.getElementById('btnCrack'),
             end: document.getElementById('btnEnd'),
@@ -303,6 +313,10 @@
             btnRecordTemp: document.getElementById('btnRecordTemp'),
             dynamicTags: document.getElementById('dynamicTags'),
             
+            phaseDrying: document.getElementById('phaseDrying'),
+            phaseMaillard: document.getElementById('phaseMaillard'),
+            phaseDev: document.getElementById('phaseDev'),
+            
             historyContainer: document.getElementById('historyContainer'),
             btnClearHistory: document.getElementById('btnClearHistory')
         };
@@ -312,95 +326,72 @@
 
         const state = {
             isRunning: false, startTime: null, elapsed: 0, crackTime: null, endTime: null, animId: null,
-            recordedTemps: [] // {temp: 100, time: 60000} 형태로 자유롭게 저장
+            recordedTemps: [],
+            currentRoR: 0
         };
 
-        // 가이드 레퍼런스 하드코딩 데이터 (다음 스텝에서 동적으로 바꿀 예정입니다!)
         const refData = {
-            'W': [
-                {time: 0, temp: 50}, {time: 94000, temp: 100}, {time: 193000, temp: 150},
-                {time: 235000, temp: 170}, {time: 362000, temp: 198, type: 'crack'}, {time: 421000, temp: 208, type: 'end'}
-            ],
-            'N': [
-                {time: 0, temp: 50}, {time: 51000, temp: 100}, {time: 176000, temp: 150},
-                {time: 283000, temp: 170}, {time: 538000, temp: 198, type: 'crack'}, {time: 599000, temp: 208, type: 'end'}
-            ]
+            'W': [{time: 0, temp: 50}, {time: 94000, temp: 100}, {time: 193000, temp: 150}, {time: 235000, temp: 170}, {time: 362000, temp: 198, type: 'crack'}, {time: 421000, temp: 208, type: 'end'}],
+            'N': [{time: 0, temp: 50}, {time: 51000, temp: 100}, {time: 176000, temp: 150}, {time: 283000, temp: 170}, {time: 538000, temp: 198, type: 'crack'}, {time: 599000, temp: 208, type: 'end'}]
         };
 
-        document.querySelectorAll('input[name="guide"]').forEach(radio => {
-            radio.addEventListener('change', drawCanvas);
-        });
+        document.querySelectorAll('input[name="guide"]').forEach(radio => radio.addEventListener('change', drawCanvas));
 
         const fmtMs = ms => ms === null ? '--' : `${String(Math.floor(ms/60000)).padStart(2,'0')}:${String(Math.floor((ms/1000)%60)).padStart(2,'0')}.${Math.floor((ms/100)%10)}`;
         const fmtShort = ms => ms === null ? '--' : `${String(Math.floor(ms/60000)).padStart(2,'0')}:${String(Math.floor(ms/1000)%60).padStart(2,'0')}`;
 
         function toggleTimer() {
             if (state.isRunning) {
-                state.isRunning = false;
-                els.start.classList.remove('running');
-                cancelAnimationFrame(state.animId);
+                state.isRunning = false; els.start.classList.remove('running'); cancelAnimationFrame(state.animId);
             } else {
                 if (state.endTime !== null) resetAll();
-                state.isRunning = true;
-                state.startTime = Date.now() - state.elapsed;
-                els.start.classList.add('running');
-                state.animId = requestAnimationFrame(loop);
+                state.isRunning = true; state.startTime = Date.now() - state.elapsed;
+                els.start.classList.add('running'); state.animId = requestAnimationFrame(loop);
             }
         }
 
         function loop() {
             if (state.isRunning) {
                 state.elapsed = Date.now() - state.startTime;
-                updateUI();
-                state.animId = requestAnimationFrame(loop);
+                updateUI(); state.animId = requestAnimationFrame(loop);
             }
         }
 
-        // [신규] 자유 온도 기록 로직
         function recordCustomTemp() {
             if (!state.isRunning && state.elapsed === 0) return;
             const tempVal = parseInt(els.customTempInput.value);
             if (isNaN(tempVal)) return;
 
-            // 이미 같은 온도가 기록되어 있다면 덮어쓰기, 없다면 새로 추가
             const existingIdx = state.recordedTemps.findIndex(t => t.temp === tempVal);
-            if (existingIdx >= 0) {
-                state.recordedTemps[existingIdx].time = state.elapsed;
-            } else {
-                state.recordedTemps.push({ temp: tempVal, time: state.elapsed });
-            }
+            if (existingIdx >= 0) state.recordedTemps[existingIdx].time = state.elapsed;
+            else state.recordedTemps.push({ temp: tempVal, time: state.elapsed });
             
-            // 온도 오름차순으로 정렬
             state.recordedTemps.sort((a, b) => a.temp - b.temp);
-            
-            // 다음 기록을 위해 센스있게 5도 자동 증가시켜두기!
             els.customTempInput.value = tempVal + 5;
+            
+            // RoR 계산 (가장 최근 2개 기록 기준)
+            if (state.recordedTemps.length >= 2) {
+                let last = state.recordedTemps[state.recordedTemps.length-1];
+                let prev = state.recordedTemps[state.recordedTemps.length-2];
+                let timeDiffMin = (last.time - prev.time) / 60000;
+                state.currentRoR = timeDiffMin > 0 ? (last.temp - prev.temp) / timeDiffMin : 0;
+            }
             
             updateUI();
         }
 
         els.btnRecordTemp.onclick = recordCustomTemp;
-        
-        // 엔터키 쳤을 때도 바로 기록되도록
-        els.customTempInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') recordCustomTemp();
-        });
+        els.customTempInput.addEventListener('keypress', e => { if (e.key === 'Enter') recordCustomTemp(); });
 
         function deleteTemp(tempVal) {
-            state.recordedTemps = state.recordedTemps.filter(t => t.temp !== tempVal);
-            updateUI();
+            state.recordedTemps = state.recordedTemps.filter(t => t.temp !== tempVal); updateUI();
         }
 
         function renderTempTags() {
             els.dynamicTags.innerHTML = '';
             state.recordedTemps.forEach(item => {
-                const tag = document.createElement('div');
-                tag.className = 'tag';
-                tag.innerHTML = `
-                    <span>${item.temp}°C</span>
-                    <span class="time">${fmtShort(item.time)}</span>
-                    <button class="tag-delete" title="삭제">×</button>
-                `;
+                const tag = document.createElement('div'); tag.className = 'tag';
+                tag.innerHTML = `<span>${item.temp}°C</span><span class="time">${fmtShort(item.time)}</span><button class="tag-delete">×</button>`;
                 tag.querySelector('.tag-delete').onclick = () => deleteTemp(item.temp);
                 els.dynamicTags.appendChild(tag);
             });
@@ -408,13 +399,10 @@
 
         function resetAll() {
             state.isRunning = false; state.elapsed = 0; state.crackTime = null; state.endTime = null;
-            state.recordedTemps = [];
-            els.customTempInput.value = 100; // 초기화 시 100도로 원복
-            els.start.classList.remove('running');
-            els.crack.classList.remove('done');
-            els.end.classList.remove('done');
-            els.dtrInput.value = '';
-            updateUI();
+            state.recordedTemps = []; state.currentRoR = 0;
+            els.customTempInput.value = 100; 
+            els.start.classList.remove('running'); els.crack.classList.remove('done'); els.end.classList.remove('done');
+            els.dtrInput.value = ''; updateUI();
         }
 
         async function saveToHistoryDB() {
@@ -422,22 +410,12 @@
             const beanName = els.bean.value || '미입력 원두';
             const now = new Date();
             const dateStr = `${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-            const titleStr = `${dateStr} - ${beanName}`;
-
-            if (!db) return; 
             
+            if (!db) return; 
             try {
-                const logsRef = collection(db, 'artifacts', appId, 'users', 'Samuel', 'roastingLogs');
-                await addDoc(logsRef, {
-                    title: titleStr,
-                    logText: finalLog,
-                    // 다음 단계를 위해 객체 형태의 데이터도 함께 보관해 둡니다
-                    rawData: {
-                        bean: beanName,
-                        recordedTemps: state.recordedTemps,
-                        crackTime: state.crackTime,
-                        endTime: state.endTime
-                    },
+                await addDoc(collection(db, 'artifacts', appId, 'users', 'Samuel', 'roastingLogs'), {
+                    title: `${dateStr} - ${beanName}`, logText: finalLog,
+                    rawData: { bean: beanName, recordedTemps: state.recordedTemps, crackTime: state.crackTime, endTime: state.endTime },
                     timestamp: Date.now()
                 });
             } catch(e) {}
@@ -446,16 +424,11 @@
         function renderHistory() {
             els.historyContainer.innerHTML = '';
             if (dbLogs.length === 0) {
-                els.historyContainer.innerHTML = '<div class="empty-msg" style="color: var(--text-dim); font-size: 0.9rem; text-align: center; margin-top: 20px;">로스팅 배출 완료 시 데이터베이스에 실시간으로 기록됩니다.</div>';
-                return;
+                els.historyContainer.innerHTML = '<div class="empty-msg" style="color: var(--text-dim); font-size: 0.9rem; text-align: center; margin-top: 20px;">로스팅 배출 완료 시 기록이 저장됩니다.</div>'; return;
             }
-
             dbLogs.forEach(log => {
-                const histDiv = document.createElement('div');
-                histDiv.className = 'history-item';
-                
-                const headerDiv = document.createElement('div');
-                headerDiv.className = 'hist-header';
+                const histDiv = document.createElement('div'); histDiv.className = 'history-item';
+                const headerDiv = document.createElement('div'); headerDiv.className = 'hist-header';
                 headerDiv.onclick = (e) => {
                     if (e.target.tagName !== 'BUTTON') {
                         const isHidden = bodyDiv.style.display === 'none';
@@ -463,249 +436,147 @@
                         histDiv.classList.toggle('expanded', isHidden);
                     }
                 };
+                const titleSpan = document.createElement('div'); titleSpan.className = 'hist-title'; titleSpan.textContent = log.title;
+                const actionsDiv = document.createElement('div'); actionsDiv.className = 'hist-actions';
                 
-                const titleSpan = document.createElement('div');
-                titleSpan.className = 'hist-title';
-                titleSpan.textContent = log.title;
-
-                const actionsDiv = document.createElement('div');
-                actionsDiv.className = 'hist-actions';
-
-                const copyBtn = document.createElement('button');
-                copyBtn.className = 'hist-btn';
-                copyBtn.textContent = '복사';
+                const copyBtn = document.createElement('button'); copyBtn.className = 'hist-btn'; copyBtn.textContent = '복사';
                 copyBtn.onclick = function(e) {
-                    e.stopPropagation(); 
-                    const ta = document.createElement('textarea');
-                    ta.value = log.logText;
-                    document.body.appendChild(ta); ta.select();
-                    try { 
-                        document.execCommand('copy'); 
-                        this.textContent = '✅'; setTimeout(() => { this.textContent = '복사'; }, 2000);
-                    } catch(err) {}
-                    document.body.removeChild(ta);
+                    e.stopPropagation(); const ta = document.createElement('textarea'); ta.value = log.logText;
+                    document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); this.textContent = '✅'; setTimeout(() => { this.textContent = '복사'; }, 2000); } catch(err) {} document.body.removeChild(ta);
                 };
-
-                const delBtn = document.createElement('button');
-                delBtn.className = 'hist-btn delete';
-                delBtn.textContent = '삭제';
+                
+                const delBtn = document.createElement('button'); delBtn.className = 'hist-btn delete'; delBtn.textContent = '삭제';
                 delBtn.onclick = async (e) => {
                     e.stopPropagation();
-                    if(confirm("이 로그를 완전히 삭제할까요? (모든 기기에서 삭제됩니다)")) {
-                        try {
-                            const docRef = doc(db, 'artifacts', appId, 'users', 'Samuel', 'roastingLogs', log.id);
-                            await deleteDoc(docRef);
-                        } catch(err) {}
-                    }
+                    if(confirm("이 로그를 완전히 삭제할까요?")) { try { await deleteDoc(doc(db, 'artifacts', appId, 'users', 'Samuel', 'roastingLogs', log.id)); } catch(err) {} }
                 };
-
+                
                 actionsDiv.appendChild(copyBtn); actionsDiv.appendChild(delBtn);
                 headerDiv.appendChild(titleSpan); headerDiv.appendChild(actionsDiv);
-
-                const bodyDiv = document.createElement('div');
-                bodyDiv.className = 'hist-body';
-                bodyDiv.textContent = log.logText;
-
-                histDiv.appendChild(headerDiv); histDiv.appendChild(bodyDiv);
-                els.historyContainer.appendChild(histDiv);
+                const bodyDiv = document.createElement('div'); bodyDiv.className = 'hist-body'; bodyDiv.textContent = log.logText;
+                histDiv.appendChild(headerDiv); histDiv.appendChild(bodyDiv); els.historyContainer.appendChild(histDiv);
             });
         }
 
         els.btnClearHistory.onclick = async () => {
             if (!db || dbLogs.length === 0) return;
-            if(confirm("정말 모든 로스팅 기록을 모든 기기의 DB에서 영구 삭제하시겠습니까?")) {
-                for(let log of dbLogs) {
-                    try {
-                        const docRef = doc(db, 'artifacts', appId, 'users', 'Samuel', 'roastingLogs', log.id);
-                        deleteDoc(docRef); 
-                    } catch(e) {}
-                }
+            if(confirm("정말 모든 로스팅 기록을 영구 삭제하시겠습니까?")) {
+                for(let log of dbLogs) { try { deleteDoc(doc(db, 'artifacts', appId, 'users', 'Samuel', 'roastingLogs', log.id)); } catch(e) {} }
             }
         };
 
         els.dtrInput.addEventListener('change', (e) => {
-            if (!state.crackTime) { alert('1차 크랙 시간이 먼저 기록되어야 DTR 역계산이 가능합니다.'); updateUI(); return; }
-            const val = parseFloat(e.target.value);
-            if (isNaN(val) || val <= 0 || val >= 100) { updateUI(); return; }
-            
-            state.endTime = state.crackTime / (1 - (val / 100));
-            state.elapsed = state.endTime; 
-            
+            if (!state.crackTime) { alert('1차 크랙 시간이 먼저 기록되어야 역계산이 가능합니다.'); updateUI(); return; }
+            const val = parseFloat(e.target.value); if (isNaN(val) || val <= 0 || val >= 100) { updateUI(); return; }
+            state.endTime = state.crackTime / (1 - (val / 100)); state.elapsed = state.endTime; 
             if (state.isRunning) toggleTimer(); 
             els.dtrInput.blur(); 
-
-            if (!els.end.classList.contains('done')) {
-                els.end.classList.add('done');
-                updateUI(); 
-                saveToHistoryDB();
-            } else { updateUI(); }
+            if (!els.end.classList.contains('done')) { els.end.classList.add('done'); updateUI(); saveToHistoryDB(); } else { updateUI(); }
         });
 
-        els.crack.onclick = () => {
-            if (state.crackTime || (!state.isRunning && !state.elapsed)) return;
-            state.crackTime = state.elapsed; els.crack.classList.add('done'); updateUI();
-        };
-
-        els.end.onclick = () => {
-            if (state.endTime || (!state.isRunning && !state.elapsed)) return;
-            state.endTime = state.elapsed; els.end.classList.add('done');
-            if (state.isRunning) toggleTimer();
-            updateUI(); 
-            saveToHistoryDB(); 
-        };
-
-        els.start.onclick = toggleTimer;
-        document.getElementById('btnReset').onclick = resetAll;
+        els.crack.onclick = () => { if (state.crackTime || (!state.isRunning && !state.elapsed)) return; state.crackTime = state.elapsed; els.crack.classList.add('done'); updateUI(); };
+        els.end.onclick = () => { if (state.endTime || (!state.isRunning && !state.elapsed)) return; state.endTime = state.elapsed; els.end.classList.add('done'); if (state.isRunning) toggleTimer(); updateUI(); saveToHistoryDB(); };
+        els.start.onclick = toggleTimer; document.getElementById('btnReset').onclick = resetAll;
         
-        function calcWL() {
-            const g = parseFloat(els.gw.value), r = parseFloat(els.rw.value);
-            els.wl.textContent = (g > 0 && r > 0 && g > r) ? ((g - r) / g * 100).toFixed(1) : '--';
-            updateLog();
-        }
-        [els.gw, els.rw, els.bean, els.memo].forEach(el => el.addEventListener('input', () => {
-            if(el !== els.memo && el !== els.bean) calcWL(); updateLog();
-        }));
+        function calcWL() { const g = parseFloat(els.gw.value), r = parseFloat(els.rw.value); els.wl.textContent = (g > 0 && r > 0 && g > r) ? ((g - r) / g * 100).toFixed(1) : '--'; updateLog(); }
+        [els.gw, els.rw, els.bean, els.memo].forEach(el => el.addEventListener('input', () => { if(el !== els.memo && el !== els.bean) calcWL(); updateLog(); }));
 
         function updateUI() {
             els.timer.textContent = fmtMs(state.elapsed);
             els.timer.classList.toggle('crack-phase', state.crackTime && !state.endTime && state.isRunning);
+            els.rorDisplay.textContent = state.currentRoR > 0 ? `+${state.currentRoR.toFixed(1)}` : '--';
 
             const curTime = state.endTime || state.elapsed;
             if (state.crackTime) {
-                const dev = curTime - state.crackTime;
-                els.dev.textContent = fmtMs(dev);
+                const dev = curTime - state.crackTime; els.dev.textContent = fmtMs(dev);
                 if (document.activeElement !== els.dtrInput) els.dtrInput.value = curTime > 0 ? (dev / curTime * 100).toFixed(1) : '';
             } else {
-                els.dev.textContent = '--';
-                if (document.activeElement !== els.dtrInput) els.dtrInput.value = '';
+                els.dev.textContent = '--'; if (document.activeElement !== els.dtrInput) els.dtrInput.value = '';
             }
 
-            renderTempTags();
-            updateLog(); 
-            drawCanvas();
+            // 페이즈 트래커 로직
+            let maxTemp = state.recordedTemps.length > 0 ? state.recordedTemps[state.recordedTemps.length-1].temp : 0;
+            let isDrying = state.elapsed > 0 && maxTemp < 150 && !state.crackTime;
+            let isMaillard = maxTemp >= 150 && !state.crackTime;
+            let isDev = !!state.crackTime;
+            
+            els.phaseDrying.classList.toggle('active', isDrying);
+            els.phaseMaillard.classList.toggle('active', isMaillard);
+            els.phaseDev.classList.toggle('active', isDev);
+
+            renderTempTags(); updateLog(); drawCanvas();
         }
 
         function updateLog() {
-            if (!state.elapsed && !state.endTime) {
-                els.log.textContent = "아직 기록이 없습니다. 스페이스바를 눌러 시작하세요."; return;
-            }
-
-            let t = `[로스팅 프로파일 리포트]
----------------------------------
-`;
-            t += `📅 일시: ${new Date().toLocaleString('ko-KR')}
-`;
-            t += `☕ 원두: ${els.bean.value || '미입력'}
-`;
-            if (els.gw.value && els.rw.value) t += `⚖️ 중량: 투입 ${els.gw.value}g -> 배출 ${els.rw.value}g
-📉 수율(WL): ${els.wl.textContent}%
-`;
-            t += `---------------------------------
-
-[구간 기록]
-`;
-            
+            if (!state.elapsed && !state.endTime) { els.log.textContent = "아직 기록이 없습니다. 스페이스바를 눌러 시작하세요."; return; }
+            let t = `[로스팅 프로파일 리포트]\n---------------------------------\n📅 일시: ${new Date().toLocaleString('ko-KR')}\n☕ 원두: ${els.bean.value || '미입력'}\n`;
+            if (els.gw.value && els.rw.value) t += `⚖️ 중량: 투입 ${els.gw.value}g -> 배출 ${els.rw.value}g\n📉 수율(WL): ${els.wl.textContent}%\n`;
+            t += `---------------------------------\n\n[구간 기록]\n`;
             let prevTime = 0;
-            state.recordedTemps.forEach(item => {
-                t += `- ${item.temp}°C : ${fmtShort(item.time)} (+${fmtShort(item.time - prevTime)})
-`;
-                prevTime = item.time;
-            });
-
-            if (state.crackTime) t += `💥 1차 크랙 : ${fmtShort(state.crackTime)}
-`;
-            if (state.endTime) t += `🏁 배출 완료 : ${fmtShort(state.endTime)}
-`;
-            
+            state.recordedTemps.forEach(item => { t += `- ${item.temp}°C : ${fmtShort(item.time)} (+${fmtShort(item.time - prevTime)})\n`; prevTime = item.time; });
+            if (state.crackTime) t += `💥 1차 크랙 : ${fmtShort(state.crackTime)}\n`;
+            if (state.endTime) t += `🏁 배출 완료 : ${fmtShort(state.endTime)}\n`;
             if (state.crackTime && state.endTime) {
                 const dev = state.endTime - state.crackTime;
-                const finalDtr = els.dtrInput.value || (dev/state.endTime*100).toFixed(1);
-                t += `
-[최종 결과]
-⏱️ 총 시간: ${fmtShort(state.endTime)} | 🔥 발현: ${fmtShort(dev)} | 📊 DTR: ${finalDtr}%
-`;
+                t += `\n[최종 결과]\n⏱️ 총 시간: ${fmtShort(state.endTime)} | 🔥 발현: ${fmtShort(dev)} | 📊 DTR: ${els.dtrInput.value || (dev/state.endTime*100).toFixed(1)}%\n`;
             }
-
-            if (els.memo.value) t += `
-[메모]
-${els.memo.value}
-`;
+            if (els.memo.value) t += `\n[메모]\n${els.memo.value}\n`;
             els.log.textContent = t;
         }
 
         document.getElementById('btnCopy').onclick = function() {
             const ta = document.createElement("textarea"); ta.value = els.log.textContent;
-            document.body.appendChild(ta); ta.select();
-            try { 
-                document.execCommand('copy'); 
-                this.textContent = '✅ 완료!'; this.classList.add('copied');
-                setTimeout(() => { this.textContent = '복사'; this.classList.remove('copied'); }, 2000);
-            } catch(e) {} document.body.removeChild(ta);
+            document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); this.textContent = '✅ 완료!'; this.classList.add('copied'); setTimeout(() => { this.textContent = '복사'; this.classList.remove('copied'); }, 2000); } catch(e) {} document.body.removeChild(ta);
         };
 
         function drawCanvas() {
             const w = els.canvas.width = els.canvas.offsetWidth * 2, h = els.canvas.height = els.canvas.offsetHeight * 2;
             const ctx = els.ctx; ctx.clearRect(0, 0, w, h);
             
-            const pad = { t: 40, r: 40, b: 60, l: 80 };
+            const pad = { t: 40, r: 60, b: 60, l: 80 }; // 우측 여백 확보(RoR)
             const pw = w - pad.l - pad.r, ph = h - pad.t - pad.b;
 
             const guide = document.querySelector('input[name="guide"]:checked').value;
             let guideMaxT = (guide !== 'none' && refData[guide]) ? refData[guide][refData[guide].length - 1].time : 0;
-
             const maxT = Math.max(state.elapsed, guideMaxT + 60000, 600000); 
-            const getX = ms => pad.l + (ms / maxT) * pw, getY = temp => pad.t + ph - ((temp - 50) / 200) * ph; 
+            
+            const getX = ms => pad.l + (ms / maxT) * pw;
+            const getY = temp => pad.t + ph - ((temp - 50) / 200) * ph; 
+            const getRoRY = ror => pad.t + ph - (ror / 40) * ph; // RoR 최대 40 기준
 
-            // 드라잉 / 메일라드 / 발현 음영 처리 (150도 기준)
-            const cx = getX(state.elapsed);
-            let t150 = state.recordedTemps.find(t => t.temp === 150);
-            const x150 = t150 ? getX(t150.time) : null;
-            const xC = state.crackTime ? getX(state.crackTime) : null;
-            const xE = state.endTime ? getX(state.endTime) : null;
+            // 배경 페이즈 선 (수직선으로 심플하게)
+            let t150 = state.recordedTemps.find(t => t.temp >= 150);
+            if (t150) { ctx.strokeStyle = 'rgba(194, 110, 67, 0.4)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(getX(t150.time), pad.t); ctx.lineTo(getX(t150.time), h - pad.b); ctx.stroke(); }
+            if (state.crackTime) { ctx.strokeStyle = 'rgba(255, 107, 74, 0.4)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(getX(state.crackTime), pad.t); ctx.lineTo(getX(state.crackTime), h - pad.b); ctx.stroke(); }
 
-            const dx = x150 || (state.elapsed > 0 ? cx : 0);
-            if (dx > pad.l) { ctx.fillStyle = 'rgba(229, 184, 105, 0.08)'; ctx.fillRect(pad.l, pad.t, dx - pad.l, ph); }
-            if (x150) { const mx = xC || (state.elapsed > t150.time ? cx : x150); if (mx > x150) { ctx.fillStyle = 'rgba(194, 110, 67, 0.1)'; ctx.fillRect(x150, pad.t, mx - x150, ph); } }
-            if (xC) { const vx = xE || (state.elapsed > state.crackTime ? cx : xC); if (vx > xC) { ctx.fillStyle = 'rgba(255, 107, 74, 0.1)'; ctx.fillRect(xC, pad.t, vx - xC, ph); } }
-
-            // 그리드 그리기
-            ctx.lineWidth = 1; ctx.font = '22px "SF Mono", monospace'; ctx.fillStyle = '#6a5a4a'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+            // 그리드 (1분 단위로 촘촘하게 변경)
+            ctx.lineWidth = 0.5; ctx.font = '20px "SF Mono", monospace'; ctx.fillStyle = '#6a5a4a'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
             [50, 100, 150, 200, 250].forEach(t => { 
-                let y = getY(t); ctx.strokeStyle = '#2a221c'; ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w-pad.r, y); ctx.stroke();
-                ctx.fillText(t + '°', pad.l - 15, y); 
+                let y = getY(t); ctx.strokeStyle = '#2a221c'; ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w-pad.r, y); ctx.stroke(); ctx.fillText(t + '°', pad.l - 15, y); 
             });
-            ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-            for(let m = 0; m <= maxT; m += 120000) {
-                let x = getX(m); ctx.strokeStyle = '#2a221c'; ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, h - pad.b); ctx.stroke();
-                ctx.fillText(Math.floor(m / 60000) + 'm', x, h - pad.b + 15);
+            // 우측 RoR Y축
+            ctx.fillStyle = '#5a7e9e'; ctx.textAlign = 'left';
+            [0, 10, 20, 30, 40].forEach(r => { let y = getRoRY(r); ctx.fillText(r, w - pad.r + 15, y); });
+
+            ctx.fillStyle = '#6a5a4a'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+            for(let m = 0; m <= maxT; m += 60000) { // 1분 간격
+                let x = getX(m); ctx.strokeStyle = '#2a221c'; ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, h - pad.b); ctx.stroke(); ctx.fillText(Math.floor(m / 60000) + 'm', x, h - pad.b + 15);
             }
             ctx.strokeStyle = '#5a4a3a'; ctx.lineWidth = 2;
             ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, h - pad.b); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(w - pad.r, pad.t); ctx.lineTo(w - pad.r, h - pad.b); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(pad.l, h - pad.b); ctx.lineTo(w - pad.r, h - pad.b); ctx.stroke();
 
             // 가이드 점선
             if (guide !== 'none' && refData[guide]) {
                 const rPts = refData[guide]; ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)'; ctx.lineWidth = 3; ctx.setLineDash([8, 8]); 
                 ctx.beginPath(); ctx.moveTo(getX(rPts[0].time), getY(rPts[0].temp));
-                for (let i = 1; i < rPts.length; i++) {
-                    let prev = rPts[i-1], curr = rPts[i];
-                    let cpX = getX(prev.time) + (getX(curr.time) - getX(prev.time)) / 2;
-                    ctx.bezierCurveTo(cpX, getY(prev.temp), cpX, getY(curr.temp), getX(curr.time), getY(curr.temp));
-                }
+                for (let i = 1; i < rPts.length; i++) { let prev = rPts[i-1], curr = rPts[i]; let cpX = getX(prev.time) + (getX(curr.time) - getX(prev.time)) / 2; ctx.bezierCurveTo(cpX, getY(prev.temp), cpX, getY(curr.temp), getX(curr.time), getY(curr.temp)); }
                 ctx.stroke(); ctx.setLineDash([]); 
-
-                rPts.forEach(p => {
-                    if(p.time === 0) return; let x = getX(p.time), y = getY(p.temp);
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.15)'; ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI*2); ctx.fill();
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'; ctx.font = '14px "SF Pro Display", sans-serif';
-                    ctx.fillText(p.type === 'crack' ? 'C' : (p.type === 'end' ? 'D' : `${p.temp}°`), x, y - 12);
-                });
             }
 
-            // 신규: 자유롭게 기록된 점들 렌더링
-            let pts = [{time: 0, temp: 50}];
-            state.recordedTemps.forEach(t => pts.push({time: t.time, temp: t.temp}));
-            
+            // 실시간 데이터
+            let pts = [{time: 0, temp: 50}]; state.recordedTemps.forEach(t => pts.push({time: t.time, temp: t.temp}));
             if (state.crackTime) pts.push({time: state.crackTime, temp: 198, type: 'crack'});
             if (state.endTime) pts.push({time: state.endTime, temp: 208, type: 'end'});
             pts.sort((a,b) => a.time - b.time);
@@ -715,6 +586,20 @@ ${els.memo.value}
                 pts.push({time: state.elapsed, temp: estTemp, type: 'est'});
             }
 
+            // RoR 곡선 그리기 (파란색)
+            if (pts.length > 2) {
+                ctx.strokeStyle = '#5a7e9e'; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                ctx.beginPath(); ctx.moveTo(getX(pts[1].time), getRoRY(0));
+                for (let i = 1; i < pts.length; i++) {
+                    if (pts[i].type === 'est' || pts[i].type === 'crack' || pts[i].type === 'end') continue;
+                    let prev = pts[i-1], curr = pts[i];
+                    let ror = (curr.time - prev.time) > 0 ? (curr.temp - prev.temp) / ((curr.time - prev.time) / 60000) : 0;
+                    ctx.lineTo(getX(curr.time), getRoRY(ror));
+                }
+                ctx.stroke();
+            }
+
+            // 온도 곡선 그리기 (주황색)
             if (pts.length > 1) {
                 ctx.strokeStyle = '#f0a050'; ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
                 ctx.beginPath(); ctx.moveTo(getX(pts[0].time), getY(pts[0].temp));
@@ -726,6 +611,7 @@ ${els.memo.value}
                 ctx.stroke();
             }
 
+            // 포인트 마커
             pts.forEach(p => {
                 if(p.time === 0 || p.type === 'est') return;
                 let sp = p.type === 'crack' || p.type === 'end';
