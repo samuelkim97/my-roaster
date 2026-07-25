@@ -54,7 +54,6 @@
         #dtrInput::-webkit-outer-spin-button, #dtrInput::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         #dtrInput:focus { background: rgba(255,255,255,0.05); border-radius: 4px; border-bottom-color: var(--text); color: #fff; }
 
-        /* 신규: 페이즈 트래커 */
         .phase-tracker { display: flex; gap: 6px; background: #0a0806; padding: 8px; border-radius: 8px; border: 1px solid #2a221c; margin-top: auto;}
         .phase-badge { flex: 1; text-align: center; font-size: 0.8rem; padding: 8px 0; border-radius: 4px; color: #55483f; background: #1c1613; font-weight: bold; transition: 0.3s; }
         .phase-badge.active.drying { background: var(--drying); color: #000; box-shadow: 0 0 10px rgba(229,184,105,0.3); }
@@ -80,7 +79,8 @@
         .dynamic-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; max-height: 90px; overflow-y: auto;}
         .tag { background: #1c1613; color: var(--text); padding: 6px 10px; border-radius: 6px; font-size: 0.9rem; display: flex; gap: 8px; align-items: center; border: 1px solid #3a3028;}
         .tag .time { color: var(--accent); font-family: var(--mono); font-weight: bold; }
-        .tag-delete { background: none; border: none; color: var(--red); cursor: pointer; font-size: 1rem; padding: 0 4px; line-height: 1; }
+        .tag-delete { background: none; border: none; color: var(--red); cursor: pointer; font-size: 1.2rem; padding: 0 4px; line-height: 1; font-weight: bold; }
+        .tag-delete:hover { transform: scale(1.2); }
 
         .bottom-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
         @media (min-width: 800px) { .bottom-grid { grid-template-columns: 1.6fr 1fr; } }
@@ -102,9 +102,8 @@
         .radio-label input { accent-color: var(--accent-bright); cursor: pointer; margin: 0; }
         .radio-label:hover { color: var(--text); }
 
-        /* 수정: 로그 히스토리 컨테이너 (스크롤 및 고정 높이 적용) */
         #historyContainer { height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px; }
-        .history-item { background: #0a0806; border: 1px solid #2a221c; border-radius: 8px; overflow: hidden; transition: 0.2s; flex-shrink: 0; } /* flex-shrink: 0 으로 찌그러짐 방지 */
+        .history-item { background: #0a0806; border: 1px solid #2a221c; border-radius: 8px; overflow: hidden; transition: 0.2s; flex-shrink: 0; }
         .history-item.expanded { border-color: var(--accent); }
         .hist-header { display: flex; justify-content: space-between; align-items: center; padding: 12px; cursor: pointer; background: rgba(255,255,255,0.02); }
         .hist-header:hover { background: rgba(255,255,255,0.05); }
@@ -119,7 +118,6 @@
         
         .loading-db { font-size: 0.85rem; color: var(--accent); text-align: center; margin-top: 20px; }
         
-        /* 스크롤바 디자인 */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #100d0b; }
         ::-webkit-scrollbar-thumb { background: #3a3028; border-radius: 3px; }
@@ -144,7 +142,7 @@
         </div>
 
         <div class="dashboard-grid">
-            <!-- 타이머 및 신규 요약 패널 -->
+            <!-- 타이머 및 요약 패널 -->
             <div class="card">
                 <div class="section-title" style="text-align: center; margin-bottom: 10px;">⏱️ 로스팅 타이머</div>
                 <div class="timer-display" id="timerDisplay">00:00.0</div>
@@ -161,14 +159,13 @@
                             <span style="font-size: 1rem; color: var(--accent-bright); margin-left: 2px;">%</span>
                         </div>
                     </div>
-                    <!-- 신규: 실시간 RoR 박스 -->
                     <div class="stat-box">
                         <div class="stat-label">구간 RoR</div>
                         <div class="stat-val" id="rorDisplay" style="color: var(--blue-bright);">--</div>
                     </div>
                 </div>
 
-                <!-- 신규: 페이즈 트래커 -->
+                <!-- 페이즈 트래커 -->
                 <div class="phase-tracker">
                     <div class="phase-badge drying" id="phaseDrying">1. 건조</div>
                     <div class="phase-badge maillard" id="phaseMaillard">2. 메일라드</div>
@@ -195,7 +192,7 @@
         </div>
 
         <div class="bottom-grid">
-            <!-- 전문가용 캔버스 그래프 -->
+            <!-- 캔버스 그래프 -->
             <div class="card canvas-card" style="display: flex; flex-direction: column;">
                 <div class="section-header">
                     <div class="section-title">📉 프로페셔널 로스팅 프로파일</div>
@@ -227,7 +224,12 @@
                 <div class="card" style="padding: 16px;">
                     <div class="section-header">
                         <div class="section-title">📋 현재 리포트</div>
-                        <div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <!-- 신규: 구간 상세 숨기기/켜기 체크박스 -->
+                            <label style="font-size: 0.8rem; color: var(--accent); cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                                <input type="checkbox" id="chkShowIntervals" style="accent-color: var(--accent-bright); cursor: pointer;">
+                                구간 상세
+                            </label>
                             <button id="btnReset" class="btn-reset">초기화</button>
                             <button id="btnCopy" class="btn-copy">복사</button>
                         </div>
@@ -249,7 +251,7 @@
         </div>
     </div>
 
-    <!-- Firebase SDK (query, orderBy, limit 추가) -->
+    <!-- Firebase SDK (query, orderBy, limit 적용됨) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -280,7 +282,6 @@
 
         function loadHistoryFromDB() {
             if (!db) return;
-            // 수정: query와 limit(20)을 사용하여 최근 20개만 불러오기
             const logsRef = query(collection(db, 'artifacts', appId, 'users', 'Samuel', 'roastingLogs'), orderBy('timestamp', 'desc'), limit(20));
             
             onSnapshot(logsRef, (snapshot) => {
@@ -301,6 +302,7 @@
             crack: document.getElementById('btnCrack'),
             end: document.getElementById('btnEnd'),
             log: document.getElementById('logContent'),
+            chkShowIntervals: document.getElementById('chkShowIntervals'), // 신규 체크박스
             canvas: document.getElementById('roastCanvas'),
             ctx: document.getElementById('roastCanvas').getContext('2d'),
             bean: document.getElementById('beanInput'),
@@ -336,6 +338,9 @@
         };
 
         document.querySelectorAll('input[name="guide"]').forEach(radio => radio.addEventListener('change', drawCanvas));
+        
+        // 구간 상세 보기 토글 이벤트 연결
+        els.chkShowIntervals.addEventListener('change', updateLog);
 
         const fmtMs = ms => ms === null ? '--' : `${String(Math.floor(ms/60000)).padStart(2,'0')}:${String(Math.floor((ms/1000)%60)).padStart(2,'0')}.${Math.floor((ms/100)%10)}`;
         const fmtShort = ms => ms === null ? '--' : `${String(Math.floor(ms/60000)).padStart(2,'0')}:${String(Math.floor(ms/1000)%60).padStart(2,'0')}`;
@@ -357,6 +362,18 @@
             }
         }
 
+        // RoR 재계산 로직 (기록 추가 및 삭제 시 재사용)
+        function recalcRoR() {
+            if (state.recordedTemps.length >= 2) {
+                let last = state.recordedTemps[state.recordedTemps.length-1];
+                let prev = state.recordedTemps[state.recordedTemps.length-2];
+                let timeDiffMin = (last.time - prev.time) / 60000;
+                state.currentRoR = timeDiffMin > 0 ? (last.temp - prev.temp) / timeDiffMin : 0;
+            } else {
+                state.currentRoR = 0;
+            }
+        }
+
         function recordCustomTemp() {
             if (!state.isRunning && state.elapsed === 0) return;
             const tempVal = parseInt(els.customTempInput.value);
@@ -369,30 +386,44 @@
             state.recordedTemps.sort((a, b) => a.temp - b.temp);
             els.customTempInput.value = tempVal + 5;
             
-            // RoR 계산 (가장 최근 2개 기록 기준)
-            if (state.recordedTemps.length >= 2) {
-                let last = state.recordedTemps[state.recordedTemps.length-1];
-                let prev = state.recordedTemps[state.recordedTemps.length-2];
-                let timeDiffMin = (last.time - prev.time) / 60000;
-                state.currentRoR = timeDiffMin > 0 ? (last.temp - prev.temp) / timeDiffMin : 0;
-            }
-            
+            recalcRoR();
             updateUI();
         }
 
         els.btnRecordTemp.onclick = recordCustomTemp;
         els.customTempInput.addEventListener('keypress', e => { if (e.key === 'Enter') recordCustomTemp(); });
 
+        // 버그 수정: 온도 삭제 기능 안정화
         function deleteTemp(tempVal) {
-            state.recordedTemps = state.recordedTemps.filter(t => t.temp !== tempVal); updateUI();
+            state.recordedTemps = state.recordedTemps.filter(t => t.temp !== tempVal); 
+            recalcRoR();
+            updateUI();
         }
 
+        // 버그 수정: DOM 객체를 직접 생성하여 삭제(X) 버튼 이벤트 유실 방지
         function renderTempTags() {
             els.dynamicTags.innerHTML = '';
             state.recordedTemps.forEach(item => {
-                const tag = document.createElement('div'); tag.className = 'tag';
-                tag.innerHTML = `<span>${item.temp}°C</span><span class="time">${fmtShort(item.time)}</span><button class="tag-delete">×</button>`;
-                tag.querySelector('.tag-delete').onclick = () => deleteTemp(item.temp);
+                const tag = document.createElement('div'); 
+                tag.className = 'tag';
+                
+                const spanTemp = document.createElement('span');
+                spanTemp.textContent = `${item.temp}°C`;
+                
+                const spanTime = document.createElement('span');
+                spanTime.className = 'time';
+                spanTime.textContent = fmtShort(item.time);
+                
+                const btnDel = document.createElement('button');
+                btnDel.className = 'tag-delete';
+                btnDel.textContent = '×';
+                btnDel.title = '삭제';
+                btnDel.onclick = () => deleteTemp(item.temp);
+                
+                tag.appendChild(spanTemp);
+                tag.appendChild(spanTime);
+                tag.appendChild(btnDel);
+                
                 els.dynamicTags.appendChild(tag);
             });
         }
@@ -494,7 +525,6 @@
                 els.dev.textContent = '--'; if (document.activeElement !== els.dtrInput) els.dtrInput.value = '';
             }
 
-            // 페이즈 트래커 로직
             let maxTemp = state.recordedTemps.length > 0 ? state.recordedTemps[state.recordedTemps.length-1].temp : 0;
             let isDrying = state.elapsed > 0 && maxTemp < 150 && !state.crackTime;
             let isMaillard = maxTemp >= 150 && !state.crackTime;
@@ -507,15 +537,24 @@
             renderTempTags(); updateLog(); drawCanvas();
         }
 
+        // 버그 수정 및 기능 추가: 오타 수정, 구간 상세 표시 토글 기능 연동
         function updateLog() {
             if (!state.elapsed && !state.endTime) { els.log.textContent = "아직 기록이 없습니다. 스페이스바를 눌러 시작하세요."; return; }
             let t = `[로스팅 프로파일 리포트]\n---------------------------------\n📅 일시: ${new Date().toLocaleString('ko-KR')}\n☕ 원두: ${els.bean.value || '미입력'}\n`;
             if (els.gw.value && els.rw.value) t += `⚖️ 중량: 투입 ${els.gw.value}g -> 배출 ${els.rw.value}g\n📉 수율(WL): ${els.wl.textContent}%\n`;
-            t += `---------------------------------\n\n[구간 기록]\n`;
-            let prevTime = 0;
-            state.recordedTemps.forEach(item => { t += `- ${item.temp}°C : ${fmtShort(item.time)} (+${fmtShort(item.time - prevTime)})\n`; prevTime = item.time; });
-            if (state.crackTime) t += `💥 1차 크랙 : ${fmtShort(state.crackTime)}\n`;
+            t += `---------------------------------\n`;
+            
+            // 토글에 따라 구간 상세 숨기기/보이기
+            if (els.chkShowIntervals.checked) {
+                t += `\n[구간 기록]\n`;
+                let prevTime = 0;
+                state.recordedTemps.forEach(item => { t += `- ${item.temp}°C : ${fmtShort(item.time)} (+${fmtShort(item.time - prevTime)})\n`; prevTime = item.time; });
+            }
+
+            // 여기서 생긴 오타(fmtShort 두번 감싼 것) 수정 완료!
+            if (state.crackTime) t += `\n💥 1차 크랙 : ${fmtShort(state.crackTime)}\n`;
             if (state.endTime) t += `🏁 배출 완료 : ${fmtShort(state.endTime)}\n`;
+            
             if (state.crackTime && state.endTime) {
                 const dev = state.endTime - state.crackTime;
                 t += `\n[최종 결과]\n⏱️ 총 시간: ${fmtShort(state.endTime)} | 🔥 발현: ${fmtShort(dev)} | 📊 DTR: ${els.dtrInput.value || (dev/state.endTime*100).toFixed(1)}%\n`;
@@ -533,7 +572,7 @@
             const w = els.canvas.width = els.canvas.offsetWidth * 2, h = els.canvas.height = els.canvas.offsetHeight * 2;
             const ctx = els.ctx; ctx.clearRect(0, 0, w, h);
             
-            const pad = { t: 40, r: 60, b: 60, l: 80 }; // 우측 여백 확보(RoR)
+            const pad = { t: 40, r: 60, b: 60, l: 80 }; 
             const pw = w - pad.l - pad.r, ph = h - pad.t - pad.b;
 
             const guide = document.querySelector('input[name="guide"]:checked').value;
@@ -542,24 +581,21 @@
             
             const getX = ms => pad.l + (ms / maxT) * pw;
             const getY = temp => pad.t + ph - ((temp - 50) / 200) * ph; 
-            const getRoRY = ror => pad.t + ph - (ror / 40) * ph; // RoR 최대 40 기준
+            const getRoRY = ror => pad.t + ph - (ror / 40) * ph; 
 
-            // 배경 페이즈 선 (수직선으로 심플하게)
             let t150 = state.recordedTemps.find(t => t.temp >= 150);
             if (t150) { ctx.strokeStyle = 'rgba(194, 110, 67, 0.4)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(getX(t150.time), pad.t); ctx.lineTo(getX(t150.time), h - pad.b); ctx.stroke(); }
             if (state.crackTime) { ctx.strokeStyle = 'rgba(255, 107, 74, 0.4)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(getX(state.crackTime), pad.t); ctx.lineTo(getX(state.crackTime), h - pad.b); ctx.stroke(); }
 
-            // 그리드 (1분 단위로 촘촘하게 변경)
             ctx.lineWidth = 0.5; ctx.font = '20px "SF Mono", monospace'; ctx.fillStyle = '#6a5a4a'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
             [50, 100, 150, 200, 250].forEach(t => { 
                 let y = getY(t); ctx.strokeStyle = '#2a221c'; ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w-pad.r, y); ctx.stroke(); ctx.fillText(t + '°', pad.l - 15, y); 
             });
-            // 우측 RoR Y축
             ctx.fillStyle = '#5a7e9e'; ctx.textAlign = 'left';
             [0, 10, 20, 30, 40].forEach(r => { let y = getRoRY(r); ctx.fillText(r, w - pad.r + 15, y); });
 
             ctx.fillStyle = '#6a5a4a'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-            for(let m = 0; m <= maxT; m += 60000) { // 1분 간격
+            for(let m = 0; m <= maxT; m += 60000) { 
                 let x = getX(m); ctx.strokeStyle = '#2a221c'; ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, h - pad.b); ctx.stroke(); ctx.fillText(Math.floor(m / 60000) + 'm', x, h - pad.b + 15);
             }
             ctx.strokeStyle = '#5a4a3a'; ctx.lineWidth = 2;
@@ -567,7 +603,6 @@
             ctx.beginPath(); ctx.moveTo(w - pad.r, pad.t); ctx.lineTo(w - pad.r, h - pad.b); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(pad.l, h - pad.b); ctx.lineTo(w - pad.r, h - pad.b); ctx.stroke();
 
-            // 가이드 점선
             if (guide !== 'none' && refData[guide]) {
                 const rPts = refData[guide]; ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)'; ctx.lineWidth = 3; ctx.setLineDash([8, 8]); 
                 ctx.beginPath(); ctx.moveTo(getX(rPts[0].time), getY(rPts[0].temp));
@@ -575,7 +610,6 @@
                 ctx.stroke(); ctx.setLineDash([]); 
             }
 
-            // 실시간 데이터
             let pts = [{time: 0, temp: 50}]; state.recordedTemps.forEach(t => pts.push({time: t.time, temp: t.temp}));
             if (state.crackTime) pts.push({time: state.crackTime, temp: 198, type: 'crack'});
             if (state.endTime) pts.push({time: state.endTime, temp: 208, type: 'end'});
@@ -586,7 +620,6 @@
                 pts.push({time: state.elapsed, temp: estTemp, type: 'est'});
             }
 
-            // RoR 곡선 그리기 (파란색)
             if (pts.length > 2) {
                 ctx.strokeStyle = '#5a7e9e'; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
                 ctx.beginPath(); ctx.moveTo(getX(pts[1].time), getRoRY(0));
@@ -599,7 +632,6 @@
                 ctx.stroke();
             }
 
-            // 온도 곡선 그리기 (주황색)
             if (pts.length > 1) {
                 ctx.strokeStyle = '#f0a050'; ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
                 ctx.beginPath(); ctx.moveTo(getX(pts[0].time), getY(pts[0].temp));
@@ -611,7 +643,6 @@
                 ctx.stroke();
             }
 
-            // 포인트 마커
             pts.forEach(p => {
                 if(p.time === 0 || p.type === 'est') return;
                 let sp = p.type === 'crack' || p.type === 'end';
