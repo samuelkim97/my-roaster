@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>☕ NUCLEUS LINK PRO // MANUAL ROASTER V3.8</title>
+    <title>☕ Samuel Roster PRO // MANUAL ROASTER V4.0</title>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -215,6 +215,60 @@
             text-shadow: 0 0 25px rgba(244, 63, 94, 0.4);
         }
 
+        /* AI Co-Pilot HUD Card */
+        .copilot-card {
+            background: rgba(10, 11, 16, 0.95);
+            border: 1px solid var(--cyan);
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.15);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .copilot-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .copilot-title {
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: var(--cyan);
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .copilot-status-badge {
+            font-size: 0.7rem;
+            font-family: var(--font-mono);
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 12px;
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--emerald);
+            border: 1px solid var(--emerald);
+        }
+
+        .copilot-cmd-text {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.3;
+        }
+
+        .copilot-sub-text {
+            font-size: 0.8rem;
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+        }
+
         .metrics-tiles {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -403,7 +457,6 @@
         .tag-time { color: var(--amber); font-family: var(--font-mono); font-weight: bold; }
         .tag-del { background: none; border: none; color: var(--rose); cursor: pointer; font-size: 1.1rem; padding: 0 2px; }
 
-        /* AI 타겟 설정 컨트롤 박스 */
         .target-config-card {
             background: rgba(6, 182, 212, 0.05);
             border: 1px solid rgba(6, 182, 212, 0.25);
@@ -593,10 +646,22 @@
         <div class="cockpit-grid">
             <div class="card">
                 <div class="section-header" style="justify-content: center; margin-bottom: 0;">
-                    <span class="section-title" style="font-size: 0.85rem; letter-spacing: 1px;">ROASTING COCKPIT V3.8</span>
+                    <span class="section-title" style="font-size: 0.85rem; letter-spacing: 1px;">ROASTING COCKPIT V4.0</span>
                 </div>
                 <div class="timer-container">
                     <div class="timer-display" id="timerDisplay">00:00.0</div>
+                </div>
+
+                <!-- AI 코파일럿 조종석 HUD 카드 -->
+                <div class="copilot-card" id="coPilotCard">
+                    <div class="copilot-head">
+                        <div class="copilot-title">
+                            <span>👨‍✈️ AI CO-PILOT GUIDANCE</span>
+                        </div>
+                        <div class="copilot-status-badge" id="pilotStatusBadge">READY</div>
+                    </div>
+                    <div class="copilot-cmd-text" id="pilotCommandText">로스팅 시작 대기 중입니다. 스페이스바를 누르세요.</div>
+                    <div class="copilot-sub-text" id="pilotDetailText">목표 타겟 곡선과 실시간 온도를 자동 분석합니다.</div>
                 </div>
 
                 <div class="metrics-tiles">
@@ -686,7 +751,6 @@
             </div>
         </div>
 
-        <!-- AI 추천 타겟 실시간 커스텀 패널 -->
         <div class="target-config-card">
             <div class="target-config-title">
                 <span>🎯 AI 추천 타겟 수치 설정 (대화 피드백 대입)</span>
@@ -847,6 +911,12 @@
             rorDisplay: document.getElementById('rorDisplay'),
             dtrInput: document.getElementById('dtrInput'),
             
+            // Co-Pilot HUD Elements
+            coPilotCard: document.getElementById('coPilotCard'),
+            pilotStatusBadge: document.getElementById('pilotStatusBadge'),
+            pilotCommandText: document.getElementById('pilotCommandText'),
+            pilotDetailText: document.getElementById('pilotDetailText'),
+
             devMatchCard: document.getElementById('devMatchCard'),
             matchScoreVal: document.getElementById('matchScoreVal'),
             timeMatchVal: document.getElementById('timeMatchVal'),
@@ -860,7 +930,6 @@
             refLegend: document.getElementById('refLegend'),
             targetLegend: document.getElementById('targetLegend'),
             
-            // 타겟 설정 입력창
             targetFcTimeInput: document.getElementById('targetFcTimeInput'),
             targetFcTempInput: document.getElementById('targetFcTempInput'),
             targetDevTimeInput: document.getElementById('targetDevTimeInput'),
@@ -919,10 +988,124 @@
         els.btnAdd2.onclick = () => { els.customTempInput.value = parseInt(els.customTempInput.value || 70) + 2; };
         els.btnAdd5.onclick = () => { els.customTempInput.value = parseInt(els.customTempInput.value || 70) + 5; };
 
-        // AI 타겟 설정값 변경 시 차트 즉시 재계산
         [els.targetFcTimeInput, els.targetFcTempInput, els.targetDevTimeInput, els.targetDeltaTempInput].forEach(input => {
             input.addEventListener('input', updateChart);
         });
+
+        function getTargetBTAtTime(elapsedSec) {
+            let targetFcSec = parseMMSS(els.targetFcTimeInput.value);
+            let targetFcTemp = parseFloat(els.targetFcTempInput.value) || 192;
+            let targetDevSec = parseFloat(els.targetDevTimeInput.value) || 60;
+            let targetDeltaTemp = parseFloat(els.targetDeltaTempInput.value) || 5.5;
+
+            let points = [
+                { time: 0, temp: 70 },
+                { time: targetFcSec * 0.15, temp: 100 },
+                { time: targetFcSec * 0.48, temp: 150 },
+                { time: targetFcSec * 0.72, temp: 170 },
+                { time: targetFcSec, temp: targetFcTemp },
+                { time: targetFcSec + targetDevSec, temp: targetFcTemp + targetDeltaTemp }
+            ];
+
+            if (elapsedSec <= 0) return points[0].temp;
+            if (elapsedSec >= points[points.length - 1].time) return points[points.length - 1].temp;
+
+            for (let i = 0; i < points.length - 1; i++) {
+                if (elapsedSec >= points[i].time && elapsedSec <= points[i + 1].time) {
+                    let ratio = (elapsedSec - points[i].time) / (points[i + 1].time - points[i].time);
+                    return points[i].temp + ratio * (points[i + 1].temp - points[i].temp);
+                }
+            }
+            return 100;
+        }
+
+        // AI 코파일럿 조종 가이드 엔진
+        function updateCoPilotGuidance() {
+            if (!state.isRunning && state.elapsed === 0) {
+                els.pilotStatusBadge.textContent = "READY";
+                els.pilotStatusBadge.style.color = "var(--emerald)";
+                els.pilotStatusBadge.style.borderColor = "var(--emerald)";
+                els.pilotCommandText.textContent = "로스팅 시작 대기 중입니다. 스페이스바를 누르세요.";
+                els.pilotDetailText.textContent = "목표 타겟 곡선과 실시간 온도를 자동 분석합니다.";
+                return;
+            }
+
+            let curSec = state.elapsed / 1000;
+            let targetBT = getTargetBTAtTime(curSec);
+            let lastRecorded = state.recordedTemps.length > 0 ? state.recordedTemps[state.recordedTemps.length - 1] : null;
+            let curBT = lastRecorded ? lastRecorded.temp : 70;
+            let diff = curBT - targetBT;
+
+            // 선제적 구간 체크
+            if (curBT >= 143 && curBT < 150) {
+                els.pilotStatusBadge.textContent = "PHASE PREPARE";
+                els.pilotStatusBadge.style.color = "var(--amber)";
+                els.pilotStatusBadge.style.borderColor = "var(--amber)";
+                els.pilotCommandText.textContent = "🔥 메일라드 구간 준비: 150°C 알람 시 가스 15% 1차 감축";
+                els.pilotDetailText.textContent = `현재 BT: ${curBT}°C | 타겟 목표: ${targetBT.toFixed(1)}°C`;
+                return;
+            }
+
+            if (curBT >= 165 && curBT < 170) {
+                els.pilotStatusBadge.textContent = "PHASE PREPARE";
+                els.pilotStatusBadge.style.color = "var(--amber)";
+                els.pilotStatusBadge.style.borderColor = "var(--amber)";
+                els.pilotCommandText.textContent = "⚡ 카라멜화 구간 준비: 170°C 알람 시 가스 50% 2차 감축";
+                els.pilotDetailText.textContent = `현재 BT: ${curBT}°C | 타겟 목표: ${targetBT.toFixed(1)}°C`;
+                return;
+            }
+
+            if (curBT >= 182 && curBT < 190 && !state.crackTime) {
+                els.pilotStatusBadge.textContent = "FC PREPARE";
+                els.pilotStatusBadge.style.color = "var(--cyan)";
+                els.pilotStatusBadge.style.borderColor = "var(--cyan)";
+                els.pilotCommandText.textContent = "💥 1차 크랙 연착륙: 가스 40~45% 감축 (RoR_FC +12°C/m 목표)";
+                els.pilotDetailText.textContent = `현재 BT: ${curBT}°C | 1차 크랙 예상 온도: 190~192°C`;
+                return;
+            }
+
+            if (state.crackTime && !state.endTime) {
+                els.pilotStatusBadge.textContent = "DEV PHASE";
+                els.pilotStatusBadge.style.color = "var(--rose)";
+                els.pilotStatusBadge.style.borderColor = "var(--rose)";
+                els.pilotCommandText.textContent = `🏁 개발 진행 중: t_dev 60초 / ΔT +5.5°C 달성 시 배출 [E]`;
+                els.pilotDetailText.textContent = `경과 개발시간: ${state.devTimeSec}초 | 상승온도: +${state.devDeltaTemp.toFixed(1)}°C`;
+                return;
+            }
+
+            // 온도차 기반 피드백 명령
+            if (diff > 2.5) {
+                els.pilotStatusBadge.textContent = "OVERHEAT";
+                els.pilotStatusBadge.style.color = "var(--rose)";
+                els.pilotStatusBadge.style.borderColor = "var(--rose)";
+                els.pilotCommandText.textContent = "🔥 속도가 너무 빠릅니다! 가스 15% 이상 감축 필요";
+                els.pilotDetailText.textContent = `타겟 대비 +${diff.toFixed(1)}°C 과열됨 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
+            } else if (diff > 0.8) {
+                els.pilotStatusBadge.textContent = "SLIGHTLY FAST";
+                els.pilotStatusBadge.style.color = "var(--amber)";
+                els.pilotStatusBadge.style.borderColor = "var(--amber)";
+                els.pilotCommandText.textContent = "📉 진행이 약간 빠릅니다. 가스를 5~10% 줄이세요.";
+                els.pilotDetailText.textContent = `타겟 대비 +${diff.toFixed(1)}°C 높음 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
+            } else if (diff < -2.5) {
+                els.pilotStatusBadge.textContent = "TOO SLOW";
+                els.pilotStatusBadge.style.color = "var(--cyan)";
+                els.pilotStatusBadge.style.borderColor = "var(--cyan)";
+                els.pilotCommandText.textContent = "❄️ 속도가 너무 느립니다! 가스 15% 이상 증량 필요";
+                els.pilotDetailText.textContent = `타겟 대비 ${diff.toFixed(1)}°C 미달됨 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
+            } else if (diff < -0.8) {
+                els.pilotStatusBadge.textContent = "SLIGHTLY SLOW";
+                els.pilotStatusBadge.style.color = "var(--cyan)";
+                els.pilotStatusBadge.style.borderColor = "var(--cyan)";
+                els.pilotCommandText.textContent = "📈 진행이 약간 느립니다. 가스를 5~10% 올려주세요.";
+                els.pilotDetailText.textContent = `타겟 대비 ${diff.toFixed(1)}°C 낮음 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
+            } else {
+                els.pilotStatusBadge.textContent = "ON TRACK";
+                els.pilotStatusBadge.style.color = "var(--emerald)";
+                els.pilotStatusBadge.style.borderColor = "var(--emerald)";
+                els.pilotCommandText.textContent = "🟢 최적 레일 순항 중! 현재 가스와 화력을 유지하세요.";
+                els.pilotDetailText.textContent = `타겟 오차 범위 내 안정 진입 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
+            }
+        }
 
         function applyEMASmoothing() {
             if (state.recordedTemps.length === 0) return;
@@ -1209,7 +1392,7 @@
             els.timer.textContent = fmtMs(state.elapsed);
             els.timer.classList.toggle('crack-phase', state.crackTime && !state.endTime && state.isRunning);
             
-            calculateAUC(); calculateDevEquivalence();
+            calculateAUC(); calculateDevEquivalence(); updateCoPilotGuidance();
 
             els.devTimeSecDisplay.textContent = `${state.devTimeSec}s`;
             els.devDeltaTempDisplay.textContent = `+${state.devDeltaTemp.toFixed(1)}°C`;
@@ -1335,7 +1518,6 @@
             });
         }
 
-        // 실시간 사용자 동적 타겟 곡선 생성 로직
         function generateTargetCurve(isAnchored, curFcTimeSec) {
             let targetFcSec = parseMMSS(els.targetFcTimeInput.value);
             let targetFcTemp = parseFloat(els.targetFcTempInput.value) || 192;
