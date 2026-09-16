@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>☕ NUCLEUS LINK PRO // MANUAL ROASTER V3.5</title>
+    <title>☕ NUCLEUS LINK PRO // MANUAL ROASTER V3.8</title>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -13,13 +13,11 @@
             --bg-card-solid: #12141d;
             --bg-input: #0a0b10;
             --border: rgba(255, 255, 255, 0.08);
-            --border-accent: rgba(245, 158, 11, 0.3);
             
             --text-main: #f3f4f6;
             --text-muted: #9ca3af;
             --text-dim: #6b7280;
             
-            /* Accent Colors */
             --amber: #f59e0b;
             --amber-glow: rgba(245, 158, 11, 0.25);
             --emerald: #10b981;
@@ -48,9 +46,6 @@
             padding: 16px;
             display: flex;
             justify-content: center;
-            background-image: 
-                radial-gradient(circle at 15% 15%, rgba(245, 158, 11, 0.03) 0%, transparent 40%),
-                radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.03) 0%, transparent 40%);
         }
 
         .app-container {
@@ -62,7 +57,6 @@
             position: relative;
         }
 
-        /* 네온 팝업 배너 */
         .toast-popup {
             position: fixed;
             top: 24px;
@@ -94,13 +88,11 @@
         .card {
             background: var(--bg-card);
             backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
             padding: 20px;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
 
         .header-card {
@@ -118,7 +110,6 @@
             gap: 10px;
             font-size: 1.1rem;
             font-weight: 800;
-            letter-spacing: 0.5px;
             color: var(--amber);
         }
 
@@ -199,9 +190,7 @@
         }
 
         @media (min-width: 900px) {
-            .cockpit-grid {
-                grid-template-columns: 1.35fr 1fr;
-            }
+            .cockpit-grid { grid-template-columns: 1.35fr 1fr; }
         }
 
         .timer-container {
@@ -218,19 +207,12 @@
             font-family: var(--font-mono);
             letter-spacing: -2px;
             color: #ffffff;
-            text-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
             line-height: 1;
         }
 
         .timer-display.crack-phase {
             color: var(--rose);
             text-shadow: 0 0 25px rgba(244, 63, 94, 0.4);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.85; }
         }
 
         .metrics-tiles {
@@ -256,7 +238,6 @@
             color: var(--text-muted);
             margin-bottom: 4px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .tile-val {
@@ -318,12 +299,11 @@
             border-radius: var(--radius-sm);
             color: var(--text-dim);
             font-weight: 700;
-            transition: all 0.3s ease;
         }
 
-        .phase-badge.active.drying { background: var(--drying); color: #000; box-shadow: 0 0 12px rgba(234, 179, 8, 0.4); }
-        .phase-badge.active.maillard { background: var(--maillard); color: #fff; box-shadow: 0 0 12px rgba(249, 115, 22, 0.4); }
-        .phase-badge.active.dev { background: var(--rose); color: #fff; box-shadow: 0 0 12px rgba(244, 63, 94, 0.4); }
+        .phase-badge.active.drying { background: var(--drying); color: #000; }
+        .phase-badge.active.maillard { background: var(--maillard); color: #fff; }
+        .phase-badge.active.dev { background: var(--rose); color: #fff; }
 
         .btn-action {
             min-height: 52px;
@@ -341,26 +321,17 @@
             margin-bottom: 10px;
         }
 
-        .btn-action:active { transform: scale(0.98); }
-        .btn-start { background: var(--emerald); color: #fff; justify-content: center; box-shadow: 0 4px 14px var(--emerald-glow); }
-        .btn-start.running { background: rgba(244, 63, 94, 0.15); border: 1px solid var(--rose); color: var(--rose); box-shadow: none; }
+        .btn-start { background: var(--emerald); color: #fff; justify-content: center; }
+        .btn-start.running { background: rgba(244, 63, 94, 0.15); border: 1px solid var(--rose); color: var(--rose); }
         .btn-crack { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--rose); color: var(--rose); }
-        .btn-crack.done { background: var(--rose); color: #fff; box-shadow: 0 4px 14px rgba(244, 63, 94, 0.3); }
+        .btn-crack.done { background: var(--rose); color: #fff; }
         .btn-end { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--cyan); color: var(--cyan); margin-bottom: 0; }
-        .btn-end.done { background: var(--cyan); color: #fff; box-shadow: 0 4px 14px var(--cyan-glow); }
+        .btn-end.done { background: var(--cyan); color: #fff; }
         .btn-key { font-size: 0.72rem; font-family: var(--font-mono); opacity: 0.8; background: rgba(0,0,0,0.4); padding: 3px 6px; border-radius: 4px; }
 
-        .temp-ctrl-box {
-            margin-top: auto;
-            padding-top: 12px;
-        }
+        .temp-ctrl-box { margin-top: auto; padding-top: 12px; }
 
-        /* 1도, 2도, 5도 증감 버튼 스타일 */
-        .temp-step-row {
-            display: flex;
-            gap: 6px;
-            margin-top: 6px;
-        }
+        .temp-step-row { display: flex; gap: 6px; margin-top: 6px; }
 
         .btn-step {
             flex: 1;
@@ -373,13 +344,9 @@
             border-radius: var(--radius-sm);
             cursor: pointer;
             font-size: 0.85rem;
-            transition: all 0.15s ease;
         }
 
-        .btn-step:hover, .btn-step:active {
-            background: var(--amber);
-            color: #000;
-        }
+        .btn-step:hover, .btn-step:active { background: var(--amber); color: #000; }
 
         .temp-input-row {
             display: flex;
@@ -411,10 +378,7 @@
             border-radius: var(--radius-sm);
             cursor: pointer;
             font-size: 0.95rem;
-            transition: 0.2s;
         }
-
-        .btn-record-temp:active { transform: scale(0.95); }
 
         .dynamic-tags {
             display: flex;
@@ -439,6 +403,54 @@
         .tag-time { color: var(--amber); font-family: var(--font-mono); font-weight: bold; }
         .tag-del { background: none; border: none; color: var(--rose); cursor: pointer; font-size: 1.1rem; padding: 0 2px; }
 
+        /* AI 타겟 설정 컨트롤 박스 */
+        .target-config-card {
+            background: rgba(6, 182, 212, 0.05);
+            border: 1px solid rgba(6, 182, 212, 0.25);
+            border-radius: var(--radius-md);
+            padding: 10px 14px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .target-config-title {
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: var(--cyan);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .target-inputs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .target-input-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .target-val-input {
+            width: 55px;
+            padding: 3px 6px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            text-align: center;
+            border-color: rgba(6, 182, 212, 0.4);
+            color: var(--cyan);
+        }
+
         .lower-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -446,9 +458,7 @@
         }
 
         @media (min-width: 900px) {
-            .lower-grid {
-                grid-template-columns: 1.65fr 1fr;
-            }
+            .lower-grid { grid-template-columns: 1.65fr 1fr; }
         }
 
         .chart-box {
@@ -463,7 +473,6 @@
 
         .side-panel { display: flex; flex-direction: column; gap: 16px; }
 
-        /* 가독성 개편 퀵 리포트 영역 */
         .log-content {
             flex: 1;
             font-family: var(--font-mono);
@@ -479,17 +488,8 @@
             height: 160px;
         }
 
-        .db-search-bar {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-
-        .db-search-input {
-            flex: 1;
-            padding: 8px 12px;
-            font-size: 0.85rem;
-        }
+        .db-search-bar { display: flex; gap: 8px; margin-bottom: 10px; }
+        .db-search-input { flex: 1; padding: 8px 12px; font-size: 0.85rem; }
 
         #historyContainer {
             height: 310px;
@@ -540,7 +540,6 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 0.75rem;
-            transition: 0.2s;
         }
 
         .hist-btn.ref { border-color: var(--amber); color: var(--amber); }
@@ -568,13 +567,11 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- 네온 팝업 배너 -->
         <div id="toastPopup" class="toast-popup">
             <span id="toastIcon">🔔</span>
             <span id="toastMsg">150°C Maillard Phase Entry!</span>
         </div>
 
-        <!-- Header -->
         <div class="card header-card">
             <div class="brand-title">
                 <span>☕ NUCLEUS LINK PRO</span>
@@ -593,11 +590,10 @@
             </div>
         </div>
 
-        <!-- Cockpit Dashboard Top -->
         <div class="cockpit-grid">
             <div class="card">
                 <div class="section-header" style="justify-content: center; margin-bottom: 0;">
-                    <span class="section-title" style="font-size: 0.85rem; letter-spacing: 1px;">ROASTING COCKPIT V3.5</span>
+                    <span class="section-title" style="font-size: 0.85rem; letter-spacing: 1px;">ROASTING COCKPIT V3.8</span>
                 </div>
                 <div class="timer-container">
                     <div class="timer-display" id="timerDisplay">00:00.0</div>
@@ -667,14 +663,12 @@
                     <span class="btn-key">E</span>
                 </button>
 
-                <!-- 수동 온도 입력 및 1도/2도/5도 증감 버튼 패널 -->
                 <div class="temp-ctrl-box">
                     <div class="section-title" style="font-size:0.8rem; display:flex; justify-content:space-between;">
                         <span>📍 수동 온도 구간 기록</span>
                         <span style="color:var(--text-muted); font-size:0.75rem;">기본 70°C 시작</span>
                     </div>
 
-                    <!-- 1도 / 2도 / 5도 빠른 조절 버튼 -->
                     <div class="temp-step-row">
                         <button class="btn-step" id="btnSub1">- 1°C</button>
                         <button class="btn-step" id="btnAdd1">+ 1°C</button>
@@ -692,17 +686,41 @@
             </div>
         </div>
 
+        <!-- AI 추천 타겟 실시간 커스텀 패널 -->
+        <div class="target-config-card">
+            <div class="target-config-title">
+                <span>🎯 AI 추천 타겟 수치 설정 (대화 피드백 대입)</span>
+            </div>
+            <div class="target-inputs">
+                <div class="target-input-item">
+                    <span>FC시간:</span>
+                    <input type="text" id="targetFcTimeInput" class="target-val-input" value="06:20">
+                </div>
+                <div class="target-input-item">
+                    <span>FC온도:</span>
+                    <input type="number" id="targetFcTempInput" class="target-val-input" value="192">
+                    <span>°C</span>
+                </div>
+                <div class="target-input-item">
+                    <span>t_dev:</span>
+                    <input type="number" id="targetDevTimeInput" class="target-val-input" value="60">
+                    <span>초</span>
+                </div>
+                <div class="target-input-item">
+                    <span>ΔT_dev:</span>
+                    <input type="number" id="targetDeltaTempInput" class="target-val-input" value="5.5" step="0.5">
+                    <span>°C</span>
+                </div>
+            </div>
+        </div>
+
         <div class="lower-grid">
             <div class="card">
                 <div class="section-header">
                     <span class="section-title" id="chartTitleText">📉 프로파일 프로젝션</span>
                     <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                        <button id="btnToggleTargetGuide" class="hist-btn target">
-                            🎯 AI 추천 타겟: ON
-                        </button>
-                        <button id="btnToggleFCAnchor" class="hist-btn" style="border-color:var(--amber); color:var(--amber);">
-                            ⚓ FC Anchored 정렬: OFF
-                        </button>
+                        <button id="btnToggleTargetGuide" class="hist-btn target">🎯 AI 추천 타겟: ON</button>
+                        <button id="btnToggleFCAnchor" class="hist-btn" style="border-color:var(--amber); color:var(--amber);">⚓ FC Anchored 정렬: OFF</button>
                         <span style="font-size:0.75rem; color:var(--purple); display:none;" id="refLegend">● 히스토리 가이드</span>
                         <span style="font-size:0.75rem; color:var(--cyan);" id="targetLegend">--- AI 추천 타겟</span>
                     </div>
@@ -842,6 +860,12 @@
             refLegend: document.getElementById('refLegend'),
             targetLegend: document.getElementById('targetLegend'),
             
+            // 타겟 설정 입력창
+            targetFcTimeInput: document.getElementById('targetFcTimeInput'),
+            targetFcTempInput: document.getElementById('targetFcTempInput'),
+            targetDevTimeInput: document.getElementById('targetDevTimeInput'),
+            targetDeltaTempInput: document.getElementById('targetDeltaTempInput'),
+            
             start: document.getElementById('btnStart'),
             crack: document.getElementById('btnCrack'),
             end: document.getElementById('btnEnd'),
@@ -884,11 +908,21 @@
         const fmtMs = ms => ms === null ? '--' : `${String(Math.floor(ms/60000)).padStart(2,'0')}:${String(Math.floor((ms/1000)%60)).padStart(2,'0')}.${Math.floor((ms/100)%10)}`;
         const fmtShort = ms => ms === null ? '--' : `${String(Math.floor(ms/60000)).padStart(2,'0')}:${String(Math.floor(ms/1000)%60).padStart(2,'0')}`;
 
-        // 수동 온도 버튼 동작 연동
+        function parseMMSS(str) {
+            if (!str || !str.includes(':')) return 380;
+            const parts = str.split(':');
+            return (parseInt(parts[0]) * 60) + parseInt(parts[1]);
+        }
+
         els.btnSub1.onclick = () => { els.customTempInput.value = Math.max(0, parseInt(els.customTempInput.value || 70) - 1); };
         els.btnAdd1.onclick = () => { els.customTempInput.value = parseInt(els.customTempInput.value || 70) + 1; };
         els.btnAdd2.onclick = () => { els.customTempInput.value = parseInt(els.customTempInput.value || 70) + 2; };
         els.btnAdd5.onclick = () => { els.customTempInput.value = parseInt(els.customTempInput.value || 70) + 5; };
+
+        // AI 타겟 설정값 변경 시 차트 즉시 재계산
+        [els.targetFcTimeInput, els.targetFcTempInput, els.targetDevTimeInput, els.targetDeltaTempInput].forEach(input => {
+            input.addEventListener('input', updateChart);
+        });
 
         function applyEMASmoothing() {
             if (state.recordedTemps.length === 0) return;
@@ -981,12 +1015,10 @@
 
         function checkTemperatureAlarms(tempVal) {
             if (tempVal >= 150 && tempVal < 170 && !state.alert150Triggered) {
-                state.alert150Triggered = true;
-                playBeepSound(880, 2);
+                state.alert150Triggered = true; playBeepSound(880, 2);
                 showToastPopup('150°C 도달! 메일라드(Maillard) 구간 진입', '🔥', '#f97316');
             } else if (tempVal >= 170 && !state.alert170Triggered) {
-                state.alert170Triggered = true;
-                playBeepSound(1046, 3);
+                state.alert170Triggered = true; playBeepSound(1046, 3);
                 showToastPopup('170°C 도달! 카라멜화 가속 / 1차 크랙 준비', '⚡', '#f59e0b');
             }
         }
@@ -1154,7 +1186,7 @@
             if (state.crackTime || (!state.isRunning && !state.elapsed)) return; 
             state.crackTime = state.elapsed; 
             let lastRec = state.recordedTemps.length > 0 ? state.recordedTemps[state.recordedTemps.length - 1] : null;
-            state.crackTemp = lastRec ? lastRec.temp : 190;
+            state.crackTemp = lastRec ? lastRec.temp : 192;
             state.rorFC = state.currentEmaRoR || 10.0;
             els.rorFCDisplay.textContent = `${state.rorFC.toFixed(1)}°/m`;
             els.crack.classList.add('done'); updateUI(); 
@@ -1205,7 +1237,6 @@
             renderTempTags(); updateLog(); updateChart();
         }
 
-        // 퀵 리포트 가독성 개편 함수 (들여쓰기 및 단락 레이아웃 적용)
         function updateLog() {
             if (!state.elapsed && !state.endTime) { els.log.textContent = "아직 기록이 없습니다. 스페이스바를 눌러 시작하세요."; return; }
             
@@ -1265,7 +1296,6 @@
             document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); this.textContent = '✅ 완료!'; setTimeout(() => { this.textContent = '복사'; }, 2000); } catch(e) {} document.body.removeChild(ta);
         };
 
-        // Chart.js 오버레이 시스템 (라이브 / 레퍼런스 가이드 / AI 추천 타겟 가이드)
         let chartInstance = null;
         function initChart() {
             const ctx = document.getElementById('roastChart').getContext('2d');
@@ -1305,13 +1335,24 @@
             });
         }
 
-        // AI 추천 타겟 가이드 곡선 생성기 (FC 190°C / RoR_FC 12.0°/m / t_dev 60s / ΔT 6.5°C)
+        // 실시간 사용자 동적 타겟 곡선 생성 로직
         function generateTargetCurve(isAnchored, curFcTimeSec) {
+            let targetFcSec = parseMMSS(els.targetFcTimeInput.value);
+            let targetFcTemp = parseFloat(els.targetFcTempInput.value) || 192;
+            let targetDevSec = parseFloat(els.targetDevTimeInput.value) || 60;
+            let targetDeltaTemp = parseFloat(els.targetDeltaTempInput.value) || 5.5;
+
+            let targetFinishSec = targetFcSec + targetDevSec;
+            let targetFinishTemp = targetFcTemp + targetDeltaTemp;
+
             let targetPoints = [
-                { time: 0, temp: 70 }, { time: 60, temp: 100 }, { time: 180, temp: 150 },
-                { time: 270, temp: 170 }, { time: 375, temp: 190 }, { time: 435, temp: 196.5 }
+                { time: 0, temp: 70 },
+                { time: targetFcSec * 0.15, temp: 100 },
+                { time: targetFcSec * 0.48, temp: 150 },
+                { time: targetFcSec * 0.72, temp: 170 },
+                { time: targetFcSec, temp: targetFcTemp },
+                { time: targetFinishSec, temp: targetFinishTemp }
             ];
-            let targetFcSec = 375; // 06:15 FC Target
 
             return targetPoints.map(p => {
                 let xVal = isAnchored ? (p.time - targetFcSec) : (p.time / 60);
@@ -1324,7 +1365,6 @@
             let btData = [], rorData = [], refBtData = [], refRorData = [];
             let curFcTimeSec = (state.crackTime || 0) / 1000;
 
-            // 1. 현재 진행 BT 및 RoR
             state.recordedTemps.forEach(t => {
                 let timeSec = t.time / 1000;
                 let xVal = state.isFcAnchoredMode ? (timeSec - curFcTimeSec) : (timeSec / 60);
@@ -1332,7 +1372,6 @@
                 rorData.push({ x: xVal, y: t.emaRoR });
             });
 
-            // 2. 레퍼런스(과거 DB) 데이터 및 FC 크랙 체크 지점 강조
             if (state.selectedRefData && state.selectedRefData.recordedTemps) {
                 let refFcTimeSec = (state.selectedRefData.crackTime || 0) / 1000;
                 state.selectedRefData.recordedTemps.forEach(t => {
@@ -1343,7 +1382,6 @@
                 });
             }
 
-            // 3. AI 추천 타겟 프로파일
             let targetData = state.isTargetGuideOn ? generateTargetCurve(state.isFcAnchoredMode, curFcTimeSec) : [];
 
             chartInstance.options.scales.x.title.text = state.isFcAnchoredMode ? '1차 크랙(FC) 기준 상대시간 (초)' : '경과 시간 (분)';
