@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>☕ Samuel Kim // MANUAL ROASTER V5.0</title>
+    <title>☕ Samuel Kim // MANUAL ROASTER V5.1</title>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -155,7 +155,6 @@
             min-width: 180px;
         }
 
-        /* 가공방식 선택 칩 패널 */
         .process-chips {
             display: flex;
             gap: 6px;
@@ -425,9 +424,10 @@
             border-radius: var(--radius-sm);
             cursor: pointer;
             font-size: 0.85rem;
+            transition: all 0.1s ease;
         }
 
-        .btn-step:hover, .btn-step:active { background: var(--amber); color: #000; }
+        .btn-step:hover, .btn-step:active { background: var(--amber); color: #000; transform: scale(0.97); }
 
         .temp-input-row {
             display: flex;
@@ -683,7 +683,6 @@
                 <div class="date-display" id="dateDisplay" style="font-family:var(--font-mono); font-size:0.9rem; color:var(--text-muted);">2026.00.00</div>
                 <input type="text" id="beanInput" class="bean-input" placeholder="생두 프로파일 / 로스팅 목표 입력">
                 
-                <!-- 가공방식 클릭 선택 칩 패널 -->
                 <div class="process-chips">
                     <button class="process-chip active" data-process="Washed">워시드</button>
                     <button class="process-chip" data-process="Natural">내추럴</button>
@@ -705,7 +704,7 @@
         <div class="cockpit-grid">
             <div class="card">
                 <div class="section-header" style="justify-content: center; margin-bottom: 0;">
-                    <span class="section-title" style="font-size: 0.85rem; letter-spacing: 1px;">ROASTING COCKPIT V5.0</span>
+                    <span class="section-title" style="font-size: 0.85rem; letter-spacing: 1px;">ROASTING COCKPIT V5.1</span>
                 </div>
                 <div class="timer-container">
                     <div class="timer-display" id="timerDisplay">00:00.0</div>
@@ -788,11 +787,11 @@
 
                 <div class="temp-ctrl-box">
                     <div class="section-title" style="font-size:0.8rem; display:flex; justify-content:space-between;">
-                        <span>📍 수동 온도 구간 기록</span>
+                        <span>📍 수동 온도 구간 기록 (원클릭 즉시 반영)</span>
                         <span style="color:var(--text-muted); font-size:0.75rem;">기본 70°C 시작</span>
                     </div>
 
-                    <!-- 1도 / 2도 / 5도 증감 누적 버튼 -->
+                    <!-- 원클릭 즉시 기록 증감 버튼 -->
                     <div class="temp-step-row">
                         <button class="btn-step" id="btnSub1">- 1°C</button>
                         <button class="btn-step" id="btnAdd1">+ 1°C</button>
@@ -1030,7 +1029,7 @@
             devTimeSec: 0, devDeltaTemp: 0, rorFC: 0, relativeAUC: 0, effectiveAUC: 0, currentEmaRoR: 0,
             selectedRefData: null, isFcAnchoredMode: false, isTargetGuideOn: true, refLogId: null,
             alert150Triggered: false, alert170Triggered: false,
-            processMethod: 'Washed' // 기본 가공 방식
+            processMethod: 'Washed'
         };
 
         const fmtMs = ms => ms === null ? '--' : `${String(Math.floor(ms/60000)).padStart(2,'0')}:${String(Math.floor((ms/1000)%60)).padStart(2,'0')}.${Math.floor((ms/100)%10)}`;
@@ -1042,7 +1041,6 @@
             return (parseInt(parts[0]) * 60) + parseInt(parts[1]);
         }
 
-        // 가공방식 버튼 클릭 이벤트 연결
         document.querySelectorAll('.process-chip').forEach(chip => {
             chip.addEventListener('click', () => {
                 document.querySelectorAll('.process-chip').forEach(c => c.classList.remove('active'));
@@ -1052,19 +1050,45 @@
             });
         });
 
-        // 온도 수동 증감 버튼 로직 (입력창 온도 기준 누적 덧셈)
-        els.btnSub1.onclick = () => { els.customTempInput.value = Math.max(0, parseInt(els.customTempInput.value || 70) - 1); };
-        els.btnAdd1.onclick = () => { els.customTempInput.value = parseInt(els.customTempInput.value || 70) + 1; };
-        els.btnAdd2.onclick = () => { els.customTempInput.value = parseInt(els.customTempInput.value || 70) + 2; };
-        els.btnAdd5.onclick = () => { els.customTempInput.value = parseInt(els.customTempInput.value || 70) + 5; };
+        // 수동 온도 기록 핵심 함수
+        function recordCustomTemp() {
+            if (!state.isRunning && state.elapsed === 0) return;
+            const tempVal = parseInt(els.customTempInput.value);
+            if (isNaN(tempVal)) return;
+
+            const existingIdx = state.recordedTemps.findIndex(t => t.temp === tempVal);
+            if (existingIdx >= 0) state.recordedTemps[existingIdx].time = state.elapsed;
+            else state.recordedTemps.push({ temp: tempVal, time: state.elapsed });
+            
+            state.recordedTemps.sort((a, b) => a.temp - b.temp);
+            
+            checkTemperatureAlarms(tempVal);
+            applyEMASmoothing(); calculateAUC(); updateUI();
+        }
+
+        // 증감 버튼 클릭 시 [입력창 온도 반영 + 즉시 데이터 기록] 동시에 실행되는 원클릭 함수
+        function adjustAndRecord(delta) {
+            let currentVal = parseInt(els.customTempInput.value || 70);
+            let newVal = Math.max(0, currentVal + delta);
+            els.customTempInput.value = newVal;
+            if (state.isRunning || state.elapsed > 0) {
+                recordCustomTemp();
+            }
+        }
+
+        els.btnSub1.onclick = () => adjustAndRecord(-1);
+        els.btnAdd1.onclick = () => adjustAndRecord(1);
+        els.btnAdd2.onclick = () => adjustAndRecord(2);
+        els.btnAdd5.onclick = () => adjustAndRecord(5);
+
+        els.btnRecordTemp.onclick = recordCustomTemp;
+        els.customTempInput.addEventListener('keypress', e => { if (e.key === 'Enter') recordCustomTemp(); });
 
         [els.targetFcTimeInput, els.targetFcTempInput, els.targetDevTimeInput, els.targetDeltaTempInput].forEach(input => {
             input.addEventListener('input', updateChart);
         });
 
-        // 실시간 목표 BT 산출 (레퍼런스 연결 시 내 실전 데이터 우선 추적)
         function getTargetBTAtTime(elapsedSec) {
-            // 1. 레퍼런스(예: 키이 3차)가 지정되어 있을 경우, 내 실전 데이터 곡선을 100% 추적!
             if (state.selectedRefData && state.selectedRefData.recordedTemps && state.selectedRefData.recordedTemps.length > 0) {
                 let recs = state.selectedRefData.recordedTemps;
                 let t0 = recs[0].time / 1000;
@@ -1083,14 +1107,12 @@
                 }
             }
 
-            // 2. 레퍼런스가 없을 때: AI 기본 타겟 곡선 (가공 방식에 맞는 기울기 반영)
             let targetFcSec = parseMMSS(els.targetFcTimeInput.value);
             let targetFcTemp = parseFloat(els.targetFcTempInput.value) || 192;
             let targetDevSec = parseFloat(els.targetDevTimeInput.value) || 60;
             let targetDeltaTemp = parseFloat(els.targetDeltaTempInput.value) || 5.5;
 
-            // 가공 방식별 마이아르 진입 속도 조정
-            let m150Ratio = 0.45; // Washed (고밀도 빠르게)
+            let m150Ratio = 0.45;
             if (state.processMethod === 'Natural' || state.processMethod === 'Decaf') m150Ratio = 0.50;
             if (state.processMethod === 'Anaerobic' || state.processMethod === 'Infused') m150Ratio = 0.52;
 
@@ -1115,7 +1137,6 @@
             return 100;
         }
 
-        // AI 코파일럿 조종 가이드 엔진 (내 실전 데이터 기반 정밀 조언)
         function updateCoPilotGuidance() {
             if (!state.isRunning && state.elapsed === 0) {
                 els.pilotStatusBadge.textContent = "READY";
@@ -1169,7 +1190,6 @@
                 return;
             }
 
-            // 실전 데이터 오차 기반 조언
             if (diff > 2.5) {
                 els.pilotStatusBadge.textContent = "OVERHEAT";
                 els.pilotStatusBadge.style.color = "var(--rose)";
@@ -1302,26 +1322,6 @@
             }
         }
 
-        // 수동 온도 기록 (자동 +5도 상승 로직 완전히 삭제!)
-        function recordCustomTemp() {
-            if (!state.isRunning && state.elapsed === 0) return;
-            const tempVal = parseInt(els.customTempInput.value);
-            if (isNaN(tempVal)) return;
-
-            const existingIdx = state.recordedTemps.findIndex(t => t.temp === tempVal);
-            if (existingIdx >= 0) state.recordedTemps[existingIdx].time = state.elapsed;
-            else state.recordedTemps.push({ temp: tempVal, time: state.elapsed });
-            
-            state.recordedTemps.sort((a, b) => a.temp - b.temp);
-            //els.customTempInput.value = tempVal + 5; // -> 불필요한 자동 5도 상승 코드 완전 삭제 완료!
-            
-            checkTemperatureAlarms(tempVal);
-            applyEMASmoothing(); calculateAUC(); updateUI();
-        }
-
-        els.btnRecordTemp.onclick = recordCustomTemp;
-        els.customTempInput.addEventListener('keypress', e => { if (e.key === 'Enter') recordCustomTemp(); });
-
         function deleteTemp(tempVal) {
             state.recordedTemps = state.recordedTemps.filter(t => t.temp !== tempVal); 
             applyEMASmoothing(); calculateAUC(); updateUI();
@@ -1374,12 +1374,10 @@
 
         els.dbSearchInput.addEventListener('input', renderHistory);
 
-        // 히스토리 렌더링 (즐겨찾기 별표 상단 고정 정렬 적용)
         function renderHistory() {
             els.historyContainer.innerHTML = '';
             const queryText = els.dbSearchInput.value.toLowerCase().trim();
             
-            // 1. 별표 즐겨찾기(isFavorite) 항목을 최상단으로 우선 정렬
             let sortedLogs = [...dbLogs].sort((a, b) => {
                 if (a.isFavorite && !b.isFavorite) return -1;
                 if (!a.isFavorite && b.isFavorite) return 1;
@@ -1408,7 +1406,6 @@
                 const titleSpan = document.createElement('div'); titleSpan.className = 'hist-title'; titleSpan.textContent = log.title;
                 const actionsDiv = document.createElement('div'); actionsDiv.className = 'hist-actions';
                 
-                // 별표(★) 즐겨찾기 토글 버튼
                 const favBtn = document.createElement('button');
                 favBtn.className = `btn-fav-star ${log.isFavorite ? 'active' : ''}`;
                 favBtn.innerHTML = log.isFavorite ? '★' : '☆';
