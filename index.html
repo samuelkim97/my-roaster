@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>☕ Samuel Roster PRO // MANUAL ROASTER V4.0</title>
+    <title>☕ Samuel Kim // MANUAL ROASTER V4.2</title>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -108,9 +108,10 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             font-weight: 800;
             color: var(--amber);
+            letter-spacing: 0.5px;
         }
 
         .sync-badge {
@@ -215,7 +216,6 @@
             text-shadow: 0 0 25px rgba(244, 63, 94, 0.4);
         }
 
-        /* AI Co-Pilot HUD Card */
         .copilot-card {
             background: rgba(10, 11, 16, 0.95);
             border: 1px solid var(--cyan);
@@ -627,7 +627,7 @@
 
         <div class="card header-card">
             <div class="brand-title">
-                <span>☕ NUCLEUS LINK PRO</span>
+                <span>☕ Samuel Kim</span>
                 <span class="sync-badge">LIVE SYNC</span>
             </div>
             <div class="meta-inputs">
@@ -646,7 +646,7 @@
         <div class="cockpit-grid">
             <div class="card">
                 <div class="section-header" style="justify-content: center; margin-bottom: 0;">
-                    <span class="section-title" style="font-size: 0.85rem; letter-spacing: 1px;">ROASTING COCKPIT V4.0</span>
+                    <span class="section-title" style="font-size: 0.85rem; letter-spacing: 1px;">ROASTING COCKPIT V4.2</span>
                 </div>
                 <div class="timer-container">
                     <div class="timer-display" id="timerDisplay">00:00.0</div>
@@ -911,7 +911,6 @@
             rorDisplay: document.getElementById('rorDisplay'),
             dtrInput: document.getElementById('dtrInput'),
             
-            // Co-Pilot HUD Elements
             coPilotCard: document.getElementById('coPilotCard'),
             pilotStatusBadge: document.getElementById('pilotStatusBadge'),
             pilotCommandText: document.getElementById('pilotCommandText'),
@@ -1019,7 +1018,6 @@
             return 100;
         }
 
-        // AI 코파일럿 조종 가이드 엔진
         function updateCoPilotGuidance() {
             if (!state.isRunning && state.elapsed === 0) {
                 els.pilotStatusBadge.textContent = "READY";
@@ -1036,7 +1034,6 @@
             let curBT = lastRecorded ? lastRecorded.temp : 70;
             let diff = curBT - targetBT;
 
-            // 선제적 구간 체크
             if (curBT >= 143 && curBT < 150) {
                 els.pilotStatusBadge.textContent = "PHASE PREPARE";
                 els.pilotStatusBadge.style.color = "var(--amber)";
@@ -1073,7 +1070,6 @@
                 return;
             }
 
-            // 온도차 기반 피드백 명령
             if (diff > 2.5) {
                 els.pilotStatusBadge.textContent = "OVERHEAT";
                 els.pilotStatusBadge.style.color = "var(--rose)";
@@ -1423,7 +1419,7 @@
         function updateLog() {
             if (!state.elapsed && !state.endTime) { els.log.textContent = "아직 기록이 없습니다. 스페이스바를 눌러 시작하세요."; return; }
             
-            let t = `☕ NUCLEUS ROASTING REPORT\n`;
+            let t = `☕ SAMUEL KIM ROASTING REPORT\n`;
             t += `═══════════════════════════════════════\n`;
             t += ` 📅 일시 : ${new Date().toLocaleString('ko-KR')}\n`;
             t += ` ☕ 원두 : ${els.bean.value || '미입력 원두'}\n`;
@@ -1488,9 +1484,10 @@
                     datasets: [
                         { label: 'BT (°C)', data: [], yAxisID: 'yTemp', borderColor: '#f59e0b', backgroundColor: 'transparent', borderWidth: 3, tension: 0.2, pointRadius: 4, pointBackgroundColor: '#f59e0b' },
                         { label: 'EMA RoR (°C/min)', data: [], yAxisID: 'yRoR', borderColor: '#10b981', borderDash: [5, 4], borderWidth: 2, tension: 0.3, pointRadius: 0 },
-                        { label: 'Ref BT', data: [], yAxisID: 'yTemp', borderColor: '#c084fc', borderDash: [3, 3], borderWidth: 2, tension: 0.2, pointRadius: 5, pointBackgroundColor: '#c084fc' },
+                        { label: 'Ref BT', data: [], yAxisID: 'yTemp', borderColor: '#c084fc', borderDash: [3, 3], borderWidth: 1.8, tension: 0.2, pointRadius: 2.5, pointBackgroundColor: '#c084fc' },
                         { label: 'Ref RoR', data: [], yAxisID: 'yRoR', borderColor: '#38bdf8', borderDash: [2, 4], borderWidth: 1.5, tension: 0.3, pointRadius: 0 },
-                        { label: 'AI Target BT', data: [], yAxisID: 'yTemp', borderColor: '#06b6d4', borderDash: [6, 6], borderWidth: 2, tension: 0.25, pointRadius: 5, pointBackgroundColor: '#06b6d4' }
+                        { label: 'AI Target BT', data: [], yAxisID: 'yTemp', borderColor: '#06b6d4', borderDash: [6, 6], borderWidth: 2, tension: 0.25, pointRadius: 4, pointBackgroundColor: '#06b6d4' },
+                        { label: 'Ref FC Line', data: [], yAxisID: 'yTemp', borderColor: '#c084fc', borderDash: [4, 4], borderWidth: 1.5, pointRadius: 0, fill: false }
                     ]
                 },
                 options: {
@@ -1544,7 +1541,7 @@
 
         function updateChart() {
             if (!chartInstance) return;
-            let btData = [], rorData = [], refBtData = [], refRorData = [];
+            let btData = [], rorData = [], refBtData = [], refRorData = [], refFcLineData = [];
             let curFcTimeSec = (state.crackTime || 0) / 1000;
 
             state.recordedTemps.forEach(t => {
@@ -1562,6 +1559,14 @@
                     refBtData.push({ x: xVal, y: t.temp });
                     refRorData.push({ x: xVal, y: t.emaRoR || 0 });
                 });
+
+                if (state.selectedRefData.crackTime) {
+                    let refFcX = state.isFcAnchoredMode ? 0 : (refFcTimeSec / 60);
+                    refFcLineData = [
+                        { x: refFcX, y: 50 },
+                        { x: refFcX, y: 230 }
+                    ];
+                }
             }
 
             let targetData = state.isTargetGuideOn ? generateTargetCurve(state.isFcAnchoredMode, curFcTimeSec) : [];
@@ -1574,6 +1579,7 @@
             chartInstance.data.datasets[2].data = refBtData;
             chartInstance.data.datasets[3].data = refRorData;
             chartInstance.data.datasets[4].data = targetData;
+            chartInstance.data.datasets[5].data = refFcLineData;
             chartInstance.update('none');
         }
 
