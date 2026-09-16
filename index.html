@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>☕ NUCLEUS LINK PRO // MANUAL ROASTER</title>
+    <title>☕ NUCLEUS LINK PRO // MANUAL ROASTER V3.5</title>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -62,7 +62,7 @@
             position: relative;
         }
 
-        /* 신규: 네온 팝업 알림 배너 */
+        /* 네온 팝업 배너 */
         .toast-popup {
             position: fixed;
             top: 24px;
@@ -355,6 +355,32 @@
             padding-top: 12px;
         }
 
+        /* 1도, 2도, 5도 증감 버튼 스타일 */
+        .temp-step-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        .btn-step {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--amber);
+            font-weight: 700;
+            font-family: var(--font-mono);
+            padding: 8px 0;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.15s ease;
+        }
+
+        .btn-step:hover, .btn-step:active {
+            background: var(--amber);
+            color: #000;
+        }
+
         .temp-input-row {
             display: flex;
             gap: 8px;
@@ -368,11 +394,12 @@
         .temp-input-ctrl {
             flex: 1;
             text-align: center;
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             font-weight: 700;
             font-family: var(--font-mono);
             border: none;
             background: transparent;
+            color: #fff;
         }
 
         .btn-record-temp {
@@ -435,6 +462,22 @@
         }
 
         .side-panel { display: flex; flex-direction: column; gap: 16px; }
+
+        /* 가독성 개편 퀵 리포트 영역 */
+        .log-content {
+            flex: 1;
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            line-height: 1.7;
+            color: var(--text-main);
+            background: var(--bg-input);
+            padding: 14px;
+            border-radius: var(--radius-md);
+            overflow-y: auto;
+            white-space: pre-wrap;
+            border: 1px solid var(--border);
+            height: 160px;
+        }
 
         .db-search-bar {
             display: flex;
@@ -502,6 +545,8 @@
 
         .hist-btn.ref { border-color: var(--amber); color: var(--amber); }
         .hist-btn.ref.active { background: var(--amber); color: #000; font-weight: bold; }
+        .hist-btn.target { border-color: var(--cyan); color: var(--cyan); }
+        .hist-btn.target.active { background: var(--cyan); color: #000; font-weight: bold; }
         .hist-btn.delete:hover { border-color: var(--rose); color: var(--rose); }
 
         .hist-body {
@@ -523,7 +568,7 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- 신규: 네온 팝업 배너 -->
+        <!-- 네온 팝업 배너 -->
         <div id="toastPopup" class="toast-popup">
             <span id="toastIcon">🔔</span>
             <span id="toastMsg">150°C Maillard Phase Entry!</span>
@@ -552,7 +597,7 @@
         <div class="cockpit-grid">
             <div class="card">
                 <div class="section-header" style="justify-content: center; margin-bottom: 0;">
-                    <span class="section-title" style="font-size: 0.85rem; letter-spacing: 1px;">ROASTING COCKPIT V3.0</span>
+                    <span class="section-title" style="font-size: 0.85rem; letter-spacing: 1px;">ROASTING COCKPIT V3.5</span>
                 </div>
                 <div class="timer-container">
                     <div class="timer-display" id="timerDisplay">00:00.0</div>
@@ -622,10 +667,23 @@
                     <span class="btn-key">E</span>
                 </button>
 
+                <!-- 수동 온도 입력 및 1도/2도/5도 증감 버튼 패널 -->
                 <div class="temp-ctrl-box">
-                    <div class="section-title" style="font-size:0.8rem;">📍 수동 온도 구간 기록 (5°C Step / 키보드)</div>
+                    <div class="section-title" style="font-size:0.8rem; display:flex; justify-content:space-between;">
+                        <span>📍 수동 온도 구간 기록</span>
+                        <span style="color:var(--text-muted); font-size:0.75rem;">기본 70°C 시작</span>
+                    </div>
+
+                    <!-- 1도 / 2도 / 5도 빠른 조절 버튼 -->
+                    <div class="temp-step-row">
+                        <button class="btn-step" id="btnSub1">- 1°C</button>
+                        <button class="btn-step" id="btnAdd1">+ 1°C</button>
+                        <button class="btn-step" id="btnAdd2">+ 2°C</button>
+                        <button class="btn-step" id="btnAdd5">+ 5°C</button>
+                    </div>
+
                     <div class="temp-input-row">
-                        <input type="number" id="customTempInput" class="temp-input-ctrl" value="100" step="5">
+                        <input type="number" id="customTempInput" class="temp-input-ctrl" value="70" step="1">
                         <span style="display:flex; align-items:center; font-weight:bold; color:var(--text-muted);">°C</span>
                         <button id="btnRecordTemp" class="btn-record-temp">기록 (Enter)</button>
                     </div>
@@ -638,11 +696,15 @@
             <div class="card">
                 <div class="section-header">
                     <span class="section-title" id="chartTitleText">📉 프로파일 프로젝션</span>
-                    <div style="display:flex; gap:8px; align-items:center;">
-                        <button id="btnToggleFCAnchor" class="hist-btn" style="border-color:var(--amber); color:var(--amber);">
-                            ⚓ FC Anchored 오버레이: OFF
+                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                        <button id="btnToggleTargetGuide" class="hist-btn target">
+                            🎯 AI 추천 타겟: ON
                         </button>
-                        <span style="font-size:0.75rem; color:var(--purple); display:none;" id="refLegend">● 레퍼런스 가이드</span>
+                        <button id="btnToggleFCAnchor" class="hist-btn" style="border-color:var(--amber); color:var(--amber);">
+                            ⚓ FC Anchored 정렬: OFF
+                        </button>
+                        <span style="font-size:0.75rem; color:var(--purple); display:none;" id="refLegend">● 히스토리 가이드</span>
+                        <span style="font-size:0.75rem; color:var(--cyan);" id="targetLegend">--- AI 추천 타겟</span>
                     </div>
                 </div>
                 <div class="chart-box">
@@ -731,7 +793,6 @@
             });
         }
 
-        // Web Audio API 비프음 생성기
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playBeepSound(freq = 880, count = 2) {
             if (audioCtx.state === 'suspended') { audioCtx.resume(); }
@@ -743,26 +804,19 @@
                     osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
                     gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.18);
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.18);
+                    osc.connect(gain); gain.connect(audioCtx.destination);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.18);
                 }, i * 220);
             }
         }
 
-        // 네온 팝업 배너 알림 함수
         function showToastPopup(msg, icon = '🔔', borderColor = '#f59e0b') {
             const popup = document.getElementById('toastPopup');
             const toastMsg = document.getElementById('toastMsg');
             const toastIcon = document.getElementById('toastIcon');
-            
-            toastIcon.textContent = icon;
-            toastMsg.textContent = msg;
-            popup.style.borderColor = borderColor;
-            popup.style.boxShadow = `0 0 30px ${borderColor}55`;
+            toastIcon.textContent = icon; toastMsg.textContent = msg;
+            popup.style.borderColor = borderColor; popup.style.boxShadow = `0 0 30px ${borderColor}55`;
             popup.classList.add('show');
-            
             setTimeout(() => { popup.classList.remove('show'); }, 3200);
         }
 
@@ -783,8 +837,10 @@
             rorMatchVal: document.getElementById('rorMatchVal'),
             
             btnToggleFCAnchor: document.getElementById('btnToggleFCAnchor'),
+            btnToggleTargetGuide: document.getElementById('btnToggleTargetGuide'),
             chartTitleText: document.getElementById('chartTitleText'),
             refLegend: document.getElementById('refLegend'),
+            targetLegend: document.getElementById('targetLegend'),
             
             start: document.getElementById('btnStart'),
             crack: document.getElementById('btnCrack'),
@@ -798,6 +854,10 @@
             memo: document.getElementById('memoInput'),
             
             customTempInput: document.getElementById('customTempInput'),
+            btnSub1: document.getElementById('btnSub1'),
+            btnAdd1: document.getElementById('btnAdd1'),
+            btnAdd2: document.getElementById('btnAdd2'),
+            btnAdd5: document.getElementById('btnAdd5'),
             btnRecordTemp: document.getElementById('btnRecordTemp'),
             dynamicTags: document.getElementById('dynamicTags'),
             
@@ -817,15 +877,18 @@
             isRunning: false, startTime: null, elapsed: 0, crackTime: null, crackTemp: null, endTime: null, animId: null,
             recordedTemps: [],
             devTimeSec: 0, devDeltaTemp: 0, rorFC: 0, relativeAUC: 0, effectiveAUC: 0, currentEmaRoR: 0,
-            selectedRefData: null, isFcAnchoredMode: false, refLogId: null,
-            
-            // 신규: 알람 상태 플래그
-            alert150Triggered: false,
-            alert170Triggered: false
+            selectedRefData: null, isFcAnchoredMode: false, isTargetGuideOn: true, refLogId: null,
+            alert150Triggered: false, alert170Triggered: false
         };
 
         const fmtMs = ms => ms === null ? '--' : `${String(Math.floor(ms/60000)).padStart(2,'0')}:${String(Math.floor((ms/1000)%60)).padStart(2,'0')}.${Math.floor((ms/100)%10)}`;
         const fmtShort = ms => ms === null ? '--' : `${String(Math.floor(ms/60000)).padStart(2,'0')}:${String(Math.floor(ms/1000)%60).padStart(2,'0')}`;
+
+        // 수동 온도 버튼 동작 연동
+        els.btnSub1.onclick = () => { els.customTempInput.value = Math.max(0, parseInt(els.customTempInput.value || 70) - 1); };
+        els.btnAdd1.onclick = () => { els.customTempInput.value = parseInt(els.customTempInput.value || 70) + 1; };
+        els.btnAdd2.onclick = () => { els.customTempInput.value = parseInt(els.customTempInput.value || 70) + 2; };
+        els.btnAdd5.onclick = () => { els.customTempInput.value = parseInt(els.customTempInput.value || 70) + 5; };
 
         function applyEMASmoothing() {
             if (state.recordedTemps.length === 0) return;
@@ -916,15 +979,14 @@
             }
         }
 
-        // 신규: 150°C 및 170°C 도달 감지 및 알람 체크 로직
         function checkTemperatureAlarms(tempVal) {
             if (tempVal >= 150 && tempVal < 170 && !state.alert150Triggered) {
                 state.alert150Triggered = true;
-                playBeepSound(880, 2); // 2음계 사운드
+                playBeepSound(880, 2);
                 showToastPopup('150°C 도달! 메일라드(Maillard) 구간 진입', '🔥', '#f97316');
             } else if (tempVal >= 170 && !state.alert170Triggered) {
                 state.alert170Triggered = true;
-                playBeepSound(1046, 3); // 3음계 높은 사운드
+                playBeepSound(1046, 3);
                 showToastPopup('170°C 도달! 카라멜화 가속 / 1차 크랙 준비', '⚡', '#f59e0b');
             }
         }
@@ -972,7 +1034,7 @@
             state.devTimeSec = 0; state.devDeltaTemp = 0; state.relativeAUC = 0; state.effectiveAUC = 0;
             state.alert150Triggered = false; state.alert170Triggered = false;
             
-            els.customTempInput.value = 100; 
+            els.customTempInput.value = 70; 
             els.start.classList.remove('running'); els.crack.classList.remove('done'); els.end.classList.remove('done');
             els.dtrInput.value = ''; updateUI();
         }
@@ -1039,7 +1101,7 @@
 
                 const copyBtn = document.createElement('button'); copyBtn.className = 'hist-btn'; copyBtn.textContent = '복사';
                 copyBtn.onclick = function(e) {
-                    e.stopPropagation(); const ta = document.createElement('textarea'); ta.value = log.logText;
+                    e.stopPropagation(); const ta = document.createElement("textarea"); ta.value = log.logText;
                     document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); this.textContent = '✅'; setTimeout(() => { this.textContent = '복사'; }, 2000); } catch(err) {} document.body.removeChild(ta);
                 };
                 
@@ -1071,6 +1133,14 @@
             updateChart();
         };
 
+        els.btnToggleTargetGuide.onclick = () => {
+            state.isTargetGuideOn = !state.isTargetGuideOn;
+            els.btnToggleTargetGuide.textContent = `🎯 AI 추천 타겟: ${state.isTargetGuideOn ? 'ON' : 'OFF'}`;
+            els.btnToggleTargetGuide.style.borderColor = state.isTargetGuideOn ? 'var(--cyan)' : 'rgba(255,255,255,0.1)';
+            els.targetLegend.style.display = state.isTargetGuideOn ? 'inline' : 'none';
+            updateChart();
+        };
+
         els.dtrInput.addEventListener('change', (e) => {
             if (!state.crackTime) { alert('1차 크랙 시간이 먼저 기록되어야 역계산이 가능합니다.'); updateUI(); return; }
             const val = parseFloat(e.target.value); if (isNaN(val) || val <= 0 || val >= 100) { updateUI(); return; }
@@ -1084,7 +1154,7 @@
             if (state.crackTime || (!state.isRunning && !state.elapsed)) return; 
             state.crackTime = state.elapsed; 
             let lastRec = state.recordedTemps.length > 0 ? state.recordedTemps[state.recordedTemps.length - 1] : null;
-            state.crackTemp = lastRec ? lastRec.temp : 198;
+            state.crackTemp = lastRec ? lastRec.temp : 190;
             state.rorFC = state.currentEmaRoR || 10.0;
             els.rorFCDisplay.textContent = `${state.rorFC.toFixed(1)}°/m`;
             els.crack.classList.add('done'); updateUI(); 
@@ -1135,30 +1205,58 @@
             renderTempTags(); updateLog(); updateChart();
         }
 
+        // 퀵 리포트 가독성 개편 함수 (들여쓰기 및 단락 레이아웃 적용)
         function updateLog() {
             if (!state.elapsed && !state.endTime) { els.log.textContent = "아직 기록이 없습니다. 스페이스바를 눌러 시작하세요."; return; }
-            let t = `[차세대 로스팅 프로파일 리포트]\n---------------------------------\n📅 일시: ${new Date().toLocaleString('ko-KR')}\n☕ 원두: ${els.bean.value || '미입력'}\n`;
-            if (els.gw.value && els.rw.value) t += `⚖️ 중량: 투입 ${els.gw.value}g -> 배출 ${els.rw.value}g | WL: ${els.wl.textContent}%\n`;
-            t += `---------------------------------\n`;
             
-            if (els.chkShowIntervals.checked) {
-                t += `\n[구간 상세 기록]\n`;
-                let prevTime = 0;
-                state.recordedTemps.forEach(item => { t += `- ${item.temp}°C : ${fmtShort(item.time)} (EMA RoR: +${item.emaRoR}°/m)\n`; prevTime = item.time; });
+            let t = `☕ NUCLEUS ROASTING REPORT\n`;
+            t += `═══════════════════════════════════════\n`;
+            t += ` 📅 일시 : ${new Date().toLocaleString('ko-KR')}\n`;
+            t += ` ☕ 원두 : ${els.bean.value || '미입력 원두'}\n`;
+            if (els.gw.value && els.rw.value) {
+                t += ` ⚖️ 중량 : 투입 ${els.gw.value}g  ➔  배출 ${els.rw.value}g  (WL: ${els.wl.textContent}%)\n`;
+            }
+            t += `───────────────────────────────────────\n\n`;
+            
+            t += `📍 주요 이벤트 시점\n`;
+            if (state.crackTime) {
+                t += `   • 💥 1차 크랙 : ${fmtShort(state.crackTime)}  (${state.crackTemp}°C | RoR_FC: +${state.rorFC.toFixed(1)}°/m)\n`;
+            } else {
+                t += `   • 💥 1차 크랙 : 미기록\n`;
+            }
+            if (state.endTime) {
+                t += `   • 🏁 배출 완료 : ${fmtShort(state.endTime)}\n`;
+            } else {
+                t += `   • 🏁 배출 완료 : 진행 중...\n`;
             }
 
-            if (state.crackTime) t += `\n💥 1차 크랙 : ${fmtShort(state.crackTime)} (${state.crackTemp}°C | RoR_FC: +${state.rorFC.toFixed(1)}°/m)\n`;
-            if (state.endTime) t += `🏁 배출 완료 : ${fmtShort(state.endTime)}\n`;
-            
-            if (state.crackTime && state.endTime) {
-                t += `\n[절대 개발 지표 (Nucleus Metrics)]\n⏱️ 절대 개발시간 (t_dev): ${state.devTimeSec}초\n🔥 개발 상승온도 (ΔT_dev): +${state.devDeltaTemp}°C\n⚡ 크랙 관성 (RoR_FC): ${state.rorFC.toFixed(1)}°C/min\n📊 실질 적분열량 (Eff.AUC): ${state.effectiveAUC} °C·s\n📈 보조 DTR: ${els.dtrInput.value}%\n`;
+            if (els.chkShowIntervals.checked && state.recordedTemps.length > 0) {
+                t += `\n📌 구간 상세 온도 기록\n`;
+                state.recordedTemps.forEach(item => {
+                    t += `   - ${String(item.temp).padStart(3, ' ')}°C  │  시간: ${fmtShort(item.time)}  │  EMA RoR: +${item.emaRoR}°/m\n`;
+                });
+            }
+
+            if (state.crackTime && (state.endTime || state.elapsed)) {
+                t += `\n🎯 절대 개발 지표 (Nucleus Metrics)\n`;
+                t += `   • ⏱️ 절대 개발시간 (t_dev)  : ${state.devTimeSec} 초\n`;
+                t += `   • 🔥 개발 상승온도 (ΔT_dev) : +${state.devDeltaTemp} °C\n`;
+                t += `   • ⚡ 크랙 관성 (RoR_FC)     : ${state.rorFC.toFixed(1)} °C/min\n`;
+                t += `   • 📊 실질 적분열량 (Eff.AUC): ${state.effectiveAUC} °C·s\n`;
+                t += `   • 📈 보조 참조 DTR          : ${els.dtrInput.value || '--'} %\n`;
             }
 
             if (state.selectedRefData) {
-                t += `\n[가이드 레퍼런스 개발 동등성]\n🎯 종합 동등성: ${els.matchScoreVal.textContent}\n`;
+                t += `\n🎯 가이드 레퍼런스 개발 동등성\n`;
+                t += `   • 종합 Dev Match : ${els.matchScoreVal.textContent}\n`;
             }
 
-            if (els.memo.value) t += `\n[메모]\n${els.memo.value}\n`;
+            if (els.memo.value) {
+                t += `\n📝 로스팅 메모\n`;
+                t += `   ${els.memo.value.replace(/\n/g, '\n   ')}\n`;
+            }
+            t += `═══════════════════════════════════════`;
+
             els.log.textContent = t;
         }
 
@@ -1167,6 +1265,7 @@
             document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); this.textContent = '✅ 완료!'; setTimeout(() => { this.textContent = '복사'; }, 2000); } catch(e) {} document.body.removeChild(ta);
         };
 
+        // Chart.js 오버레이 시스템 (라이브 / 레퍼런스 가이드 / AI 추천 타겟 가이드)
         let chartInstance = null;
         function initChart() {
             const ctx = document.getElementById('roastChart').getContext('2d');
@@ -1174,10 +1273,11 @@
                 type: 'line',
                 data: {
                     datasets: [
-                        { label: 'BT (°C)', data: [], yAxisID: 'yTemp', borderColor: '#f59e0b', backgroundColor: 'transparent', borderWidth: 3, tension: 0.2, pointRadius: 3, pointBackgroundColor: '#f59e0b' },
+                        { label: 'BT (°C)', data: [], yAxisID: 'yTemp', borderColor: '#f59e0b', backgroundColor: 'transparent', borderWidth: 3, tension: 0.2, pointRadius: 4, pointBackgroundColor: '#f59e0b' },
                         { label: 'EMA RoR (°C/min)', data: [], yAxisID: 'yRoR', borderColor: '#10b981', borderDash: [5, 4], borderWidth: 2, tension: 0.3, pointRadius: 0 },
-                        { label: 'Ref BT', data: [], yAxisID: 'yTemp', borderColor: '#c084fc', borderDash: [3, 3], borderWidth: 2, tension: 0.2, pointRadius: 0 },
-                        { label: 'Ref RoR', data: [], yAxisID: 'yRoR', borderColor: '#38bdf8', borderDash: [2, 4], borderWidth: 1.5, tension: 0.3, pointRadius: 0 }
+                        { label: 'Ref BT', data: [], yAxisID: 'yTemp', borderColor: '#c084fc', borderDash: [3, 3], borderWidth: 2, tension: 0.2, pointRadius: 5, pointBackgroundColor: '#c084fc' },
+                        { label: 'Ref RoR', data: [], yAxisID: 'yRoR', borderColor: '#38bdf8', borderDash: [2, 4], borderWidth: 1.5, tension: 0.3, pointRadius: 0 },
+                        { label: 'AI Target BT', data: [], yAxisID: 'yTemp', borderColor: '#06b6d4', borderDash: [6, 6], borderWidth: 2, tension: 0.25, pointRadius: 5, pointBackgroundColor: '#06b6d4' }
                     ]
                 },
                 options: {
@@ -1205,11 +1305,26 @@
             });
         }
 
+        // AI 추천 타겟 가이드 곡선 생성기 (FC 190°C / RoR_FC 12.0°/m / t_dev 60s / ΔT 6.5°C)
+        function generateTargetCurve(isAnchored, curFcTimeSec) {
+            let targetPoints = [
+                { time: 0, temp: 70 }, { time: 60, temp: 100 }, { time: 180, temp: 150 },
+                { time: 270, temp: 170 }, { time: 375, temp: 190 }, { time: 435, temp: 196.5 }
+            ];
+            let targetFcSec = 375; // 06:15 FC Target
+
+            return targetPoints.map(p => {
+                let xVal = isAnchored ? (p.time - targetFcSec) : (p.time / 60);
+                return { x: xVal, y: p.temp };
+            });
+        }
+
         function updateChart() {
             if (!chartInstance) return;
             let btData = [], rorData = [], refBtData = [], refRorData = [];
             let curFcTimeSec = (state.crackTime || 0) / 1000;
 
+            // 1. 현재 진행 BT 및 RoR
             state.recordedTemps.forEach(t => {
                 let timeSec = t.time / 1000;
                 let xVal = state.isFcAnchoredMode ? (timeSec - curFcTimeSec) : (timeSec / 60);
@@ -1217,6 +1332,7 @@
                 rorData.push({ x: xVal, y: t.emaRoR });
             });
 
+            // 2. 레퍼런스(과거 DB) 데이터 및 FC 크랙 체크 지점 강조
             if (state.selectedRefData && state.selectedRefData.recordedTemps) {
                 let refFcTimeSec = (state.selectedRefData.crackTime || 0) / 1000;
                 state.selectedRefData.recordedTemps.forEach(t => {
@@ -1227,6 +1343,9 @@
                 });
             }
 
+            // 3. AI 추천 타겟 프로파일
+            let targetData = state.isTargetGuideOn ? generateTargetCurve(state.isFcAnchoredMode, curFcTimeSec) : [];
+
             chartInstance.options.scales.x.title.text = state.isFcAnchoredMode ? '1차 크랙(FC) 기준 상대시간 (초)' : '경과 시간 (분)';
             chartInstance.options.scales.x.ticks.callback = v => state.isFcAnchoredMode ? `${v > 0 ? '+' : ''}${v.toFixed(0)}s` : `${v.toFixed(1)}m`;
 
@@ -1234,6 +1353,7 @@
             chartInstance.data.datasets[1].data = rorData;
             chartInstance.data.datasets[2].data = refBtData;
             chartInstance.data.datasets[3].data = refRorData;
+            chartInstance.data.datasets[4].data = targetData;
             chartInstance.update('none');
         }
 
