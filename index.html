@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>☕ Samuel Kim // MANUAL ROASTER V4.2</title>
+    <title>☕ Samuel Kim // MANUAL ROASTER V5.0</title>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -152,7 +152,34 @@
             flex: 1;
             padding: 10px 14px;
             font-size: 0.95rem;
-            min-width: 200px;
+            min-width: 180px;
+        }
+
+        /* 가공방식 선택 칩 패널 */
+        .process-chips {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .process-chip {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .process-chip.active {
+            background: rgba(6, 182, 212, 0.15);
+            border-color: var(--cyan);
+            color: var(--cyan);
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
         }
 
         .weight-group {
@@ -562,6 +589,11 @@
             flex-shrink: 0;
         }
 
+        .history-item.is-fav {
+            border-color: rgba(245, 158, 11, 0.5);
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.1);
+        }
+
         .history-item.expanded { border-color: var(--amber); }
         
         .hist-header {
@@ -580,11 +612,28 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 50%;
+            max-width: 45%;
         }
 
-        .hist-actions { display: flex; gap: 4px; }
+        .hist-actions { display: flex; gap: 4px; align-items: center; }
         
+        .btn-fav-star {
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            cursor: pointer;
+            color: var(--text-dim);
+            padding: 0 4px;
+            transition: transform 0.2s;
+        }
+
+        .btn-fav-star.active {
+            color: var(--amber);
+            text-shadow: 0 0 8px var(--amber-glow);
+        }
+
+        .btn-fav-star:active { transform: scale(1.3); }
+
         .hist-btn {
             background: rgba(255,255,255,0.05);
             border: 1px solid var(--border);
@@ -633,6 +682,16 @@
             <div class="meta-inputs">
                 <div class="date-display" id="dateDisplay" style="font-family:var(--font-mono); font-size:0.9rem; color:var(--text-muted);">2026.00.00</div>
                 <input type="text" id="beanInput" class="bean-input" placeholder="생두 프로파일 / 로스팅 목표 입력">
+                
+                <!-- 가공방식 클릭 선택 칩 패널 -->
+                <div class="process-chips">
+                    <button class="process-chip active" data-process="Washed">워시드</button>
+                    <button class="process-chip" data-process="Natural">내추럴</button>
+                    <button class="process-chip" data-process="Decaf">디카페인</button>
+                    <button class="process-chip" data-process="Anaerobic">무산소</button>
+                    <button class="process-chip" data-process="Infused">인퓨즈드</button>
+                </div>
+
                 <div class="weight-group">
                     <span style="font-size:0.8rem; color:var(--text-muted)">중량:</span>
                     <input type="number" id="greenWeight" class="weight-input" placeholder="생두">
@@ -646,13 +705,12 @@
         <div class="cockpit-grid">
             <div class="card">
                 <div class="section-header" style="justify-content: center; margin-bottom: 0;">
-                    <span class="section-title" style="font-size: 0.85rem; letter-spacing: 1px;">ROASTING COCKPIT V4.2</span>
+                    <span class="section-title" style="font-size: 0.85rem; letter-spacing: 1px;">ROASTING COCKPIT V5.0</span>
                 </div>
                 <div class="timer-container">
                     <div class="timer-display" id="timerDisplay">00:00.0</div>
                 </div>
 
-                <!-- AI 코파일럿 조종석 HUD 카드 -->
                 <div class="copilot-card" id="coPilotCard">
                     <div class="copilot-head">
                         <div class="copilot-title">
@@ -734,6 +792,7 @@
                         <span style="color:var(--text-muted); font-size:0.75rem;">기본 70°C 시작</span>
                     </div>
 
+                    <!-- 1도 / 2도 / 5도 증감 누적 버튼 -->
                     <div class="temp-step-row">
                         <button class="btn-step" id="btnSub1">- 1°C</button>
                         <button class="btn-step" id="btnAdd1">+ 1°C</button>
@@ -838,7 +897,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBHtXxGLGEvDIbhiZffwTokk3YdCBHEuxU",
@@ -865,7 +924,7 @@
 
         function loadHistoryFromDB() {
             if (!db) return;
-            const logsRef = query(collection(db, 'artifacts', appId, 'users', 'Samuel', 'roastingLogs'), orderBy('timestamp', 'desc'), limit(20));
+            const logsRef = query(collection(db, 'artifacts', appId, 'users', 'Samuel', 'roastingLogs'), orderBy('timestamp', 'desc'), limit(25));
             onSnapshot(logsRef, (snapshot) => {
                 dbLogs = [];
                 snapshot.forEach(doc => { dbLogs.push({ id: doc.id, ...doc.data() }); });
@@ -970,7 +1029,8 @@
             recordedTemps: [],
             devTimeSec: 0, devDeltaTemp: 0, rorFC: 0, relativeAUC: 0, effectiveAUC: 0, currentEmaRoR: 0,
             selectedRefData: null, isFcAnchoredMode: false, isTargetGuideOn: true, refLogId: null,
-            alert150Triggered: false, alert170Triggered: false
+            alert150Triggered: false, alert170Triggered: false,
+            processMethod: 'Washed' // 기본 가공 방식
         };
 
         const fmtMs = ms => ms === null ? '--' : `${String(Math.floor(ms/60000)).padStart(2,'0')}:${String(Math.floor((ms/1000)%60)).padStart(2,'0')}.${Math.floor((ms/100)%10)}`;
@@ -982,6 +1042,17 @@
             return (parseInt(parts[0]) * 60) + parseInt(parts[1]);
         }
 
+        // 가공방식 버튼 클릭 이벤트 연결
+        document.querySelectorAll('.process-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('.process-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                state.processMethod = chip.dataset.process;
+                updateCoPilotGuidance(); updateLog(); updateChart();
+            });
+        });
+
+        // 온도 수동 증감 버튼 로직 (입력창 온도 기준 누적 덧셈)
         els.btnSub1.onclick = () => { els.customTempInput.value = Math.max(0, parseInt(els.customTempInput.value || 70) - 1); };
         els.btnAdd1.onclick = () => { els.customTempInput.value = parseInt(els.customTempInput.value || 70) + 1; };
         els.btnAdd2.onclick = () => { els.customTempInput.value = parseInt(els.customTempInput.value || 70) + 2; };
@@ -991,16 +1062,42 @@
             input.addEventListener('input', updateChart);
         });
 
+        // 실시간 목표 BT 산출 (레퍼런스 연결 시 내 실전 데이터 우선 추적)
         function getTargetBTAtTime(elapsedSec) {
+            // 1. 레퍼런스(예: 키이 3차)가 지정되어 있을 경우, 내 실전 데이터 곡선을 100% 추적!
+            if (state.selectedRefData && state.selectedRefData.recordedTemps && state.selectedRefData.recordedTemps.length > 0) {
+                let recs = state.selectedRefData.recordedTemps;
+                let t0 = recs[0].time / 1000;
+                let tLast = recs[recs.length - 1].time / 1000;
+                
+                if (elapsedSec <= t0) return recs[0].temp;
+                if (elapsedSec >= tLast) return recs[recs.length - 1].temp;
+
+                for (let i = 0; i < recs.length - 1; i++) {
+                    let t1 = recs[i].time / 1000;
+                    let t2 = recs[i+1].time / 1000;
+                    if (elapsedSec >= t1 && elapsedSec <= t2) {
+                        let ratio = (elapsedSec - t1) / (t2 - t1);
+                        return recs[i].temp + ratio * (recs[i+1].temp - recs[i].temp);
+                    }
+                }
+            }
+
+            // 2. 레퍼런스가 없을 때: AI 기본 타겟 곡선 (가공 방식에 맞는 기울기 반영)
             let targetFcSec = parseMMSS(els.targetFcTimeInput.value);
             let targetFcTemp = parseFloat(els.targetFcTempInput.value) || 192;
             let targetDevSec = parseFloat(els.targetDevTimeInput.value) || 60;
             let targetDeltaTemp = parseFloat(els.targetDeltaTempInput.value) || 5.5;
 
+            // 가공 방식별 마이아르 진입 속도 조정
+            let m150Ratio = 0.45; // Washed (고밀도 빠르게)
+            if (state.processMethod === 'Natural' || state.processMethod === 'Decaf') m150Ratio = 0.50;
+            if (state.processMethod === 'Anaerobic' || state.processMethod === 'Infused') m150Ratio = 0.52;
+
             let points = [
                 { time: 0, temp: 70 },
                 { time: targetFcSec * 0.15, temp: 100 },
-                { time: targetFcSec * 0.48, temp: 150 },
+                { time: targetFcSec * m150Ratio, temp: 150 },
                 { time: targetFcSec * 0.72, temp: 170 },
                 { time: targetFcSec, temp: targetFcTemp },
                 { time: targetFcSec + targetDevSec, temp: targetFcTemp + targetDeltaTemp }
@@ -1018,13 +1115,14 @@
             return 100;
         }
 
+        // AI 코파일럿 조종 가이드 엔진 (내 실전 데이터 기반 정밀 조언)
         function updateCoPilotGuidance() {
             if (!state.isRunning && state.elapsed === 0) {
                 els.pilotStatusBadge.textContent = "READY";
                 els.pilotStatusBadge.style.color = "var(--emerald)";
                 els.pilotStatusBadge.style.borderColor = "var(--emerald)";
                 els.pilotCommandText.textContent = "로스팅 시작 대기 중입니다. 스페이스바를 누르세요.";
-                els.pilotDetailText.textContent = "목표 타겟 곡선과 실시간 온도를 자동 분석합니다.";
+                els.pilotDetailText.textContent = `가공방식: ${state.processMethod} | ${state.selectedRefData ? '📌 내 레퍼런스 데이터 추적' : '🎯 AI 타겟 추적'}`;
                 return;
             }
 
@@ -1033,13 +1131,14 @@
             let lastRecorded = state.recordedTemps.length > 0 ? state.recordedTemps[state.recordedTemps.length - 1] : null;
             let curBT = lastRecorded ? lastRecorded.temp : 70;
             let diff = curBT - targetBT;
+            let refModeText = state.selectedRefData ? "[레퍼런스 추적]" : `[${state.processMethod} AI 타겟]`;
 
             if (curBT >= 143 && curBT < 150) {
                 els.pilotStatusBadge.textContent = "PHASE PREPARE";
                 els.pilotStatusBadge.style.color = "var(--amber)";
                 els.pilotStatusBadge.style.borderColor = "var(--amber)";
                 els.pilotCommandText.textContent = "🔥 메일라드 구간 준비: 150°C 알람 시 가스 15% 1차 감축";
-                els.pilotDetailText.textContent = `현재 BT: ${curBT}°C | 타겟 목표: ${targetBT.toFixed(1)}°C`;
+                els.pilotDetailText.textContent = `${refModeText} 현재 BT: ${curBT}°C | 목표: ${targetBT.toFixed(1)}°C`;
                 return;
             }
 
@@ -1048,7 +1147,7 @@
                 els.pilotStatusBadge.style.color = "var(--amber)";
                 els.pilotStatusBadge.style.borderColor = "var(--amber)";
                 els.pilotCommandText.textContent = "⚡ 카라멜화 구간 준비: 170°C 알람 시 가스 50% 2차 감축";
-                els.pilotDetailText.textContent = `현재 BT: ${curBT}°C | 타겟 목표: ${targetBT.toFixed(1)}°C`;
+                els.pilotDetailText.textContent = `${refModeText} 현재 BT: ${curBT}°C | 목표: ${targetBT.toFixed(1)}°C`;
                 return;
             }
 
@@ -1057,7 +1156,7 @@
                 els.pilotStatusBadge.style.color = "var(--cyan)";
                 els.pilotStatusBadge.style.borderColor = "var(--cyan)";
                 els.pilotCommandText.textContent = "💥 1차 크랙 연착륙: 가스 40~45% 감축 (RoR_FC +12°C/m 목표)";
-                els.pilotDetailText.textContent = `현재 BT: ${curBT}°C | 1차 크랙 예상 온도: 190~192°C`;
+                els.pilotDetailText.textContent = `${refModeText} 현재 BT: ${curBT}°C | 1차 크랙 예상: 190~192°C`;
                 return;
             }
 
@@ -1070,36 +1169,37 @@
                 return;
             }
 
+            // 실전 데이터 오차 기반 조언
             if (diff > 2.5) {
                 els.pilotStatusBadge.textContent = "OVERHEAT";
                 els.pilotStatusBadge.style.color = "var(--rose)";
                 els.pilotStatusBadge.style.borderColor = "var(--rose)";
-                els.pilotCommandText.textContent = "🔥 속도가 너무 빠릅니다! 가스 15% 이상 감축 필요";
-                els.pilotDetailText.textContent = `타겟 대비 +${diff.toFixed(1)}°C 과열됨 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
+                els.pilotCommandText.textContent = "🔥 속도가 빠릅니다! 가스 15% 감축 필요";
+                els.pilotDetailText.textContent = `${refModeText} +${diff.toFixed(1)}°C 과열 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
             } else if (diff > 0.8) {
                 els.pilotStatusBadge.textContent = "SLIGHTLY FAST";
                 els.pilotStatusBadge.style.color = "var(--amber)";
                 els.pilotStatusBadge.style.borderColor = "var(--amber)";
-                els.pilotCommandText.textContent = "📉 진행이 약간 빠릅니다. 가스를 5~10% 줄이세요.";
-                els.pilotDetailText.textContent = `타겟 대비 +${diff.toFixed(1)}°C 높음 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
+                els.pilotCommandText.textContent = "📉 진행이 약간 빠릅니다. 가스를 5% 미세 축소하세요.";
+                els.pilotDetailText.textContent = `${refModeText} +${diff.toFixed(1)}°C 높음 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
             } else if (diff < -2.5) {
                 els.pilotStatusBadge.textContent = "TOO SLOW";
                 els.pilotStatusBadge.style.color = "var(--cyan)";
                 els.pilotStatusBadge.style.borderColor = "var(--cyan)";
-                els.pilotCommandText.textContent = "❄️ 속도가 너무 느립니다! 가스 15% 이상 증량 필요";
-                els.pilotDetailText.textContent = `타겟 대비 ${diff.toFixed(1)}°C 미달됨 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
+                els.pilotCommandText.textContent = "❄️ 속도가 느립니다! 가스 15% 증량 필요";
+                els.pilotDetailText.textContent = `${refModeText} ${diff.toFixed(1)}°C 미달 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
             } else if (diff < -0.8) {
                 els.pilotStatusBadge.textContent = "SLIGHTLY SLOW";
                 els.pilotStatusBadge.style.color = "var(--cyan)";
                 els.pilotStatusBadge.style.borderColor = "var(--cyan)";
-                els.pilotCommandText.textContent = "📈 진행이 약간 느립니다. 가스를 5~10% 올려주세요.";
-                els.pilotDetailText.textContent = `타겟 대비 ${diff.toFixed(1)}°C 낮음 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
+                els.pilotCommandText.textContent = "📈 진행이 약간 느립니다. 가스를 5% 올려주세요.";
+                els.pilotDetailText.textContent = `${refModeText} ${diff.toFixed(1)}°C 낮음 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
             } else {
                 els.pilotStatusBadge.textContent = "ON TRACK";
                 els.pilotStatusBadge.style.color = "var(--emerald)";
                 els.pilotStatusBadge.style.borderColor = "var(--emerald)";
-                els.pilotCommandText.textContent = "🟢 최적 레일 순항 중! 현재 가스와 화력을 유지하세요.";
-                els.pilotDetailText.textContent = `타겟 오차 범위 내 안정 진입 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
+                els.pilotCommandText.textContent = "🟢 최적 프로파일 레일 순항 중! 현재 화력을 유지하세요.";
+                els.pilotDetailText.textContent = `${refModeText} 목표 오차 범위 내 안정 진입 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
             }
         }
 
@@ -1202,6 +1302,7 @@
             }
         }
 
+        // 수동 온도 기록 (자동 +5도 상승 로직 완전히 삭제!)
         function recordCustomTemp() {
             if (!state.isRunning && state.elapsed === 0) return;
             const tempVal = parseInt(els.customTempInput.value);
@@ -1212,7 +1313,7 @@
             else state.recordedTemps.push({ temp: tempVal, time: state.elapsed });
             
             state.recordedTemps.sort((a, b) => a.temp - b.temp);
-            els.customTempInput.value = tempVal + 5;
+            //els.customTempInput.value = tempVal + 5; // -> 불필요한 자동 5도 상승 코드 완전 삭제 완료!
             
             checkTemperatureAlarms(tempVal);
             applyEMASmoothing(); calculateAUC(); updateUI();
@@ -1259,9 +1360,10 @@
             if (!db) return; 
             try {
                 await addDoc(collection(db, 'artifacts', appId, 'users', 'Samuel', 'roastingLogs'), {
-                    title: `${dateStr} - ${beanName}`, logText: finalLog,
+                    title: `${dateStr} - [${state.processMethod}] ${beanName}`, logText: finalLog,
+                    isFavorite: false,
                     rawData: { 
-                        bean: beanName, recordedTemps: state.recordedTemps, 
+                        bean: beanName, processMethod: state.processMethod, recordedTemps: state.recordedTemps, 
                         crackTime: state.crackTime, crackTemp: state.crackTemp, rorFC: state.rorFC, endTime: state.endTime,
                         devTimeSec: state.devTimeSec, devDeltaTemp: state.devDeltaTemp, relativeAUC: state.relativeAUC, effectiveAUC: state.effectiveAUC
                     },
@@ -1272,17 +1374,28 @@
 
         els.dbSearchInput.addEventListener('input', renderHistory);
 
+        // 히스토리 렌더링 (즐겨찾기 별표 상단 고정 정렬 적용)
         function renderHistory() {
             els.historyContainer.innerHTML = '';
             const queryText = els.dbSearchInput.value.toLowerCase().trim();
-            const filteredLogs = dbLogs.filter(log => log.title && log.title.toLowerCase().includes(queryText));
+            
+            // 1. 별표 즐겨찾기(isFavorite) 항목을 최상단으로 우선 정렬
+            let sortedLogs = [...dbLogs].sort((a, b) => {
+                if (a.isFavorite && !b.isFavorite) return -1;
+                if (!a.isFavorite && b.isFavorite) return 1;
+                return (b.timestamp || 0) - (a.timestamp || 0);
+            });
+
+            const filteredLogs = sortedLogs.filter(log => log.title && log.title.toLowerCase().includes(queryText));
 
             if (filteredLogs.length === 0) {
                 els.historyContainer.innerHTML = '<div class="empty-msg" style="color: var(--text-dim); font-size: 0.85rem; text-align: center; margin-top: 20px;">검색된 로스팅 기록이 없습니다.</div>'; return;
             }
 
             filteredLogs.forEach(log => {
-                const histDiv = document.createElement('div'); histDiv.className = 'history-item';
+                const histDiv = document.createElement('div');
+                histDiv.className = `history-item ${log.isFavorite ? 'is-fav' : ''}`;
+                
                 const headerDiv = document.createElement('div'); headerDiv.className = 'hist-header';
                 headerDiv.onclick = (e) => {
                     if (e.target.tagName !== 'BUTTON') {
@@ -1291,9 +1404,24 @@
                         histDiv.classList.toggle('expanded', isHidden);
                     }
                 };
+
                 const titleSpan = document.createElement('div'); titleSpan.className = 'hist-title'; titleSpan.textContent = log.title;
                 const actionsDiv = document.createElement('div'); actionsDiv.className = 'hist-actions';
                 
+                // 별표(★) 즐겨찾기 토글 버튼
+                const favBtn = document.createElement('button');
+                favBtn.className = `btn-fav-star ${log.isFavorite ? 'active' : ''}`;
+                favBtn.innerHTML = log.isFavorite ? '★' : '☆';
+                favBtn.title = "베스트 프로파일 상단 고정";
+                favBtn.onclick = async (e) => {
+                    e.stopPropagation();
+                    if (!db) return;
+                    try {
+                        const logRef = doc(db, 'artifacts', appId, 'users', 'Samuel', 'roastingLogs', log.id);
+                        await updateDoc(logRef, { isFavorite: !log.isFavorite });
+                    } catch(err) {}
+                };
+
                 const refBtn = document.createElement('button');
                 refBtn.className = `hist-btn ref ${state.refLogId === log.id ? 'active' : ''}`;
                 refBtn.textContent = state.refLogId === log.id ? '가이드 해제' : '가이드 적용';
@@ -1322,6 +1450,7 @@
                     if(confirm("이 로그를 완전히 삭제할까요?")) { try { await deleteDoc(doc(db, 'artifacts', appId, 'users', 'Samuel', 'roastingLogs', log.id)); } catch(err) {} }
                 };
                 
+                actionsDiv.appendChild(favBtn);
                 actionsDiv.appendChild(refBtn); actionsDiv.appendChild(copyBtn); actionsDiv.appendChild(delBtn);
                 headerDiv.appendChild(titleSpan); headerDiv.appendChild(actionsDiv);
                 const bodyDiv = document.createElement('div'); bodyDiv.className = 'hist-body'; bodyDiv.textContent = log.logText;
@@ -1422,7 +1551,7 @@
             let t = `☕ SAMUEL KIM ROASTING REPORT\n`;
             t += `═══════════════════════════════════════\n`;
             t += ` 📅 일시 : ${new Date().toLocaleString('ko-KR')}\n`;
-            t += ` ☕ 원두 : ${els.bean.value || '미입력 원두'}\n`;
+            t += ` ☕ 원두 : [${state.processMethod}] ${els.bean.value || '미입력 원두'}\n`;
             if (els.gw.value && els.rw.value) {
                 t += ` ⚖️ 중량 : 투입 ${els.gw.value}g  ➔  배출 ${els.rw.value}g  (WL: ${els.wl.textContent}%)\n`;
             }
