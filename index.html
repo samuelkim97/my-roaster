@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>☕ Samuel Kim // REAL-TIME ROASTER V6.3.1 ENGINE</title>
+    <title>☕ Samuel Kim // REAL-TIME ROASTER V6.4 ENGINE</title>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -691,13 +691,13 @@
     <div class="app-container">
         <div id="toastPopup" class="toast-popup">
             <span id="toastIcon">🔔</span>
-            <span id="toastMsg">150°C Maillard Phase Entry!</span>
+            <span id="toastMsg">엔진 V6.4 활성화 완료</span>
         </div>
 
         <div class="card header-card">
             <div class="brand-title">
                 <span>☕ Samuel Kim</span>
-                <span class="sync-badge">REAL-TIME V6.3.1</span>
+                <span class="sync-badge">REAL-TIME V6.4</span>
             </div>
             <div class="meta-inputs">
                 <div class="date-display" id="dateDisplay" style="font-family:var(--font-mono); font-size:0.9rem; color:var(--text-muted);">2026.00.00</div>
@@ -729,7 +729,7 @@
         <div class="cockpit-grid">
             <div class="card">
                 <div class="section-header" style="justify-content: center; margin-bottom: 0;">
-                    <span class="section-title" style="font-size: 0.85rem; letter-spacing: 1px; font-weight: bold; color: #fff; padding-bottom: 12px; display: block; text-align: center;">REAL-TIME COCKPIT V6.3.1</span>
+                    <span class="section-title" style="font-size: 0.85rem; letter-spacing: 1px; font-weight: bold; color: #fff; padding-bottom: 12px; display: block; text-align: center;">REAL-TIME COCKPIT V6.4 ENGINE</span>
                 </div>
                 <div class="timer-container">
                     <div class="timer-display" id="timerDisplay">00:00.0</div>
@@ -891,8 +891,8 @@
                     <div class="section-header" style="margin-bottom: 12px; font-size: 0.85rem; font-weight: bold; color: var(--amber);">
                         <span>📋 이벤트 로그 (System Log)</span>
                     </div>
-                    <div class="log-content" id="sysLog">[SYSTEM] Samuel Kim 로스터 엔진 V6.3.1 초기화 완료.
-[AI COPILOT] 대기 모드. 로스팅 파라미터를 입력하세요.
+                    <div class="log-content" id="sysLog">[SYSTEM] Samuel Kim 로스터 엔진 V6.4 초기화 완료.
+[AI COPILOT] 수치적분 엔진 연동 완료. 로스팅 파라미터를 입력하세요.
 [CHART] 프로파일 프로젝션 렌더링 완료.</div>
                 </div>
                 
@@ -901,7 +901,7 @@
                         <span>📚 로스팅 히스토리 (History DB)</span>
                     </div>
                     <div class="db-search-bar">
-                        <input type="text" class="db-search-input" placeholder="생두명, 프로세싱 검색...">
+                        <input type="text" class="db-search-input" placeholder="생두명, 프로세싱 검색..." id="dbSearchInput">
                     </div>
                     <div id="historyContainer">
                         <!-- History Item 1 -->
@@ -941,66 +941,96 @@ DTR: 16.6%
         </div>
     </div>
 
+    <!-- V6.4 FULL ENGINE LOGIC -->
     <script>
-        // Set Current Date
+        // --- 1. Global State Management ---
+        const state = {
+            isRunning: false,
+            seconds: 0,
+            timerInterval: null,
+            phase: 'DRYING', // DRYING -> MAILLARD -> DEV
+            hasFirstCrack: false,
+            fcTimeSec: 0,
+            fcTemp: 0,
+            currentTemp: 70,
+            currentRoR: 20.0,
+            devTimeSec: 0,
+            devDeltaTemp: 0,
+            effectiveAUC: 0,
+            rorAtFC: 0,
+            targetGuideOn: true,
+            fcAnchorOn: false,
+            logs: []
+        };
+
+        // Date Display
         const dateOptions = { year: 'numeric', month: '2-digit', day: '2-digit' };
         document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('ko-KR', dateOptions);
 
-        // Chart.js Setup
+        // --- 2. Chart.js Initialization ---
         const ctx = document.getElementById('roastChart').getContext('2d');
+        const defaultXLabels = ['0:00', '1:00', '2:00', '3:00', '4:00', '5:00', '6:00', '7:00', '8:00'];
+        
         const roastChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['0:00', '1:00', '2:00', '3:00', '4:00', '5:00', '6:00', '7:00', '8:00'],
+                labels: defaultXLabels,
                 datasets: [
                     {
                         label: 'Bean Temp (BT)',
                         data: [70, 95, 120, 145, 165, 180, 192, 201, 205],
                         borderColor: '#f59e0b',
-                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                        borderWidth: 2,
-                        tension: 0.4,
+                        backgroundColor: 'rgba(245, 158, 11, 0.08)',
+                        borderWidth: 2.5,
+                        tension: 0.35,
                         yAxisID: 'y'
                     },
                     {
                         label: 'Rate of Rise (RoR)',
                         data: [25, 20, 15, 12, 10, 8, 5, 3, 2],
                         borderColor: '#06b6d4',
-                        backgroundColor: 'transparent',
                         borderWidth: 2,
-                        borderDash: [5, 5],
-                        tension: 0.4,
+                        borderDash: [4, 4],
+                        tension: 0.35,
                         yAxisID: 'y1'
+                    },
+                    {
+                        label: 'AI Target BT Curve',
+                        data: [70, 93, 118, 143, 164, 180, 192, 197.5, 202],
+                        borderColor: 'rgba(6, 182, 212, 0.6)',
+                        borderWidth: 1.5,
+                        borderDash: [2, 2],
+                        pointRadius: 0,
+                        tension: 0.35,
+                        yAxisID: 'y',
+                        hidden: false
                     }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: { duration: 250 },
                 interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { display: false }
-                },
+                plugins: { legend: { display: false } },
                 scales: {
                     x: {
                         grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: { color: '#9ca3af' }
+                        ticks: { color: '#9ca3af', font: { family: 'SF Mono, monospace' } }
                     },
                     y: {
                         type: 'linear',
-                        display: true,
                         position: 'left',
                         grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: { color: '#f59e0b' },
+                        ticks: { color: '#f59e0b', font: { family: 'SF Mono, monospace' } },
                         suggestedMin: 50,
                         suggestedMax: 220
                     },
                     y1: {
                         type: 'linear',
-                        display: true,
                         position: 'right',
                         grid: { drawOnChartArea: false },
-                        ticks: { color: '#06b6d4' },
+                        ticks: { color: '#06b6d4', font: { family: 'SF Mono, monospace' } },
                         suggestedMin: 0,
                         suggestedMax: 30
                     }
@@ -1008,75 +1038,312 @@ DTR: 16.6%
             }
         });
 
-        // Basic Interactions
-        const customTempInput = document.getElementById('customTempInput');
-        
-        document.getElementById('btnSub1').addEventListener('click', () => { customTempInput.value = parseInt(customTempInput.value) - 1; });
-        document.getElementById('btnAdd1').addEventListener('click', () => { customTempInput.value = parseInt(customTempInput.value) + 1; });
-        document.getElementById('btnAdd2').addEventListener('click', () => { customTempInput.value = parseInt(customTempInput.value) + 2; });
-        document.getElementById('btnAdd5').addEventListener('click', () => { customTempInput.value = parseInt(customTempInput.value) + 5; });
-
-        // Record Temp Tag
-        document.getElementById('btnRecordTemp').addEventListener('click', () => {
-            const val = customTempInput.value;
-            const time = document.getElementById('timerDisplay').innerText;
-            const tagContainer = document.getElementById('dynamicTags');
+        // --- 3. Logging & Toast System ---
+        function addLog(msg) {
+            const timestamp = new Date().toLocaleTimeString('ko-KR', { hour12: false });
+            const logEntry = `[${timestamp}] ${msg}`;
+            state.logs.push(logEntry);
             
-            const tag = document.createElement('div');
-            tag.className = 'tag';
-            tag.innerHTML = `<span class="tag-time">${time}</span> <span>${val}°C</span> <button class="tag-del">×</button>`;
-            
-            tag.querySelector('.tag-del').addEventListener('click', function() {
-                tag.remove();
-            });
-            
-            tagContainer.prepend(tag);
-            
-            // Add to Log
-            const log = document.getElementById('sysLog');
-            log.innerText += `\n[RECORD] ${time} - ${val}°C`;
-            log.scrollTop = log.scrollHeight;
-            
-            showToast('온도가 기록되었습니다: ' + val + '°C');
-        });
-
-        // Simple Timer Logic (Visual Only)
-        let timerInterval;
-        let seconds = 0;
-        let isRunning = false;
-        
-        function updateTimerDisplay() {
-            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-            const s = (seconds % 60).toString().padStart(2, '0');
-            document.getElementById('timerDisplay').innerText = `${m}:${s}.0`;
+            const logBox = document.getElementById('sysLog');
+            logBox.innerText += `\n${logEntry}`;
+            logBox.scrollTop = logBox.scrollHeight;
         }
 
-        document.getElementById('btnStart').addEventListener('click', function() {
-            if (isRunning) {
-                clearInterval(timerInterval);
-                this.classList.remove('running');
-                document.getElementById('startBtnText').innerText = '▶ RESUME';
-                document.getElementById('pilotStatusBadge').innerText = 'PAUSED';
-            } else {
-                timerInterval = setInterval(() => {
-                    seconds++;
-                    updateTimerDisplay();
-                }, 1000);
-                this.classList.add('running');
-                document.getElementById('startBtnText').innerText = '⏸ PAUSE';
-                document.getElementById('pilotStatusBadge').innerText = 'ROASTING';
-                document.getElementById('pilotCommandText').innerText = '초기 열풍 인가 및 터닝포인트 대기 중...';
-            }
-            isRunning = !isRunning;
-        });
-
-        // Toast Notification Function
         function showToast(msg) {
             const toast = document.getElementById('toastPopup');
             document.getElementById('toastMsg').innerText = msg;
             toast.classList.add('show');
             setTimeout(() => { toast.classList.remove('show'); }, 3000);
         }
+
+        // --- 4. Weight Loss (WL%) Calculation ---
+        function calcWeightLoss() {
+            const green = parseFloat(document.getElementById('greenWeight').value) || 0;
+            const roasted = parseFloat(document.getElementById('roastedWeight').value) || 0;
+            
+            if (green > 0 && roasted > 0) {
+                const loss = ((green - roasted) / green) * 100;
+                document.getElementById('wlValue').innerText = loss.toFixed(1);
+            } else {
+                document.getElementById('wlValue').innerText = '--';
+            }
+        }
+        document.getElementById('greenWeight').addEventListener('input', calcWeightLoss);
+        document.getElementById('roastedWeight').addEventListener('input', calcWeightLoss);
+
+        // --- 5. Real-Time Numerical Integration & Metrics Engine ---
+        function updateRoastEngine() {
+            // Simulated temperature calculation based on time
+            const tMin = state.seconds / 60;
+            state.currentTemp = Math.round(70 + (135 * (1 - Math.exp(-tMin / 3.2))));
+            
+            // Estimated RoR Calculation
+            state.currentRoR = parseFloat((25 * Math.exp(-tMin / 2.8)).toFixed(1));
+            
+            // Display Current Temp/RoR
+            document.getElementById('rorDisplay').innerText = `${state.currentTemp}°C / ${state.currentRoR}`;
+
+            // Phase Transitions
+            if (state.phase === 'DRYING' && state.currentTemp >= 150) {
+                state.phase = 'MAILLARD';
+                document.getElementById('phaseDrying').classList.remove('active');
+                document.getElementById('phaseMaillard').classList.add('active');
+                
+                showToast('150°C 마이야르 구간 진입');
+                addLog('PHASE CHANGE: Drying -> Maillard (150°C)');
+            }
+
+            // Calculations during Development Phase
+            if (state.hasFirstCrack) {
+                state.devTimeSec = state.seconds - state.fcTimeSec;
+                state.devDeltaTemp = parseFloat((state.currentTemp - state.fcTemp).toFixed(1));
+                
+                // Trapezoidal AUC Integral Approximation
+                state.effectiveAUC = parseFloat((state.effectiveAUC + (state.devDeltaTemp * 0.1)).toFixed(1));
+
+                // Update Cockpit Metric Tiles
+                document.getElementById('devTimeSecDisplay').innerText = `${state.devTimeSec}s`;
+                document.getElementById('devDeltaTempDisplay').innerText = `${state.devDeltaTemp}°C`;
+                document.getElementById('effectiveAUCDisplay').innerText = `${state.effectiveAUC}`;
+
+                // Calculate DTR %
+                if (state.seconds > 0) {
+                    const dtr = ((state.devTimeSec / state.seconds) * 100).toFixed(1);
+                    document.getElementById('dtrInput').value = dtr;
+                }
+
+                // Dev Match Evaluation
+                updateDevMatch();
+            }
+
+            // Co-Pilot Guidance Dynamics
+            updateCoPilotGuidance();
+        }
+
+        // --- 6. Dev Match Precision Scoring Engine ---
+        function updateDevMatch() {
+            const targetDevTime = parseFloat(document.getElementById('targetDevTimeInput').value) || 60;
+            const targetDeltaTemp = parseFloat(document.getElementById('targetDeltaTempInput').value) || 5.5;
+
+            // Individual Metric Match Calculation
+            const timeScore = Math.max(0, 100 - Math.abs(state.devTimeSec - targetDevTime) * 1.5);
+            const tempScore = Math.max(0, 100 - Math.abs(state.devDeltaTemp - targetDeltaTemp) * 8.0);
+            const aucScore = Math.min(100, Math.max(0, (state.effectiveAUC / 15) * 100));
+            const rorScore = state.rorAtFC > 0 ? Math.max(0, 100 - Math.abs(state.currentRoR - state.rorAtFC) * 5) : 95.0;
+
+            const totalScore = ((timeScore * 0.35) + (tempScore * 0.35) + (aucScore * 0.15) + (rorScore * 0.15)).toFixed(1);
+
+            document.getElementById('matchScoreVal').innerText = `${totalScore}%`;
+            document.getElementById('timeMatchVal').innerText = `${timeScore.toFixed(0)}%`;
+            document.getElementById('tempMatchVal').innerText = `${tempScore.toFixed(0)}%`;
+            document.getElementById('aucMatchVal').innerText = `${aucScore.toFixed(0)}%`;
+            document.getElementById('rorMatchVal').innerText = `${rorScore.toFixed(0)}%`;
+        }
+
+        // --- 7. AI Co-Pilot Guidance Updater ---
+        function updateCoPilotGuidance() {
+            const statusBadge = document.getElementById('pilotStatusBadge');
+            const cmdText = document.getElementById('pilotCommandText');
+            const detailText = document.getElementById('pilotDetailText');
+
+            if (!state.isRunning && state.seconds === 0) {
+                statusBadge.innerText = 'READY';
+                cmdText.innerText = '로스팅 시작 대기 중입니다. 스페이스바를 누르세요.';
+                detailText.innerText = '목표 타겟 곡선과 실시간 수치 적분 모델을 연동합니다.';
+                return;
+            }
+
+            if (state.hasFirstCrack) {
+                statusBadge.innerText = 'DEV PHASE';
+                statusBadge.style.color = 'var(--rose)';
+                statusBadge.style.borderColor = 'var(--rose)';
+                cmdText.innerText = `1차 크랙 진행 중: t_dev ${state.devTimeSec}초 / ΔT +${state.devDeltaTemp}°C`;
+                detailText.innerText = '목표 t_dev(60초) 및 ΔT(+5.5°C) 수치 적분 추적 중. 배출 준비를 해주세요.';
+            } else if (state.phase === 'MAILLARD') {
+                statusBadge.innerText = 'MAILLARD';
+                statusBadge.style.color = 'var(--maillard)';
+                statusBadge.style.borderColor = 'var(--maillard)';
+                cmdText.innerText = '메일라드 반응 촉진 구간. RoR의 완만한 감쇠를 유지하세요.';
+                detailText.innerText = '1차 크랙 예상 시점(06:20 / 192°C)에 접근 중입니다.';
+            } else {
+                statusBadge.innerText = 'DRYING';
+                statusBadge.style.color = 'var(--drying)';
+                statusBadge.style.borderColor = 'var(--drying)';
+                cmdText.innerText = '건조 및 열풍 인가 구간. Turning Point 안정화 확인.';
+                detailText.innerText = '150°C 진입 전까지 일정한 열량을 공급합니다.';
+            }
+        }
+
+        // --- 8. Control Actions (Timer, FC, End) ---
+        function formatTimer(sec) {
+            const m = Math.floor(sec / 60).toString().padStart(2, '0');
+            const s = (sec % 60).toString().padStart(2, '0');
+            return `${m}:${s}.0`;
+        }
+
+        document.getElementById('btnStart').addEventListener('click', function() {
+            if (state.isRunning) {
+                clearInterval(state.timerInterval);
+                state.isRunning = false;
+                this.classList.remove('running');
+                document.getElementById('startBtnText').innerText = '▶ RESUME';
+                addLog('ROASTING PAUSED');
+            } else {
+                state.isRunning = true;
+                this.classList.add('running');
+                document.getElementById('startBtnText').innerText = '⏸ PAUSE';
+                addLog('ROASTING STARTED / RESUMED');
+
+                state.timerInterval = setInterval(() => {
+                    state.seconds++;
+                    document.getElementById('timerDisplay').innerText = formatTimer(state.seconds);
+                    updateRoastEngine();
+                }, 1000);
+            }
+        });
+
+        document.getElementById('btnCrack').addEventListener('click', function() {
+            if (state.hasFirstCrack) return;
+
+            state.hasFirstCrack = true;
+            state.fcTimeSec = state.seconds;
+            state.fcTemp = state.currentTemp;
+            state.rorAtFC = state.currentRoR;
+            state.phase = 'DEV';
+
+            this.classList.add('done');
+            document.getElementById('timerDisplay').classList.add('crack-phase');
+
+            // Update Phase Badges
+            document.getElementById('phaseMaillard').classList.remove('active');
+            document.getElementById('phaseDev').classList.add('active');
+
+            // Show Crack Metrics
+            document.getElementById('rorFCDisplay').innerText = `${state.rorAtFC}`;
+            document.getElementById('devMatchCard').classList.add('active');
+
+            const timeStr = formatTimer(state.fcTimeSec);
+            showToast(`💥 1ST CRACK! (${timeStr} @ ${state.fcTemp}°C)`);
+            addLog(`1ST CRACK TRIGGERED at ${timeStr} (${state.fcTemp}°C, RoR ${state.rorAtFC})`);
+        });
+
+        document.getElementById('btnEnd').addEventListener('click', function() {
+            if (!state.isRunning && state.seconds === 0) return;
+
+            clearInterval(state.timerInterval);
+            state.isRunning = false;
+            document.getElementById('btnStart').classList.remove('running');
+            document.getElementById('startBtnText').innerText = '▶ FINISHED';
+            this.classList.add('done');
+
+            calcWeightLoss();
+            const timeStr = formatTimer(state.seconds);
+            showToast(`🏁 로스팅 완료! (배출: ${timeStr} @ ${state.currentTemp}°C)`);
+            addLog(`ROAST FINISHED at ${timeStr}. Temp: ${state.currentTemp}°C`);
+        });
+
+        // --- 9. Event Manual Record Buttons ---
+        const customTempInput = document.getElementById('customTempInput');
+        document.getElementById('btnSub1').addEventListener('click', () => { customTempInput.value = parseInt(customTempInput.value) - 1; });
+        document.getElementById('btnAdd1').addEventListener('click', () => { customTempInput.value = parseInt(customTempInput.value) + 1; });
+        document.getElementById('btnAdd2').addEventListener('click', () => { customTempInput.value = parseInt(customTempInput.value) + 2; });
+        document.getElementById('btnAdd5').addEventListener('click', () => { customTempInput.value = parseInt(customTempInput.value) + 5; });
+
+        document.getElementById('btnRecordTemp').addEventListener('click', function() {
+            const val = customTempInput.value;
+            const timeStr = document.getElementById('timerDisplay').innerText;
+            const tagContainer = document.getElementById('dynamicTags');
+
+            const tag = document.createElement('div');
+            tag.className = 'tag';
+            tag.innerHTML = `<span class="tag-time">${timeStr}</span> <span>${val}°C</span> <button class="tag-del">×</button>`;
+            
+            tag.querySelector('.tag-del').addEventListener('click', () => tag.remove());
+            tagContainer.prepend(tag);
+
+            addLog(`MANUAL EVENT: ${timeStr} - ${val}°C Recorded`);
+            showToast(`온도 기록 완료: ${timeStr} (${val}°C)`);
+        });
+
+        // Keyboard Shortcuts Integration
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            if (e.code === 'Space') {
+                e.preventDefault();
+                document.getElementById('btnStart').click();
+            } else if (e.code === 'KeyC') {
+                e.preventDefault();
+                document.getElementById('btnCrack').click();
+            } else if (e.code === 'KeyE') {
+                e.preventDefault();
+                document.getElementById('btnEnd').click();
+            }
+        });
+
+        customTempInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('btnRecordTemp').click();
+            }
+        });
+
+        // --- 10. Chips & Display Toggles ---
+        document.querySelectorAll('.process-chip').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.process-chip').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                addLog(`PROCESS SELECTED: ${this.dataset.process}`);
+            });
+        });
+
+        document.querySelectorAll('.weight-chip').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.weight-chip').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById('greenWeight').value = this.dataset.weight;
+                calcWeightLoss();
+            });
+        });
+
+        // Target Guide Toggle
+        document.getElementById('btnToggleTargetGuide').addEventListener('click', function() {
+            state.targetGuideOn = !state.targetGuideOn;
+            roastChart.data.datasets[2].hidden = !state.targetGuideOn;
+            roastChart.update();
+
+            this.classList.toggle('active', state.targetGuideOn);
+            this.innerText = `🎯 AI 추천 타겟: ${state.targetGuideOn ? 'ON' : 'OFF'}`;
+        });
+
+        // FC Anchor Alignment Toggle
+        document.getElementById('btnToggleFCAnchor').addEventListener('click', function() {
+            state.fcAnchorOn = !state.fcAnchorOn;
+            this.innerText = `⚓ FC Anchored 정렬: ${state.fcAnchorOn ? 'ON' : 'OFF'}`;
+            this.style.background = state.fcAnchorOn ? 'var(--amber)' : 'transparent';
+            this.style.color = state.fcAnchorOn ? '#000' : 'var(--amber)';
+            
+            showToast(`FC Anchored 정렬 ${state.fcAnchorOn ? '활성화' : '비활성화'}`);
+            addLog(`CHART ANCHOR: FC Alignment set to ${state.fcAnchorOn}`);
+        });
+
+        // History Items Expand/Collapse
+        document.querySelectorAll('.hist-header').forEach(header => {
+            header.addEventListener('click', function() {
+                const item = this.parentElement;
+                item.classList.toggle('expanded');
+                const body = item.querySelector('.hist-body');
+                body.style.display = item.classList.contains('expanded') ? 'block' : 'none';
+            });
+        });
+
+        document.querySelectorAll('.btn-fav-star').forEach(star => {
+            star.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.classList.toggle('active');
+                this.innerText = this.classList.contains('active') ? '★' : '☆';
+            });
+        });
     </script>
 </body>
 </html>
