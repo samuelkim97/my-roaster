@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>☕ Samuel Kim // MANUAL ROASTER V6.1 ENGINE</title>
+    <title>☕ Samuel Kim // REAL-TIME ROASTER V6.3 ENGINE</title>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -122,6 +122,12 @@
             background: rgba(16, 185, 129, 0.15);
             color: var(--emerald);
             border: 1px solid rgba(16, 185, 129, 0.3);
+            animation: pulseSync 2s infinite;
+        }
+
+        @keyframes pulseSync {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         .meta-inputs {
@@ -339,7 +345,7 @@
         .tile-val.emerald { color: var(--emerald); }
 
         #dtrInput {
-            width: 45px;
+            width: 50px;
             background: transparent;
             border: none;
             border-bottom: 1px dashed var(--amber);
@@ -386,11 +392,12 @@
             border-radius: var(--radius-sm);
             color: var(--text-dim);
             font-weight: 700;
+            transition: all 0.3s ease;
         }
 
-        .phase-badge.active.drying { background: var(--drying); color: #000; }
-        .phase-badge.active.maillard { background: var(--maillard); color: #fff; }
-        .phase-badge.active.dev { background: var(--rose); color: #fff; }
+        .phase-badge.active.drying { background: var(--drying); color: #000; box-shadow: 0 0 10px rgba(234, 179, 8, 0.4); }
+        .phase-badge.active.maillard { background: var(--maillard); color: #fff; box-shadow: 0 0 10px rgba(249, 115, 22, 0.4); }
+        .phase-badge.active.dev { background: var(--rose); color: #fff; box-shadow: 0 0 10px rgba(244, 63, 94, 0.4); }
 
         .btn-action {
             min-height: 52px;
@@ -690,7 +697,7 @@
         <div class="card header-card">
             <div class="brand-title">
                 <span>☕ Samuel Kim</span>
-                <span class="sync-badge">ENGINE V6.1</span>
+                <span class="sync-badge">REAL-TIME V6.3</span>
             </div>
             <div class="meta-inputs">
                 <div class="date-display" id="dateDisplay" style="font-family:var(--font-mono); font-size:0.9rem; color:var(--text-muted);">2026.00.00</div>
@@ -708,7 +715,6 @@
                     <span style="font-size:0.8rem; color:var(--text-muted)">중량:</span>
                     <input type="number" id="greenWeight" class="weight-input" placeholder="생두" value="200">
                     
-                    <!-- 용량 퀵선택 칩 -->
                     <button class="weight-chip" data-weight="100">100g</button>
                     <button class="weight-chip active" data-weight="200">200g</button>
                     <button class="weight-chip" data-weight="300">300g</button>
@@ -723,7 +729,7 @@
         <div class="cockpit-grid">
             <div class="card">
                 <div class="section-header" style="justify-content: center; margin-bottom: 0;">
-                    <span class="section-title" style="font-size: 0.85rem; letter-spacing: 1px;">ROASTING COCKPIT V6.1</span>
+                    <span class="section-title" style="font-size: 0.85rem; letter-spacing: 1px;">REAL-TIME COCKPIT V6.3</span>
                 </div>
                 <div class="timer-container">
                     <div class="timer-display" id="timerDisplay">00:00.0</div>
@@ -732,7 +738,7 @@
                 <div class="copilot-card" id="coPilotCard">
                     <div class="copilot-head">
                         <div class="copilot-title">
-                            <span>👨‍‍✈️ AI PREDICTIVE CO-PILOT GUIDANCE</span>
+                            <span>👨‍✈️ AI REAL-TIME CO-PILOT GUIDANCE</span>
                         </div>
                         <div class="copilot-status-badge" id="pilotStatusBadge">READY</div>
                     </div>
@@ -758,7 +764,7 @@
                         <span class="tile-val cyan" id="effectiveAUCDisplay">0.0</span>
                     </div>
                     <div class="tile">
-                        <span class="tile-label">시간기반 EMA RoR</span>
+                        <span class="tile-label">실시간 추정 BT / RoR</span>
                         <span class="tile-val emerald" id="rorDisplay">--</span>
                     </div>
                     <div class="tile">
@@ -829,7 +835,7 @@
 
         <div class="target-config-card">
             <div class="target-config-title">
-                <span>🎯 AI 타겟 파라미터 (열질량 동적 자동 계산)</span>
+                <span>🎯 AI 타겟 파라미터 (실시간 수치적분 보정)</span>
             </div>
             <div class="target-inputs">
                 <div class="target-input-item">
@@ -867,7 +873,7 @@
         <div class="lower-grid">
             <div class="card">
                 <div class="section-header">
-                    <span class="section-title" id="chartTitleText">📉 프로파일 프로젝션</span>
+                    <span class="section-title" id="chartTitleText">📉 실시간 프로파일 프로젝션</span>
                     <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                         <button id="btnToggleTargetGuide" class="hist-btn target">🎯 AI 추천 타겟: ON</button>
                         <button id="btnToggleFCAnchor" class="hist-btn" style="border-color:var(--amber); color:var(--amber);">⚓ FC Anchored 정렬: OFF</button>
@@ -1070,6 +1076,8 @@
             lastRenderTime: 0,
             
             samples: [],
+            liveBT: 70.0,      // 실시간 추정 BT (°C)
+            liveRoR: 18.0,     // 실시간 추정 RoR (°C/min)
             
             config: {
                 beanName: '',
@@ -1115,7 +1123,6 @@
             return (parseInt(parts[0]) * 60) + parseInt(parts[1]);
         }
 
-        // 가공방식 선택 칩 이벤트
         document.querySelectorAll('.process-chip').forEach(chip => {
             chip.addEventListener('click', () => {
                 document.querySelectorAll('.process-chip').forEach(c => c.classList.remove('active'));
@@ -1125,23 +1132,19 @@
             });
         });
 
-        // 용량 중량 변경 시 비선형 열질량 스케일링 계산기
         function applyBatchWeightScaling(weightG) {
             if (!weightG || weightG <= 0) return;
             
-            const baseWeight = 200; // 기준 200g
+            const baseWeight = 200;
             const ratio = weightG / baseWeight;
 
-            // 기준 200g 추천값
             const baseCharge = 170;
-            const baseFcSec = 380; // 06:20
+            const baseFcSec = 380;
             const baseFcTemp = 192;
             const baseDevSec = 60;
             const baseDeltaTemp = 5.5;
 
-            // 스케일링 공식 연산
             const recCharge = Math.round(baseCharge + (ratio - 1) * 12);
-            
             const recFcSec = Math.round(baseFcSec * Math.pow(ratio, 0.22));
             const fcMin = Math.floor(recFcSec / 60);
             const fcSec = recFcSec % 60;
@@ -1151,7 +1154,6 @@
             const recDevSec = Math.round(baseDevSec * Math.pow(ratio, 0.15));
             const recDeltaTemp = Number((baseDeltaTemp + (ratio - 1) * 0.5).toFixed(1));
 
-            // DOM 및 State 동시 대입
             els.gw.value = weightG;
             els.chargeTempInput.value = recCharge;
             els.targetFcTimeInput.value = recFcTimeStr;
@@ -1166,7 +1168,6 @@
             showToastPopup(`배치 ${weightG}g 맞춤 추천 수치로 자동 계산되었습니다!`, "⚖️", "#06b6d4");
         }
 
-        // 용량 퀵선택 칩 이벤트 연결
         document.querySelectorAll('.weight-chip').forEach(chip => {
             chip.addEventListener('click', () => {
                 document.querySelectorAll('.weight-chip').forEach(c => c.classList.remove('active'));
@@ -1176,7 +1177,6 @@
             });
         });
 
-        // 중량 수동 입력 시 변경 감지
         els.gw.addEventListener('change', (e) => {
             const val = parseFloat(e.target.value);
             if (val > 0) {
@@ -1224,7 +1224,6 @@
             state.samples.push(sample);
             state.samples.sort((a, b) => a.tMs - b.tMs);
 
-            checkTemperatureAlarms(tempVal);
             recomputeEmaRoR();
             calculateAUC();
             renderFullUI();
@@ -1388,6 +1387,7 @@
             };
         }
 
+        // [핵심] 실시간 BT_live 기반 코파일럿 가이드
         function updateCoPilotGuidance() {
             if (!state.isRunning && state.elapsed === 0) {
                 els.pilotStatusBadge.textContent = "READY";
@@ -1402,8 +1402,7 @@
             let targetCurves = generateDynamicTargetCurve(false, 0);
             let targetBT = targetCurves.bt.length > 0 ? targetCurves.bt[Math.min(Math.floor(curSec / 10), targetCurves.bt.length - 1)].y : 70;
             
-            let lastRecorded = state.samples.length > 0 ? state.samples[state.samples.length - 1] : null;
-            let curBT = lastRecorded ? lastRecorded.tempC : 70;
+            let curBT = state.liveBT;
             let diff = curBT - targetBT;
             let pred = predictFromSamples(state.elapsed);
 
@@ -1423,7 +1422,7 @@
                 els.pilotStatusBadge.style.color = "var(--amber)";
                 els.pilotStatusBadge.style.borderColor = "var(--amber)";
                 els.pilotCommandText.textContent = "🔥 메일라드 구간 준비: 150°C 도달 시 체프 풍량 증량";
-                els.pilotDetailText.textContent = `현재 BT: ${curBT}°C | 적분 타겟 BT: ${targetBT.toFixed(1)}°C`;
+                els.pilotDetailText.textContent = `실시간 BT: ${curBT.toFixed(1)}°C | 적분 타겟 BT: ${targetBT.toFixed(1)}°C`;
                 return;
             }
 
@@ -1432,7 +1431,7 @@
                 els.pilotStatusBadge.style.color = "var(--cyan)";
                 els.pilotStatusBadge.style.borderColor = "var(--cyan)";
                 els.pilotCommandText.textContent = "💥 1차 크랙 연착륙: 가스 미세 축소 (RoR_FC +12°C/m 목표)";
-                els.pilotDetailText.textContent = `현재 BT: ${curBT}°C | 1차 크랙 예상: 190~192°C`;
+                els.pilotDetailText.textContent = `실시간 BT: ${curBT.toFixed(1)}°C | 1차 크랙 예상: 190~192°C`;
                 return;
             }
 
@@ -1450,19 +1449,19 @@
                 els.pilotStatusBadge.style.color = "var(--rose)";
                 els.pilotStatusBadge.style.borderColor = "var(--rose)";
                 els.pilotCommandText.textContent = "🔥 속도가 빠릅니다! 가스 10~15% 감축 필요";
-                els.pilotDetailText.textContent = `+${diff.toFixed(1)}°C 과열 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
+                els.pilotDetailText.textContent = `+${diff.toFixed(1)}°C 과열 (목표: ${targetBT.toFixed(1)}°C / 실시간: ${curBT.toFixed(1)}°C)`;
             } else if (diff < -2.5) {
                 els.pilotStatusBadge.textContent = "TOO SLOW";
                 els.pilotStatusBadge.style.color = "var(--cyan)";
                 els.pilotStatusBadge.style.borderColor = "var(--cyan)";
                 els.pilotCommandText.textContent = "❄️ 속도가 느립니다! 가스 10~15% 증량 필요";
-                els.pilotDetailText.textContent = `${diff.toFixed(1)}°C 미달 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
+                els.pilotDetailText.textContent = `${diff.toFixed(1)}°C 미달 (목표: ${targetBT.toFixed(1)}°C / 실시간: ${curBT.toFixed(1)}°C)`;
             } else {
                 els.pilotStatusBadge.textContent = "ON TRACK";
                 els.pilotStatusBadge.style.color = "var(--emerald)";
                 els.pilotStatusBadge.style.borderColor = "var(--emerald)";
                 els.pilotCommandText.textContent = "🟢 최적 프로파일 레일 순항 중! 현재 화력을 유지하세요.";
-                els.pilotDetailText.textContent = `목표 오차 범위 내 안정 진입 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
+                els.pilotDetailText.textContent = `목표 오차 범위 내 안정 진입 (목표: ${targetBT.toFixed(1)}°C / 실시간: ${curBT.toFixed(1)}°C)`;
             }
         }
 
@@ -1473,8 +1472,7 @@
             const curTime = state.endTime || state.elapsed;
             state.metrics.devTimeSec = Math.max(0, Math.floor((curTime - state.crackTime) / 1000));
             
-            let lastSample = state.samples.length > 0 ? state.samples[state.samples.length - 1] : null;
-            let lastTemp = lastSample ? lastSample.tempC : state.crackTemp;
+            let lastTemp = state.liveBT;
             state.metrics.devDeltaTemp = Number(Math.max(0, lastTemp - state.crackTemp).toFixed(1));
 
             let devPoints = state.samples.filter(t => t.tMs >= state.crackTime);
@@ -1520,15 +1518,63 @@
             els.rorMatchVal.textContent = `${rorSim.toFixed(0)}%`;
         }
 
+        // [핵심 Engine V6.3] 100ms 초단위 실시간 연속 연산 및 페이즈/BT/RoR 추적
         function timerLoop(timestamp) {
             if (state.isRunning) {
                 const now = performance.now();
                 state.elapsed = now - state.startTime;
                 
+                // 1. 실시간 BT_live 연속 추계 계산
+                const lastSample = state.samples.length > 0 ? state.samples[state.samples.length - 1] : null;
+                if (lastSample) {
+                    const dtMin = (state.elapsed - lastSample.tMs) / 60000;
+                    const curRoR = lastSample.emaRoR !== null ? lastSample.emaRoR : 15.0;
+                    state.liveRoR = curRoR;
+                    state.liveBT = lastSample.tempC + (curRoR * dtMin);
+                } else {
+                    const curMin = state.elapsed / 60000;
+                    state.liveRoR = 18.0 * Math.exp(-0.15 * curMin);
+                    state.liveBT = 70.0 + (18.0 * curMin);
+                }
+
+                // 2. 실시간 100ms 렌더링
                 if (now - state.lastRenderTime >= 100) {
                     els.timer.textContent = fmtMs(state.elapsed);
                     els.timer.classList.toggle('crack-phase', state.crackTime && !state.endTime && state.isRunning);
+                    
+                    // 실시간 추정 BT / RoR 타일 출력
+                    els.rorDisplay.textContent = `${state.liveBT.toFixed(1)}° / +${state.liveRoR.toFixed(1)}`;
+
+                    // 실시간 페이즈 감지 및 배지 변경
+                    let isDrying = state.elapsed > 0 && state.liveBT < 150 && !state.crackTime;
+                    let isMaillard = state.liveBT >= 150 && !state.crackTime;
+                    let isDev = !!state.crackTime;
+                    
+                    els.phaseDrying.classList.toggle('active', isDrying);
+                    els.phaseMaillard.classList.toggle('active', isMaillard);
+                    els.phaseDev.classList.toggle('active', isDev);
+
+                    // 실시간 알람 체크
+                    checkTemperatureAlarms(state.liveBT);
+
+                    // 1차 크랙 이후 절대개발지표 실시간 연산
+                    if (state.crackTime) {
+                        calculateAUC();
+                        els.devTimeSecDisplay.textContent = `${state.metrics.devTimeSec}s`;
+                        els.devDeltaTempDisplay.textContent = `+${state.metrics.devDeltaTemp.toFixed(1)}°C`;
+                        els.effectiveAUCDisplay.textContent = `${state.metrics.effectiveAUC.toFixed(1)}`;
+                        
+                        const curTime = state.endTime || state.elapsed;
+                        const devMs = curTime - state.crackTime;
+                        
+                        if (document.activeElement !== els.dtrInput) {
+                            els.dtrInput.value = curTime > 0 ? (devMs / curTime * 100).toFixed(1) : '';
+                        }
+                    }
+
                     updateCoPilotGuidance();
+                    updateChartRealtimeCursor();
+
                     state.lastRenderTime = now;
                 }
                 state.animId = requestAnimationFrame(timerLoop);
@@ -1553,7 +1599,7 @@
         function checkTemperatureAlarms(tempVal) {
             if (tempVal >= 150 && tempVal < 170 && !state.alert150Triggered) {
                 state.alert150Triggered = true; playBeepSound(880, 2);
-                showToastPopup('150°C 도달! 메일라드(Maillard) 구간 진입', '🔥', '#f97316');
+                showToastPopup('150°C 도달! 실시간 메일라드(Maillard) 진입', '🔥', '#f97316');
             } else if (tempVal >= 170 && !state.alert170Triggered) {
                 state.alert170Triggered = true; playBeepSound(1046, 3);
                 showToastPopup('170°C 도달! 카라멜화 가속 / 1차 크랙 준비', '⚡', '#f59e0b');
@@ -1565,7 +1611,6 @@
             recomputeEmaRoR(); calculateAUC(); renderFullUI();
         }
 
-        // 수동 입력 태그 렌더링 (최신 기록이 맨 위로 오도록 역순[reverse] 정렬!)
         function renderTempTags() {
             els.dynamicTags.innerHTML = '';
             const reversedSamples = [...state.samples].reverse();
@@ -1584,6 +1629,7 @@
         function resetAll() {
             state.isRunning = false; state.elapsed = 0; state.crackTime = null; state.crackTemp = null; state.endTime = null;
             state.samples = [];
+            state.liveBT = 70.0; state.liveRoR = 18.0;
             state.metrics = { devTimeSec: 0, devDeltaTemp: 0, rorFC: 0, relativeAUC: 0, effectiveAUC: 0, currentEmaRoR: 0 };
             state.alert150Triggered = false; state.alert170Triggered = false;
             
@@ -1724,21 +1770,48 @@
             updateChart();
         };
 
-        els.dtrInput.addEventListener('change', (e) => {
-            if (!state.crackTime) { alert('1차 크랙 시간이 먼저 기록되어야 역계산이 가능합니다.'); renderFullUI(); return; }
-            const val = parseFloat(e.target.value); if (isNaN(val) || val <= 0 || val >= 100) { renderFullUI(); return; }
-            state.endTime = state.crackTime / (1 - (val / 100)); state.elapsed = state.endTime; 
-            if (state.isRunning) toggleTimer(); 
+        function handleDtrReverseCalc() {
+            if (!state.crackTime) { 
+                showToastPopup('1차 크랙(FC)이 먼저 기록되어야 DTR 역계산이 가능합니다!', '⚠️', '#f43f5e'); 
+                return; 
+            }
+            const val = parseFloat(els.dtrInput.value); 
+            if (isNaN(val) || val <= 0 || val >= 100) return;
+
+            const calculatedEndTime = state.crackTime / (1 - (val / 100));
+            
+            state.endTime = calculatedEndTime; 
+            state.elapsed = calculatedEndTime; 
+            
+            if (state.isRunning) {
+                state.isRunning = false;
+                els.start.classList.remove('running');
+                cancelAnimationFrame(state.animId);
+            }
+            
+            els.timer.textContent = fmtMs(state.endTime);
             els.dtrInput.blur(); 
-            if (!els.end.classList.contains('done')) { els.end.classList.add('done'); renderFullUI(); saveToHistoryDB(); } else { renderFullUI(); }
+            els.end.classList.add('done'); 
+            
+            calculateAUC(); 
+            renderFullUI(); 
+            saveToHistoryDB();
+            showToastPopup(`DTR ${val}% 기준 배출시간(${fmtShort(calculatedEndTime)}) 역계산 완료!`, '🎯', '#10b981');
+        }
+
+        els.dtrInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleDtrReverseCalc();
+            }
         });
+        els.dtrInput.addEventListener('change', handleDtrReverseCalc);
 
         els.crack.onclick = () => { 
             if (state.crackTime || (!state.isRunning && !state.elapsed)) return; 
             state.crackTime = state.elapsed; 
-            let lastRec = state.samples.length > 0 ? state.samples[state.samples.length - 1] : null;
-            state.crackTemp = lastRec ? lastRec.tempC : 192;
-            state.metrics.rorFC = state.metrics.currentEmaRoR || 10.0;
+            state.crackTemp = Number(state.liveBT.toFixed(1));
+            state.metrics.rorFC = state.liveRoR || 10.0;
             els.rorFCDisplay.textContent = `${state.metrics.rorFC.toFixed(1)}°/m`;
             els.crack.classList.add('done'); renderFullUI(); 
         };
@@ -1764,24 +1837,17 @@
             els.devDeltaTempDisplay.textContent = `+${state.metrics.devDeltaTemp.toFixed(1)}°C`;
             els.rorFCDisplay.textContent = state.metrics.rorFC > 0 ? `${state.metrics.rorFC.toFixed(1)}` : '--';
             els.effectiveAUCDisplay.textContent = `${state.metrics.effectiveAUC.toFixed(1)}`;
-            els.rorDisplay.textContent = state.metrics.currentEmaRoR > 0 ? `+${state.metrics.currentEmaRoR.toFixed(1)}` : '--';
+            els.rorDisplay.textContent = `${state.liveBT.toFixed(1)}° / +${state.liveRoR.toFixed(1)}`;
 
             const curTime = state.endTime || state.elapsed;
             if (state.crackTime) {
                 const devMs = curTime - state.crackTime;
-                if (document.activeElement !== els.dtrInput) els.dtrInput.value = curTime > 0 ? (devMs / curTime * 100).toFixed(1) : '';
+                if (document.activeElement !== els.dtrInput) {
+                    els.dtrInput.value = curTime > 0 ? (devMs / curTime * 100).toFixed(1) : '';
+                }
             } else {
                 if (document.activeElement !== els.dtrInput) els.dtrInput.value = '';
             }
-
-            let maxTemp = state.samples.length > 0 ? state.samples[state.samples.length-1].tempC : 0;
-            let isDrying = state.elapsed > 0 && maxTemp < 150 && !state.crackTime;
-            let isMaillard = maxTemp >= 150 && !state.crackTime;
-            let isDev = !!state.crackTime;
-            
-            els.phaseDrying.classList.toggle('active', isDrying);
-            els.phaseMaillard.classList.toggle('active', isMaillard);
-            els.phaseDev.classList.toggle('active', isDev);
 
             renderTempTags(); updateLog(); updateChart();
         }
@@ -1789,7 +1855,7 @@
         function updateLog() {
             if (!state.elapsed && !state.endTime) { els.log.textContent = "아직 기록이 없습니다. 스페이스바를 눌러 시작하세요."; return; }
             
-            let t = `☕ SAMUEL KIM ROASTING REPORT V6.1\n`;
+            let t = `☕ SAMUEL KIM ROASTING REPORT V6.3 REAL-TIME\n`;
             t += `═══════════════════════════════════════\n`;
             t += ` 📅 일시 : ${new Date().toLocaleString('ko-KR')}\n`;
             t += ` ☕ 원두 : [${state.config.processMethod}] ${state.config.beanName || '미입력 원두'}\n`;
@@ -1859,7 +1925,8 @@
                         { label: 'AI Target BT', data: [], yAxisID: 'yTemp', borderColor: '#06b6d4', borderDash: [6, 6], borderWidth: 2, tension: 0.25, pointRadius: 0 },
                         { label: 'AI Target RoR', data: [], yAxisID: 'yRoR', borderColor: '#06b6d4', borderDash: [2, 2], borderWidth: 1.2, tension: 0.25, pointRadius: 0 },
                         { label: 'Batch FC Line', data: [], yAxisID: 'yTemp', borderColor: '#f43f5e', borderDash: [4, 4], borderWidth: 1.5, pointRadius: 0, fill: false },
-                        { label: 'Ref FC Line', data: [], yAxisID: 'yTemp', borderColor: '#c084fc', borderDash: [4, 4], borderWidth: 1.5, pointRadius: 0, fill: false }
+                        { label: 'Ref FC Line', data: [], yAxisID: 'yTemp', borderColor: '#c084fc', borderDash: [4, 4], borderWidth: 1.5, pointRadius: 0, fill: false },
+                        { label: 'Realtime Live Cursor', data: [], yAxisID: 'yTemp', borderColor: '#10b981', backgroundColor: '#10b981', borderWidth: 0, pointRadius: 6, pointHoverRadius: 8 }
                     ]
                 },
                 options: {
@@ -1885,6 +1952,17 @@
                     plugins: { legend: { display: false } }
                 }
             });
+        }
+
+        // 실시간 이동 라이브 커서 점 업데이트
+        function updateChartRealtimeCursor() {
+            if (!chartInstance) return;
+            let curFcTimeSec = (state.crackTime || parseMMSS(state.config.targetFcTimeStr) * 1000) / 1000;
+            let timeSec = state.elapsed / 1000;
+            let xVal = state.ui.isFcAnchoredMode ? (timeSec - curFcTimeSec) : (timeSec / 60);
+
+            chartInstance.data.datasets[8].data = [{ x: xVal, y: state.liveBT }];
+            chartInstance.update('none');
         }
 
         function updateChart() {
@@ -1934,7 +2012,8 @@
             chartInstance.data.datasets[5].data = targetCurves.ror;
             chartInstance.data.datasets[6].data = batchFcLine;
             chartInstance.data.datasets[7].data = refFcLine;
-            chartInstance.update('none');
+            
+            updateChartRealtimeCursor();
         }
 
         document.addEventListener('keydown', e => {
