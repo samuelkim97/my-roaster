@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>☕ Samuel Kim // MANUAL ROASTER V5.1</title>
+    <title>☕ Samuel Kim // MANUAL ROASTER V6.1 ENGINE</title>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -162,7 +162,7 @@
             align-items: center;
         }
 
-        .process-chip {
+        .process-chip, .weight-chip {
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid var(--border);
             color: var(--text-muted);
@@ -181,6 +181,13 @@
             box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
         }
 
+        .weight-chip.active {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: var(--amber);
+            color: var(--amber);
+            box-shadow: 0 0 10px var(--amber-glow);
+        }
+
         .weight-group {
             display: flex;
             align-items: center;
@@ -192,7 +199,7 @@
         }
 
         .weight-input {
-            width: 65px;
+            width: 60px;
             background: transparent;
             border: none;
             border-bottom: 1px solid var(--border);
@@ -466,19 +473,25 @@
             flex-wrap: wrap;
             gap: 6px;
             margin-top: 10px;
-            max-height: 85px;
+            max-height: 100px;
             overflow-y: auto;
         }
 
         .tag {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid var(--border);
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--amber);
             padding: 5px 10px;
             border-radius: var(--radius-sm);
             font-size: 0.85rem;
             display: flex;
             align-items: center;
             gap: 6px;
+            animation: fadeInTag 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes fadeInTag {
+            from { transform: translateY(-6px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         .tag-time { color: var(--amber); font-family: var(--font-mono); font-weight: bold; }
@@ -677,7 +690,7 @@
         <div class="card header-card">
             <div class="brand-title">
                 <span>☕ Samuel Kim</span>
-                <span class="sync-badge">LIVE SYNC</span>
+                <span class="sync-badge">ENGINE V6.1</span>
             </div>
             <div class="meta-inputs">
                 <div class="date-display" id="dateDisplay" style="font-family:var(--font-mono); font-size:0.9rem; color:var(--text-muted);">2026.00.00</div>
@@ -693,7 +706,13 @@
 
                 <div class="weight-group">
                     <span style="font-size:0.8rem; color:var(--text-muted)">중량:</span>
-                    <input type="number" id="greenWeight" class="weight-input" placeholder="생두">
+                    <input type="number" id="greenWeight" class="weight-input" placeholder="생두" value="200">
+                    
+                    <!-- 용량 퀵선택 칩 -->
+                    <button class="weight-chip" data-weight="100">100g</button>
+                    <button class="weight-chip active" data-weight="200">200g</button>
+                    <button class="weight-chip" data-weight="300">300g</button>
+
                     <span style="color:var(--text-dim)">▶</span>
                     <input type="number" id="roastedWeight" class="weight-input" placeholder="원두">
                     <div class="wl-badge">WL <span id="wlValue">--</span>%</div>
@@ -704,7 +723,7 @@
         <div class="cockpit-grid">
             <div class="card">
                 <div class="section-header" style="justify-content: center; margin-bottom: 0;">
-                    <span class="section-title" style="font-size: 0.85rem; letter-spacing: 1px;">ROASTING COCKPIT V5.1</span>
+                    <span class="section-title" style="font-size: 0.85rem; letter-spacing: 1px;">ROASTING COCKPIT V6.1</span>
                 </div>
                 <div class="timer-container">
                     <div class="timer-display" id="timerDisplay">00:00.0</div>
@@ -713,12 +732,12 @@
                 <div class="copilot-card" id="coPilotCard">
                     <div class="copilot-head">
                         <div class="copilot-title">
-                            <span>👨‍✈️ AI CO-PILOT GUIDANCE</span>
+                            <span>👨‍‍✈️ AI PREDICTIVE CO-PILOT GUIDANCE</span>
                         </div>
                         <div class="copilot-status-badge" id="pilotStatusBadge">READY</div>
                     </div>
                     <div class="copilot-cmd-text" id="pilotCommandText">로스팅 시작 대기 중입니다. 스페이스바를 누르세요.</div>
-                    <div class="copilot-sub-text" id="pilotDetailText">목표 타겟 곡선과 실시간 온도를 자동 분석합니다.</div>
+                    <div class="copilot-sub-text" id="pilotDetailText">목표 타겟 곡선과 실시간 수치 적분 모델을 연동합니다.</div>
                 </div>
 
                 <div class="metrics-tiles">
@@ -735,11 +754,11 @@
                         <span class="tile-val cyan" id="rorFCDisplay">--</span>
                     </div>
                     <div class="tile">
-                        <span class="tile-label">실질 적분열량 (Eff.AUC)</span>
+                        <span class="tile-label">개발 면적지표 (Dev.Area)</span>
                         <span class="tile-val cyan" id="effectiveAUCDisplay">0.0</span>
                     </div>
                     <div class="tile">
-                        <span class="tile-label">실시간 EMA RoR</span>
+                        <span class="tile-label">시간기반 EMA RoR</span>
                         <span class="tile-val emerald" id="rorDisplay">--</span>
                     </div>
                     <div class="tile">
@@ -753,13 +772,13 @@
 
                 <div class="dev-match-card" id="devMatchCard">
                     <div class="dev-match-head">
-                        <span class="dev-match-title">🎯 레퍼런스 개발 동등성 (Dev Match)</span>
+                        <span class="dev-match-title">🎯 레퍼런스 정밀 동등성 (Dev Match)</span>
                         <span class="dev-match-score" id="matchScoreVal">0.0%</span>
                     </div>
                     <div class="match-bars">
                         <div class="match-bar-item">시간 일치<div class="match-bar-val" id="timeMatchVal">--%</div></div>
                         <div class="match-bar-item">상승온도 일치<div class="match-bar-val" id="tempMatchVal">--%</div></div>
-                        <div class="match-bar-item">AUC 일치<div class="match-bar-val" id="aucMatchVal">--%</div></div>
+                        <div class="match-bar-item">면적지표 일치<div class="match-bar-val" id="aucMatchVal">--%</div></div>
                         <div class="match-bar-item">RoR_FC 일치<div class="match-bar-val" id="rorMatchVal">--%</div></div>
                     </div>
                 </div>
@@ -787,11 +806,10 @@
 
                 <div class="temp-ctrl-box">
                     <div class="section-title" style="font-size:0.8rem; display:flex; justify-content:space-between;">
-                        <span>📍 수동 온도 구간 기록 (원클릭 즉시 반영)</span>
+                        <span>📍 관측 이벤트 수동 기록 (최신순 상단 노출)</span>
                         <span style="color:var(--text-muted); font-size:0.75rem;">기본 70°C 시작</span>
                     </div>
 
-                    <!-- 원클릭 즉시 기록 증감 버튼 -->
                     <div class="temp-step-row">
                         <button class="btn-step" id="btnSub1">- 1°C</button>
                         <button class="btn-step" id="btnAdd1">+ 1°C</button>
@@ -811,9 +829,19 @@
 
         <div class="target-config-card">
             <div class="target-config-title">
-                <span>🎯 AI 추천 타겟 수치 설정 (대화 피드백 대입)</span>
+                <span>🎯 AI 타겟 파라미터 (열질량 동적 자동 계산)</span>
             </div>
             <div class="target-inputs">
+                <div class="target-input-item">
+                    <span>예열온도:</span>
+                    <input type="number" id="chargeTempInput" class="target-val-input" value="170">
+                    <span>°C</span>
+                </div>
+                <div class="target-input-item">
+                    <span>함수율:</span>
+                    <input type="number" id="moistureInput" class="target-val-input" value="12" step="0.5">
+                    <span>%</span>
+                </div>
                 <div class="target-input-item">
                     <span>FC시간:</span>
                     <input type="text" id="targetFcTimeInput" class="target-val-input" value="06:20">
@@ -844,7 +872,7 @@
                         <button id="btnToggleTargetGuide" class="hist-btn target">🎯 AI 추천 타겟: ON</button>
                         <button id="btnToggleFCAnchor" class="hist-btn" style="border-color:var(--amber); color:var(--amber);">⚓ FC Anchored 정렬: OFF</button>
                         <span style="font-size:0.75rem; color:var(--purple); display:none;" id="refLegend">● 히스토리 가이드</span>
-                        <span style="font-size:0.75rem; color:var(--cyan);" id="targetLegend">--- AI 추천 타겟</span>
+                        <span style="font-size:0.75rem; color:var(--cyan);" id="targetLegend">--- AI 수치적분 BT/RoR</span>
                     </div>
                 </div>
                 <div class="chart-box">
@@ -911,25 +939,31 @@
         const appId = 'my-personal-roaster';
         let db, auth;
         let dbLogs = []; 
+        let unsubscribeHistory = null;
 
         try {
             const app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
-            signInAnonymously(auth).then(() => loadHistoryFromDB()).catch(() => loadHistoryFromDB());
+            signInAnonymously(auth).then(() => loadHistoryFromDB()).catch((err) => {
+                showToastPopup("Firebase 익명 인증 오류", "⚠️", "#f43f5e");
+                loadHistoryFromDB();
+            });
         } catch (error) {
-            document.getElementById('historyContainer').innerHTML = '<div class="empty-msg" style="color: var(--rose); text-align: center;">Firebase 연결 실패</div>';
+            document.getElementById('historyContainer').innerHTML = '<div class="empty-msg" style="color: var(--rose); text-align: center;">Firebase 초기화 실패</div>';
         }
 
         function loadHistoryFromDB() {
             if (!db) return;
+            if (unsubscribeHistory) unsubscribeHistory();
+
             const logsRef = query(collection(db, 'artifacts', appId, 'users', 'Samuel', 'roastingLogs'), orderBy('timestamp', 'desc'), limit(25));
-            onSnapshot(logsRef, (snapshot) => {
+            unsubscribeHistory = onSnapshot(logsRef, (snapshot) => {
                 dbLogs = [];
                 snapshot.forEach(doc => { dbLogs.push({ id: doc.id, ...doc.data() }); });
                 renderHistory();
             }, (err) => {
-                document.getElementById('historyContainer').innerHTML = '<div class="empty-msg" style="color: var(--rose); text-align: center;">DB 권한 오류</div>';
+                document.getElementById('historyContainer').innerHTML = `<div class="empty-msg" style="color: var(--rose); text-align: center;">DB 접근 오류: ${err.message}</div>`;
             });
         }
 
@@ -987,6 +1021,8 @@
             refLegend: document.getElementById('refLegend'),
             targetLegend: document.getElementById('targetLegend'),
             
+            chargeTempInput: document.getElementById('chargeTempInput'),
+            moistureInput: document.getElementById('moistureInput'),
             targetFcTimeInput: document.getElementById('targetFcTimeInput'),
             targetFcTempInput: document.getElementById('targetFcTempInput'),
             targetDevTimeInput: document.getElementById('targetDevTimeInput'),
@@ -1024,12 +1060,50 @@
         document.getElementById('dateDisplay').textContent = `${today.getFullYear()}.${String(today.getMonth()+1).padStart(2,'0')}.${String(today.getDate()).padStart(2,'0')}`;
 
         const state = {
-            isRunning: false, startTime: null, elapsed: 0, crackTime: null, crackTemp: null, endTime: null, animId: null,
-            recordedTemps: [],
-            devTimeSec: 0, devDeltaTemp: 0, rorFC: 0, relativeAUC: 0, effectiveAUC: 0, currentEmaRoR: 0,
-            selectedRefData: null, isFcAnchoredMode: false, isTargetGuideOn: true, refLogId: null,
-            alert150Triggered: false, alert170Triggered: false,
-            processMethod: 'Washed'
+            isRunning: false,
+            startTime: null,
+            elapsed: 0,
+            crackTime: null,
+            crackTemp: null,
+            endTime: null,
+            animId: null,
+            lastRenderTime: 0,
+            
+            samples: [],
+            
+            config: {
+                beanName: '',
+                processMethod: 'Washed',
+                greenWeight: 200,
+                roastedWeight: null,
+                chargeTempC: 170,
+                moistureFrac: 0.12,
+                targetFcTimeStr: '06:20',
+                targetFcTempC: 192,
+                targetDevSec: 60,
+                targetDeltaTempC: 5.5,
+                memo: ''
+            },
+            
+            metrics: {
+                devTimeSec: 0,
+                devDeltaTemp: 0,
+                rorFC: 0,
+                relativeAUC: 0,
+                effectiveAUC: 0,
+                currentEmaRoR: 0
+            },
+
+            ui: {
+                showIntervals: false,
+                isFcAnchoredMode: false,
+                isTargetGuideOn: true,
+                refLogId: null,
+                selectedRefData: null
+            },
+            
+            alert150Triggered: false,
+            alert170Triggered: false
         };
 
         const fmtMs = ms => ms === null ? '--' : `${String(Math.floor(ms/60000)).padStart(2,'0')}:${String(Math.floor((ms/1000)%60)).padStart(2,'0')}.${Math.floor((ms/100)%10)}`;
@@ -1041,38 +1115,127 @@
             return (parseInt(parts[0]) * 60) + parseInt(parts[1]);
         }
 
+        // 가공방식 선택 칩 이벤트
         document.querySelectorAll('.process-chip').forEach(chip => {
             chip.addEventListener('click', () => {
                 document.querySelectorAll('.process-chip').forEach(c => c.classList.remove('active'));
                 chip.classList.add('active');
-                state.processMethod = chip.dataset.process;
-                updateCoPilotGuidance(); updateLog(); updateChart();
+                state.config.processMethod = chip.dataset.process;
+                renderFullUI();
             });
         });
 
-        // 수동 온도 기록 핵심 함수
-        function recordCustomTemp() {
-            if (!state.isRunning && state.elapsed === 0) return;
-            const tempVal = parseInt(els.customTempInput.value);
-            if (isNaN(tempVal)) return;
+        // 용량 중량 변경 시 비선형 열질량 스케일링 계산기
+        function applyBatchWeightScaling(weightG) {
+            if (!weightG || weightG <= 0) return;
+            
+            const baseWeight = 200; // 기준 200g
+            const ratio = weightG / baseWeight;
 
-            const existingIdx = state.recordedTemps.findIndex(t => t.temp === tempVal);
-            if (existingIdx >= 0) state.recordedTemps[existingIdx].time = state.elapsed;
-            else state.recordedTemps.push({ temp: tempVal, time: state.elapsed });
+            // 기준 200g 추천값
+            const baseCharge = 170;
+            const baseFcSec = 380; // 06:20
+            const baseFcTemp = 192;
+            const baseDevSec = 60;
+            const baseDeltaTemp = 5.5;
+
+            // 스케일링 공식 연산
+            const recCharge = Math.round(baseCharge + (ratio - 1) * 12);
             
-            state.recordedTemps.sort((a, b) => a.temp - b.temp);
-            
-            checkTemperatureAlarms(tempVal);
-            applyEMASmoothing(); calculateAUC(); updateUI();
+            const recFcSec = Math.round(baseFcSec * Math.pow(ratio, 0.22));
+            const fcMin = Math.floor(recFcSec / 60);
+            const fcSec = recFcSec % 60;
+            const recFcTimeStr = `${String(fcMin).padStart(2,'0')}:${String(fcSec).padStart(2,'0')}`;
+
+            const recFcTemp = Number((baseFcTemp + (ratio - 1) * 1.0).toFixed(1));
+            const recDevSec = Math.round(baseDevSec * Math.pow(ratio, 0.15));
+            const recDeltaTemp = Number((baseDeltaTemp + (ratio - 1) * 0.5).toFixed(1));
+
+            // DOM 및 State 동시 대입
+            els.gw.value = weightG;
+            els.chargeTempInput.value = recCharge;
+            els.targetFcTimeInput.value = recFcTimeStr;
+            els.targetFcTempInput.value = recFcTemp;
+            els.targetDevTimeInput.value = recDevSec;
+            els.targetDeltaTempInput.value = recDeltaTemp;
+
+            syncInputsToState();
+            calcWL();
+            renderFullUI();
+
+            showToastPopup(`배치 ${weightG}g 맞춤 추천 수치로 자동 계산되었습니다!`, "⚖️", "#06b6d4");
         }
 
-        // 증감 버튼 클릭 시 [입력창 온도 반영 + 즉시 데이터 기록] 동시에 실행되는 원클릭 함수
+        // 용량 퀵선택 칩 이벤트 연결
+        document.querySelectorAll('.weight-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('.weight-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                const w = parseInt(chip.dataset.weight);
+                applyBatchWeightScaling(w);
+            });
+        });
+
+        // 중량 수동 입력 시 변경 감지
+        els.gw.addEventListener('change', (e) => {
+            const val = parseFloat(e.target.value);
+            if (val > 0) {
+                document.querySelectorAll('.weight-chip').forEach(c => {
+                    c.classList.toggle('active', parseInt(c.dataset.weight) === val);
+                });
+                applyBatchWeightScaling(val);
+            }
+        });
+
+        function syncInputsToState() {
+            state.config.beanName = els.bean.value;
+            state.config.greenWeight = parseFloat(els.gw.value) || 200;
+            state.config.roastedWeight = parseFloat(els.rw.value) || null;
+            state.config.chargeTempC = parseFloat(els.chargeTempInput.value) || 170;
+            state.config.moistureFrac = (parseFloat(els.moistureInput.value) || 12) / 100;
+            state.config.targetFcTimeStr = els.targetFcTimeInput.value;
+            state.config.targetFcTempC = parseFloat(els.targetFcTempInput.value) || 192;
+            state.config.targetDevSec = parseFloat(els.targetDevTimeInput.value) || 60;
+            state.config.targetDeltaTempC = parseFloat(els.targetDeltaTempInput.value) || 5.5;
+            state.config.memo = els.memo.value;
+            state.ui.showIntervals = els.chkShowIntervals.checked;
+        }
+
+        [els.bean, els.rw, els.chargeTempInput, els.moistureInput, els.targetFcTimeInput, els.targetFcTempInput, els.targetDevTimeInput, els.targetDeltaTempInput, els.memo, els.chkShowIntervals].forEach(input => {
+            input.addEventListener('input', () => {
+                syncInputsToState();
+                calcWL();
+                renderFullUI();
+            });
+        });
+
+        function recordSample(tempVal) {
+            if (!state.isRunning && state.elapsed === 0) return;
+            if (isNaN(tempVal)) return;
+
+            const sample = {
+                id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 's_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                tMs: state.elapsed,
+                tempC: tempVal,
+                rawRoR: null,
+                emaRoR: null
+            };
+
+            state.samples.push(sample);
+            state.samples.sort((a, b) => a.tMs - b.tMs);
+
+            checkTemperatureAlarms(tempVal);
+            recomputeEmaRoR();
+            calculateAUC();
+            renderFullUI();
+        }
+
         function adjustAndRecord(delta) {
             let currentVal = parseInt(els.customTempInput.value || 70);
             let newVal = Math.max(0, currentVal + delta);
             els.customTempInput.value = newVal;
             if (state.isRunning || state.elapsed > 0) {
-                recordCustomTemp();
+                recordSample(newVal);
             }
         }
 
@@ -1081,60 +1244,148 @@
         els.btnAdd2.onclick = () => adjustAndRecord(2);
         els.btnAdd5.onclick = () => adjustAndRecord(5);
 
-        els.btnRecordTemp.onclick = recordCustomTemp;
-        els.customTempInput.addEventListener('keypress', e => { if (e.key === 'Enter') recordCustomTemp(); });
+        els.btnRecordTemp.onclick = () => recordSample(parseInt(els.customTempInput.value));
+        els.customTempInput.addEventListener('keypress', e => { if (e.key === 'Enter') recordSample(parseInt(els.customTempInput.value)); });
 
-        [els.targetFcTimeInput, els.targetFcTempInput, els.targetDevTimeInput, els.targetDeltaTempInput].forEach(input => {
-            input.addEventListener('input', updateChart);
-        });
+        function recomputeEmaRoR(tauSec = 45) {
+            if (state.samples.length === 0) {
+                state.metrics.currentEmaRoR = 0;
+                return;
+            }
 
-        function getTargetBTAtTime(elapsedSec) {
-            if (state.selectedRefData && state.selectedRefData.recordedTemps && state.selectedRefData.recordedTemps.length > 0) {
-                let recs = state.selectedRefData.recordedTemps;
-                let t0 = recs[0].time / 1000;
-                let tLast = recs[recs.length - 1].time / 1000;
+            let prev = null;
+            let ema = null;
+
+            for (let i = 0; i < state.samples.length; i++) {
+                const s = state.samples[i];
+                if (!prev) {
+                    s.rawRoR = null;
+                    s.emaRoR = null;
+                    prev = s;
+                    continue;
+                }
+
+                const dtSec = (s.tMs - prev.tMs) / 1000;
+                if (dtSec <= 0) {
+                    s.rawRoR = prev.rawRoR;
+                    s.emaRoR = prev.emaRoR;
+                    continue;
+                }
+
+                const raw = ((s.tempC - prev.tempC) * 60) / dtSec;
+                const alpha = 1 - Math.exp(-dtSec / tauSec);
+                ema = (ema === null) ? raw : (ema + alpha * (raw - ema));
+
+                s.rawRoR = Number(raw.toFixed(2));
+                s.emaRoR = Number(ema.toFixed(2));
+                prev = s;
+            }
+
+            const lastSample = state.samples[state.samples.length - 1];
+            state.metrics.currentEmaRoR = (lastSample && lastSample.emaRoR !== null) ? lastSample.emaRoR : 0;
+        }
+
+        function getAdjustedRoRModel({ tSec, beanTempC, baseRoR, batchG, chargeTempC, moistureFrac, processMethod }) {
+            const processPriors = {
+                Washed: { density: 1.05, latent: 1.0 },
+                Natural: { density: 0.98, latent: 1.15 },
+                Decaf: { density: 0.90, latent: 0.85 },
+                Anaerobic: { density: 0.96, latent: 1.20 },
+                Infused: { density: 0.95, latent: 1.25 }
+            };
+
+            const prior = processPriors[processMethod] || processPriors.Washed;
+            const massRatio = batchG / 200;
+            const capacityExponent = 0.8;
+            const capacity = Math.pow(massRatio, capacityExponent) * prior.density;
+
+            const referenceChargeC = 170;
+            const drumExcess = chargeTempC - referenceChargeC;
+            const kDrum = 0.12;
+            const drumTauSec = 180;
+            const drumMassExponent = 0.3;
+            const drumTerm = (kDrum * drumExcess * Math.exp(-tSec / (drumTauSec * Math.pow(massRatio, drumMassExponent)))) / capacity;
+
+            const referenceMoisture = 0.12;
+            const latentSigmaC = 18;
+            const kLatent = 3.5;
+            const z = (beanTempC - 125) / latentSigmaC;
+            const latentTerm = (kLatent * prior.latent * (massRatio * (moistureFrac / referenceMoisture)) * Math.exp(-0.5 * z * z)) / capacity;
+
+            return Math.max(0, baseRoR + drumTerm - latentTerm);
+        }
+
+        function generateDynamicTargetCurve(isAnchored, curFcTimeSec) {
+            const chargeC = state.config.chargeTempC;
+            const batchG = state.config.greenWeight;
+            const moistureFrac = state.config.moistureFrac;
+            const processMethod = state.config.processMethod;
+            
+            const targetFcSec = parseMMSS(state.config.targetFcTimeStr);
+            const targetDevSec = state.config.targetDevSec;
+            const totalSec = targetFcSec + targetDevSec;
+
+            const btPoints = [];
+            const rorPoints = [];
+
+            let curBT = 70.0;
+            
+            for (let t = 0; t <= totalSec; t++) {
+                let progressRatio = t / totalSec;
+                let baseRoR = 24.0 * Math.exp(-1.8 * progressRatio) + 4.0;
                 
-                if (elapsedSec <= t0) return recs[0].temp;
-                if (elapsedSec >= tLast) return recs[recs.length - 1].temp;
+                let adjRoR = getAdjustedRoRModel({
+                    tSec: t,
+                    beanTempC: curBT,
+                    baseRoR: baseRoR,
+                    batchG: batchG,
+                    chargeTempC: chargeC,
+                    moistureFrac: moistureFrac,
+                    processMethod: processMethod
+                });
 
-                for (let i = 0; i < recs.length - 1; i++) {
-                    let t1 = recs[i].time / 1000;
-                    let t2 = recs[i+1].time / 1000;
-                    if (elapsedSec >= t1 && elapsedSec <= t2) {
-                        let ratio = (elapsedSec - t1) / (t2 - t1);
-                        return recs[i].temp + ratio * (recs[i+1].temp - recs[i].temp);
-                    }
+                if (t % 10 === 0 || t === totalSec) {
+                    let xVal = isAnchored ? (t - targetFcSec) : (t / 60);
+                    btPoints.push({ x: xVal, y: Number(curBT.toFixed(1)) });
+                    rorPoints.push({ x: xVal, y: Number(adjRoR.toFixed(1)) });
                 }
+
+                curBT += adjRoR / 60;
             }
 
-            let targetFcSec = parseMMSS(els.targetFcTimeInput.value);
-            let targetFcTemp = parseFloat(els.targetFcTempInput.value) || 192;
-            let targetDevSec = parseFloat(els.targetDevTimeInput.value) || 60;
-            let targetDeltaTemp = parseFloat(els.targetDeltaTempInput.value) || 5.5;
+            return { bt: btPoints, ror: rorPoints };
+        }
 
-            let m150Ratio = 0.45;
-            if (state.processMethod === 'Natural' || state.processMethod === 'Decaf') m150Ratio = 0.50;
-            if (state.processMethod === 'Anaerobic' || state.processMethod === 'Infused') m150Ratio = 0.52;
+        function predictFromSamples(nowMs, horizonMin = 1.5) {
+            if (state.samples.length < 3) return null;
 
-            let points = [
-                { time: 0, temp: 70 },
-                { time: targetFcSec * 0.15, temp: 100 },
-                { time: targetFcSec * m150Ratio, temp: 150 },
-                { time: targetFcSec * 0.72, temp: 170 },
-                { time: targetFcSec, temp: targetFcTemp },
-                { time: targetFcSec + targetDevSec, temp: targetFcTemp + targetDeltaTemp }
-            ];
+            const validSamples = state.samples
+                .filter(x => x.emaRoR !== null && Number.isFinite(x.emaRoR))
+                .sort((a, b) => a.tMs - b.tMs)
+                .slice(-3);
 
-            if (elapsedSec <= 0) return points[0].temp;
-            if (elapsedSec >= points[points.length - 1].time) return points[points.length - 1].temp;
+            if (validSamples.length < 3) return null;
 
-            for (let i = 0; i < points.length - 1; i++) {
-                if (elapsedSec >= points[i].time && elapsedSec <= points[i + 1].time) {
-                    let ratio = (elapsedSec - points[i].time) / (points[i + 1].time - points[i].time);
-                    return points[i].temp + ratio * (points[i + 1].temp - points[i].temp);
-                }
-            }
-            return 100;
+            const last = validSamples[validSamples.length - 1];
+            const secondLast = validSamples[validSamples.length - 2];
+            
+            if (nowMs - last.tMs > 90000) return null;
+
+            const dtMin = (last.tMs - secondLast.tMs) / 60000;
+            if (dtMin <= 0) return null;
+
+            const accel = (last.emaRoR - secondLast.emaRoR) / dtMin;
+            const ageMin = (nowMs - last.tMs) / 60000;
+            const h = ageMin + horizonMin;
+
+            const predictedRoR = Math.max(0, last.emaRoR + accel * h);
+            const predictedBT = last.tempC + (last.emaRoR * h) + (0.5 * accel * h * h);
+
+            return {
+                predictedRoR: Number(predictedRoR.toFixed(1)),
+                predictedBT: Number(predictedBT.toFixed(1)),
+                accel: Number(accel.toFixed(2))
+            };
         }
 
         function updateCoPilotGuidance() {
@@ -1143,32 +1394,36 @@
                 els.pilotStatusBadge.style.color = "var(--emerald)";
                 els.pilotStatusBadge.style.borderColor = "var(--emerald)";
                 els.pilotCommandText.textContent = "로스팅 시작 대기 중입니다. 스페이스바를 누르세요.";
-                els.pilotDetailText.textContent = `가공방식: ${state.processMethod} | ${state.selectedRefData ? '📌 내 레퍼런스 데이터 추적' : '🎯 AI 타겟 추적'}`;
+                els.pilotDetailText.textContent = `가공: ${state.config.processMethod} | 예열: ${state.config.chargeTempC}°C | 중량: ${state.config.greenWeight}g`;
                 return;
             }
 
             let curSec = state.elapsed / 1000;
-            let targetBT = getTargetBTAtTime(curSec);
-            let lastRecorded = state.recordedTemps.length > 0 ? state.recordedTemps[state.recordedTemps.length - 1] : null;
-            let curBT = lastRecorded ? lastRecorded.temp : 70;
+            let targetCurves = generateDynamicTargetCurve(false, 0);
+            let targetBT = targetCurves.bt.length > 0 ? targetCurves.bt[Math.min(Math.floor(curSec / 10), targetCurves.bt.length - 1)].y : 70;
+            
+            let lastRecorded = state.samples.length > 0 ? state.samples[state.samples.length - 1] : null;
+            let curBT = lastRecorded ? lastRecorded.tempC : 70;
             let diff = curBT - targetBT;
-            let refModeText = state.selectedRefData ? "[레퍼런스 추적]" : `[${state.processMethod} AI 타겟]`;
+            let pred = predictFromSamples(state.elapsed);
+
+            if (pred && curBT >= 130 && curBT < 185 && !state.crackTime) {
+                if (pred.accel < -5.0) {
+                    els.pilotStatusBadge.textContent = "PREDICTIVE DROP";
+                    els.pilotStatusBadge.style.color = "var(--rose)";
+                    els.pilotStatusBadge.style.borderColor = "var(--rose)";
+                    els.pilotCommandText.textContent = "⚠️ 1.5분 뒤 열 모멘텀 붕괴 예측! 화력을 5~10% 올리세요.";
+                    els.pilotDetailText.textContent = `예측 1.5분 뒤 RoR: +${pred.predictedRoR}°C/m (가속도: ${pred.accel}°C/m²)`;
+                    return;
+                }
+            }
 
             if (curBT >= 143 && curBT < 150) {
                 els.pilotStatusBadge.textContent = "PHASE PREPARE";
                 els.pilotStatusBadge.style.color = "var(--amber)";
                 els.pilotStatusBadge.style.borderColor = "var(--amber)";
-                els.pilotCommandText.textContent = "🔥 메일라드 구간 준비: 150°C 알람 시 가스 15% 1차 감축";
-                els.pilotDetailText.textContent = `${refModeText} 현재 BT: ${curBT}°C | 목표: ${targetBT.toFixed(1)}°C`;
-                return;
-            }
-
-            if (curBT >= 165 && curBT < 170) {
-                els.pilotStatusBadge.textContent = "PHASE PREPARE";
-                els.pilotStatusBadge.style.color = "var(--amber)";
-                els.pilotStatusBadge.style.borderColor = "var(--amber)";
-                els.pilotCommandText.textContent = "⚡ 카라멜화 구간 준비: 170°C 알람 시 가스 50% 2차 감축";
-                els.pilotDetailText.textContent = `${refModeText} 현재 BT: ${curBT}°C | 목표: ${targetBT.toFixed(1)}°C`;
+                els.pilotCommandText.textContent = "🔥 메일라드 구간 준비: 150°C 도달 시 체프 풍량 증량";
+                els.pilotDetailText.textContent = `현재 BT: ${curBT}°C | 적분 타겟 BT: ${targetBT.toFixed(1)}°C`;
                 return;
             }
 
@@ -1176,8 +1431,8 @@
                 els.pilotStatusBadge.textContent = "FC PREPARE";
                 els.pilotStatusBadge.style.color = "var(--cyan)";
                 els.pilotStatusBadge.style.borderColor = "var(--cyan)";
-                els.pilotCommandText.textContent = "💥 1차 크랙 연착륙: 가스 40~45% 감축 (RoR_FC +12°C/m 목표)";
-                els.pilotDetailText.textContent = `${refModeText} 현재 BT: ${curBT}°C | 1차 크랙 예상: 190~192°C`;
+                els.pilotCommandText.textContent = "💥 1차 크랙 연착륙: 가스 미세 축소 (RoR_FC +12°C/m 목표)";
+                els.pilotDetailText.textContent = `현재 BT: ${curBT}°C | 1차 크랙 예상: 190~192°C`;
                 return;
             }
 
@@ -1185,8 +1440,8 @@
                 els.pilotStatusBadge.textContent = "DEV PHASE";
                 els.pilotStatusBadge.style.color = "var(--rose)";
                 els.pilotStatusBadge.style.borderColor = "var(--rose)";
-                els.pilotCommandText.textContent = `🏁 개발 진행 중: t_dev 60초 / ΔT +5.5°C 달성 시 배출 [E]`;
-                els.pilotDetailText.textContent = `경과 개발시간: ${state.devTimeSec}초 | 상승온도: +${state.devDeltaTemp.toFixed(1)}°C`;
+                els.pilotCommandText.textContent = `🏁 개발 진행 중: t_dev ${state.config.targetDevSec}초 / ΔT +${state.config.targetDeltaTempC}°C 달성 시 배출 [E]`;
+                els.pilotDetailText.textContent = `경과 개발시간: ${state.metrics.devTimeSec}초 | 상승온도: +${state.metrics.devDeltaTemp.toFixed(1)}°C`;
                 return;
             }
 
@@ -1194,85 +1449,55 @@
                 els.pilotStatusBadge.textContent = "OVERHEAT";
                 els.pilotStatusBadge.style.color = "var(--rose)";
                 els.pilotStatusBadge.style.borderColor = "var(--rose)";
-                els.pilotCommandText.textContent = "🔥 속도가 빠릅니다! 가스 15% 감축 필요";
-                els.pilotDetailText.textContent = `${refModeText} +${diff.toFixed(1)}°C 과열 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
-            } else if (diff > 0.8) {
-                els.pilotStatusBadge.textContent = "SLIGHTLY FAST";
-                els.pilotStatusBadge.style.color = "var(--amber)";
-                els.pilotStatusBadge.style.borderColor = "var(--amber)";
-                els.pilotCommandText.textContent = "📉 진행이 약간 빠릅니다. 가스를 5% 미세 축소하세요.";
-                els.pilotDetailText.textContent = `${refModeText} +${diff.toFixed(1)}°C 높음 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
+                els.pilotCommandText.textContent = "🔥 속도가 빠릅니다! 가스 10~15% 감축 필요";
+                els.pilotDetailText.textContent = `+${diff.toFixed(1)}°C 과열 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
             } else if (diff < -2.5) {
                 els.pilotStatusBadge.textContent = "TOO SLOW";
                 els.pilotStatusBadge.style.color = "var(--cyan)";
                 els.pilotStatusBadge.style.borderColor = "var(--cyan)";
-                els.pilotCommandText.textContent = "❄️ 속도가 느립니다! 가스 15% 증량 필요";
-                els.pilotDetailText.textContent = `${refModeText} ${diff.toFixed(1)}°C 미달 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
-            } else if (diff < -0.8) {
-                els.pilotStatusBadge.textContent = "SLIGHTLY SLOW";
-                els.pilotStatusBadge.style.color = "var(--cyan)";
-                els.pilotStatusBadge.style.borderColor = "var(--cyan)";
-                els.pilotCommandText.textContent = "📈 진행이 약간 느립니다. 가스를 5% 올려주세요.";
-                els.pilotDetailText.textContent = `${refModeText} ${diff.toFixed(1)}°C 낮음 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
+                els.pilotCommandText.textContent = "❄️ 속도가 느립니다! 가스 10~15% 증량 필요";
+                els.pilotDetailText.textContent = `${diff.toFixed(1)}°C 미달 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
             } else {
                 els.pilotStatusBadge.textContent = "ON TRACK";
                 els.pilotStatusBadge.style.color = "var(--emerald)";
                 els.pilotStatusBadge.style.borderColor = "var(--emerald)";
                 els.pilotCommandText.textContent = "🟢 최적 프로파일 레일 순항 중! 현재 화력을 유지하세요.";
-                els.pilotDetailText.textContent = `${refModeText} 목표 오차 범위 내 안정 진입 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
+                els.pilotDetailText.textContent = `목표 오차 범위 내 안정 진입 (목표: ${targetBT.toFixed(1)}°C / 현재: ${curBT}°C)`;
             }
-        }
-
-        function applyEMASmoothing() {
-            if (state.recordedTemps.length === 0) return;
-            let alpha = 0.35, prevEMA = 0;
-            for (let i = 0; i < state.recordedTemps.length; i++) {
-                if (i === 0) {
-                    state.recordedTemps[i].rawRoR = 0; state.recordedTemps[i].emaRoR = 0; prevEMA = 0;
-                } else {
-                    let prev = state.recordedTemps[i - 1], curr = state.recordedTemps[i];
-                    let dtMin = (curr.time - prev.time) / 60000;
-                    let rawRoR = dtMin > 0 ? (curr.temp - prev.temp) / dtMin : 0;
-                    curr.rawRoR = Number(rawRoR.toFixed(2));
-                    if (i === 1) prevEMA = rawRoR;
-                    let ema = (alpha * rawRoR) + ((1 - alpha) * prevEMA);
-                    curr.emaRoR = Number(ema.toFixed(2)); prevEMA = ema;
-                }
-            }
-            state.currentEmaRoR = state.recordedTemps.length > 0 ? state.recordedTemps[state.recordedTemps.length - 1].emaRoR : 0;
         }
 
         function calculateAUC() {
             if (!state.crackTime || !state.crackTemp) {
-                state.devTimeSec = 0; state.devDeltaTemp = 0; state.relativeAUC = 0; state.effectiveAUC = 0; return;
+                state.metrics.devTimeSec = 0; state.metrics.devDeltaTemp = 0; state.metrics.relativeAUC = 0; state.metrics.effectiveAUC = 0; return;
             }
             const curTime = state.endTime || state.elapsed;
-            state.devTimeSec = Math.max(0, Math.floor((curTime - state.crackTime) / 1000));
+            state.metrics.devTimeSec = Math.max(0, Math.floor((curTime - state.crackTime) / 1000));
             
-            let lastTemp = state.recordedTemps.length > 0 ? state.recordedTemps[state.recordedTemps.length - 1].temp : state.crackTemp;
-            state.devDeltaTemp = Number(Math.max(0, lastTemp - state.crackTemp).toFixed(1));
+            let lastSample = state.samples.length > 0 ? state.samples[state.samples.length - 1] : null;
+            let lastTemp = lastSample ? lastSample.tempC : state.crackTemp;
+            state.metrics.devDeltaTemp = Number(Math.max(0, lastTemp - state.crackTemp).toFixed(1));
 
-            let devPoints = state.recordedTemps.filter(t => t.time >= state.crackTime);
+            let devPoints = state.samples.filter(t => t.tMs >= state.crackTime);
             let relAUC = 0;
             if (devPoints.length >= 2) {
                 for (let i = 1; i < devPoints.length; i++) {
                     let pPrev = devPoints[i - 1], pCurr = devPoints[i];
-                    let dtSec = (pCurr.time - pPrev.time) / 1000;
-                    let relPrev = Math.max(0, pPrev.temp - state.crackTemp);
-                    let relCurr = Math.max(0, pCurr.temp - state.crackTemp);
+                    let dtSec = (pCurr.tMs - pPrev.tMs) / 1000;
+                    let relPrev = Math.max(0, pPrev.tempC - state.crackTemp);
+                    let relCurr = Math.max(0, pCurr.tempC - state.crackTemp);
                     relAUC += ((relPrev + relCurr) / 2) * dtSec;
                 }
             }
-            state.relativeAUC = Number(relAUC.toFixed(1));
-            let thermalInertiaFactor = 1 + (state.rorFC / 100);
-            state.effectiveAUC = Number((state.relativeAUC * thermalInertiaFactor).toFixed(1));
+            state.metrics.relativeAUC = Number(relAUC.toFixed(1));
+            let thermalInertiaFactor = 1 + (state.metrics.rorFC / 100);
+            state.metrics.effectiveAUC = Number((state.metrics.relativeAUC * thermalInertiaFactor).toFixed(1));
         }
 
         function calculateDevEquivalence() {
-            if (!state.selectedRefData || !state.crackTime) {
+            if (!state.ui.selectedRefData || !state.crackTime) {
                 els.devMatchCard.classList.remove('active'); return;
             }
-            const ref = state.selectedRefData;
+            const ref = state.ui.selectedRefData;
             els.devMatchCard.classList.add('active');
 
             const getSim = (valA, valB) => {
@@ -1281,10 +1506,10 @@
                 return Math.max(0, (1 - (Math.abs(valA - valB) / maxVal)) * 100);
             };
 
-            const timeSim = getSim(state.devTimeSec, ref.devTimeSec || 0);
-            const tempSim = getSim(state.devDeltaTemp, ref.devDeltaTemp || 0);
-            const aucSim = getSim(state.effectiveAUC, ref.effectiveAUC || 0);
-            const rorSim = getSim(state.rorFC, ref.rorFC || 0);
+            const timeSim = getSim(state.metrics.devTimeSec, ref.devTimeSec || 0);
+            const tempSim = getSim(state.metrics.devDeltaTemp, ref.devDeltaTemp || 0);
+            const aucSim = getSim(state.metrics.effectiveAUC, ref.effectiveAUC || 0);
+            const rorSim = getSim(state.metrics.rorFC, ref.rorFC || 0);
 
             const totalScore = (timeSim * 0.2) + (tempSim * 0.2) + (aucSim * 0.3) + (rorSim * 0.3);
 
@@ -1295,20 +1520,33 @@
             els.rorMatchVal.textContent = `${rorSim.toFixed(0)}%`;
         }
 
-        function toggleTimer() {
+        function timerLoop(timestamp) {
             if (state.isRunning) {
-                state.isRunning = false; els.start.classList.remove('running'); cancelAnimationFrame(state.animId);
-            } else {
-                if (state.endTime !== null) resetAll();
-                state.isRunning = true; state.startTime = Date.now() - state.elapsed;
-                els.start.classList.add('running'); state.animId = requestAnimationFrame(loop);
+                const now = performance.now();
+                state.elapsed = now - state.startTime;
+                
+                if (now - state.lastRenderTime >= 100) {
+                    els.timer.textContent = fmtMs(state.elapsed);
+                    els.timer.classList.toggle('crack-phase', state.crackTime && !state.endTime && state.isRunning);
+                    updateCoPilotGuidance();
+                    state.lastRenderTime = now;
+                }
+                state.animId = requestAnimationFrame(timerLoop);
             }
         }
 
-        function loop() {
+        function toggleTimer() {
             if (state.isRunning) {
-                state.elapsed = Date.now() - state.startTime;
-                updateUI(); state.animId = requestAnimationFrame(loop);
+                state.isRunning = false;
+                els.start.classList.remove('running');
+                cancelAnimationFrame(state.animId);
+            } else {
+                if (state.endTime !== null) resetAll();
+                state.isRunning = true;
+                state.startTime = performance.now() - state.elapsed;
+                state.lastRenderTime = performance.now();
+                els.start.classList.add('running');
+                state.animId = requestAnimationFrame(timerLoop);
             }
         }
 
@@ -1322,19 +1560,22 @@
             }
         }
 
-        function deleteTemp(tempVal) {
-            state.recordedTemps = state.recordedTemps.filter(t => t.temp !== tempVal); 
-            applyEMASmoothing(); calculateAUC(); updateUI();
+        function deleteSample(id) {
+            state.samples = state.samples.filter(s => s.id !== id);
+            recomputeEmaRoR(); calculateAUC(); renderFullUI();
         }
 
+        // 수동 입력 태그 렌더링 (최신 기록이 맨 위로 오도록 역순[reverse] 정렬!)
         function renderTempTags() {
             els.dynamicTags.innerHTML = '';
-            state.recordedTemps.forEach(item => {
+            const reversedSamples = [...state.samples].reverse();
+            
+            reversedSamples.forEach(item => {
                 const tag = document.createElement('div'); tag.className = 'tag';
-                const spanTemp = document.createElement('span'); spanTemp.textContent = `${item.temp}°C`;
-                const spanTime = document.createElement('span'); spanTime.className = 'tag-time'; spanTime.textContent = fmtShort(item.time);
+                const spanTemp = document.createElement('span'); spanTemp.textContent = `${item.tempC}°C`;
+                const spanTime = document.createElement('span'); spanTime.className = 'tag-time'; spanTime.textContent = fmtShort(item.tMs);
                 const btnDel = document.createElement('button'); btnDel.className = 'tag-del'; btnDel.textContent = '×';
-                btnDel.onclick = () => deleteTemp(item.temp);
+                btnDel.onclick = () => deleteSample(item.id);
                 tag.appendChild(spanTemp); tag.appendChild(spanTime); tag.appendChild(btnDel);
                 els.dynamicTags.appendChild(tag);
             });
@@ -1342,34 +1583,39 @@
 
         function resetAll() {
             state.isRunning = false; state.elapsed = 0; state.crackTime = null; state.crackTemp = null; state.endTime = null;
-            state.recordedTemps = []; state.rorFC = 0; state.currentEmaRoR = 0;
-            state.devTimeSec = 0; state.devDeltaTemp = 0; state.relativeAUC = 0; state.effectiveAUC = 0;
+            state.samples = [];
+            state.metrics = { devTimeSec: 0, devDeltaTemp: 0, rorFC: 0, relativeAUC: 0, effectiveAUC: 0, currentEmaRoR: 0 };
             state.alert150Triggered = false; state.alert170Triggered = false;
             
             els.customTempInput.value = 70; 
             els.start.classList.remove('running'); els.crack.classList.remove('done'); els.end.classList.remove('done');
-            els.dtrInput.value = ''; updateUI();
+            els.dtrInput.value = '';
+            renderFullUI();
         }
 
         async function saveToHistoryDB() {
             const finalLog = els.log.textContent;
-            const beanName = els.bean.value || '미입력 원두';
+            const beanName = state.config.beanName || '미입력 원두';
             const now = new Date();
             const dateStr = `${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
             
             if (!db) return; 
             try {
                 await addDoc(collection(db, 'artifacts', appId, 'users', 'Samuel', 'roastingLogs'), {
-                    title: `${dateStr} - [${state.processMethod}] ${beanName}`, logText: finalLog,
+                    title: `${dateStr} - [${state.config.processMethod}] ${beanName}`, logText: finalLog,
                     isFavorite: false,
                     rawData: { 
-                        bean: beanName, processMethod: state.processMethod, recordedTemps: state.recordedTemps, 
-                        crackTime: state.crackTime, crackTemp: state.crackTemp, rorFC: state.rorFC, endTime: state.endTime,
-                        devTimeSec: state.devTimeSec, devDeltaTemp: state.devDeltaTemp, relativeAUC: state.relativeAUC, effectiveAUC: state.effectiveAUC
+                        bean: beanName, processMethod: state.config.processMethod, chargeTemp: state.config.chargeTempC,
+                        samples: state.samples, recordedTemps: state.samples.map(s => ({ temp: s.tempC, time: s.tMs, emaRoR: s.emaRoR })), 
+                        crackTime: state.crackTime, crackTemp: state.crackTemp, rorFC: state.metrics.rorFC, endTime: state.endTime,
+                        devTimeSec: state.metrics.devTimeSec, devDeltaTemp: state.metrics.devDeltaTemp, relativeAUC: state.metrics.relativeAUC, effectiveAUC: state.metrics.effectiveAUC
                     },
                     timestamp: Date.now()
                 });
-            } catch(e) {}
+                showToastPopup("로스팅 히스토리가 DB에 저장되었습니다!", "✅", "#10b981");
+            } catch(e) {
+                showToastPopup(`DB 저장 실패: ${e.message}`, "⚠️", "#f43f5e");
+            }
         }
 
         els.dbSearchInput.addEventListener('input', renderHistory);
@@ -1420,19 +1666,19 @@
                 };
 
                 const refBtn = document.createElement('button');
-                refBtn.className = `hist-btn ref ${state.refLogId === log.id ? 'active' : ''}`;
-                refBtn.textContent = state.refLogId === log.id ? '가이드 해제' : '가이드 적용';
+                refBtn.className = `hist-btn ref ${state.ui.refLogId === log.id ? 'active' : ''}`;
+                refBtn.textContent = state.ui.refLogId === log.id ? '가이드 해제' : '가이드 적용';
                 refBtn.onclick = (e) => {
                     e.stopPropagation();
-                    if (state.refLogId === log.id) {
-                        state.refLogId = null; state.selectedRefData = null;
+                    if (state.ui.refLogId === log.id) {
+                        state.ui.refLogId = null; state.ui.selectedRefData = null;
                         els.refLegend.style.display = 'none';
                     } else {
-                        state.refLogId = log.id;
-                        state.selectedRefData = log.rawData || null;
+                        state.ui.refLogId = log.id;
+                        state.ui.selectedRefData = log.rawData || null;
                         els.refLegend.style.display = 'inline';
                     }
-                    renderHistory(); updateUI();
+                    renderHistory(); renderFullUI();
                 };
 
                 const copyBtn = document.createElement('button'); copyBtn.className = 'hist-btn'; copyBtn.textContent = '복사';
@@ -1463,64 +1709,62 @@
         };
 
         els.btnToggleFCAnchor.onclick = () => {
-            state.isFcAnchoredMode = !state.isFcAnchoredMode;
-            els.btnToggleFCAnchor.textContent = `⚓ FC Anchored 오버레이: ${state.isFcAnchoredMode ? 'ON' : 'OFF'}`;
-            els.btnToggleFCAnchor.style.borderColor = state.isFcAnchoredMode ? 'var(--amber)' : 'rgba(255,255,255,0.1)';
-            els.chartTitleText.textContent = state.isFcAnchoredMode ? '⚓ FC Anchored 정렬 프로파일' : '📉 프로파일 프로젝션';
+            state.ui.isFcAnchoredMode = !state.ui.isFcAnchoredMode;
+            els.btnToggleFCAnchor.textContent = `⚓ FC Anchored 오버레이: ${state.ui.isFcAnchoredMode ? 'ON' : 'OFF'}`;
+            els.btnToggleFCAnchor.style.borderColor = state.ui.isFcAnchoredMode ? 'var(--amber)' : 'rgba(255,255,255,0.1)';
+            els.chartTitleText.textContent = state.ui.isFcAnchoredMode ? '⚓ FC Anchored 정렬 프로파일' : '📉 프로파일 프로젝션';
             updateChart();
         };
 
         els.btnToggleTargetGuide.onclick = () => {
-            state.isTargetGuideOn = !state.isTargetGuideOn;
-            els.btnToggleTargetGuide.textContent = `🎯 AI 추천 타겟: ${state.isTargetGuideOn ? 'ON' : 'OFF'}`;
-            els.btnToggleTargetGuide.style.borderColor = state.isTargetGuideOn ? 'var(--cyan)' : 'rgba(255,255,255,0.1)';
-            els.targetLegend.style.display = state.isTargetGuideOn ? 'inline' : 'none';
+            state.ui.isTargetGuideOn = !state.ui.isTargetGuideOn;
+            els.btnToggleTargetGuide.textContent = `🎯 AI 추천 타겟: ${state.ui.isTargetGuideOn ? 'ON' : 'OFF'}`;
+            els.btnToggleTargetGuide.style.borderColor = state.ui.isTargetGuideOn ? 'var(--cyan)' : 'rgba(255,255,255,0.1)';
+            els.targetLegend.style.display = state.ui.isTargetGuideOn ? 'inline' : 'none';
             updateChart();
         };
 
         els.dtrInput.addEventListener('change', (e) => {
-            if (!state.crackTime) { alert('1차 크랙 시간이 먼저 기록되어야 역계산이 가능합니다.'); updateUI(); return; }
-            const val = parseFloat(e.target.value); if (isNaN(val) || val <= 0 || val >= 100) { updateUI(); return; }
+            if (!state.crackTime) { alert('1차 크랙 시간이 먼저 기록되어야 역계산이 가능합니다.'); renderFullUI(); return; }
+            const val = parseFloat(e.target.value); if (isNaN(val) || val <= 0 || val >= 100) { renderFullUI(); return; }
             state.endTime = state.crackTime / (1 - (val / 100)); state.elapsed = state.endTime; 
             if (state.isRunning) toggleTimer(); 
             els.dtrInput.blur(); 
-            if (!els.end.classList.contains('done')) { els.end.classList.add('done'); updateUI(); saveToHistoryDB(); } else { updateUI(); }
+            if (!els.end.classList.contains('done')) { els.end.classList.add('done'); renderFullUI(); saveToHistoryDB(); } else { renderFullUI(); }
         });
 
         els.crack.onclick = () => { 
             if (state.crackTime || (!state.isRunning && !state.elapsed)) return; 
             state.crackTime = state.elapsed; 
-            let lastRec = state.recordedTemps.length > 0 ? state.recordedTemps[state.recordedTemps.length - 1] : null;
-            state.crackTemp = lastRec ? lastRec.temp : 192;
-            state.rorFC = state.currentEmaRoR || 10.0;
-            els.rorFCDisplay.textContent = `${state.rorFC.toFixed(1)}°/m`;
-            els.crack.classList.add('done'); updateUI(); 
+            let lastRec = state.samples.length > 0 ? state.samples[state.samples.length - 1] : null;
+            state.crackTemp = lastRec ? lastRec.tempC : 192;
+            state.metrics.rorFC = state.metrics.currentEmaRoR || 10.0;
+            els.rorFCDisplay.textContent = `${state.metrics.rorFC.toFixed(1)}°/m`;
+            els.crack.classList.add('done'); renderFullUI(); 
         };
 
         els.end.onclick = () => { 
             if (state.endTime || (!state.isRunning && !state.elapsed)) return; 
             state.endTime = state.elapsed; els.end.classList.add('done'); 
             if (state.isRunning) toggleTimer(); 
-            calculateAUC(); updateUI(); saveToHistoryDB(); 
+            calculateAUC(); renderFullUI(); saveToHistoryDB(); 
         };
 
         els.start.onclick = toggleTimer; document.getElementById('btnReset').onclick = resetAll;
-        els.chkShowIntervals.addEventListener('change', updateLog);
 
-        function calcWL() { const g = parseFloat(els.gw.value), r = parseFloat(els.rw.value); els.wl.textContent = (g > 0 && r > 0 && g > r) ? ((g - r) / g * 100).toFixed(1) : '--'; updateLog(); }
-        [els.gw, els.rw, els.bean, els.memo].forEach(el => el.addEventListener('input', () => { if(el !== els.memo && el !== els.bean) calcWL(); updateLog(); }));
+        function calcWL() { const g = parseFloat(els.gw.value), r = parseFloat(els.rw.value); els.wl.textContent = (g > 0 && r > 0 && g > r) ? ((g - r) / g * 100).toFixed(1) : '--'; }
 
-        function updateUI() {
-            els.timer.textContent = fmtMs(state.elapsed);
-            els.timer.classList.toggle('crack-phase', state.crackTime && !state.endTime && state.isRunning);
-            
-            calculateAUC(); calculateDevEquivalence(); updateCoPilotGuidance();
+        function renderFullUI() {
+            syncInputsToState();
+            calculateAUC();
+            calculateDevEquivalence();
+            updateCoPilotGuidance();
 
-            els.devTimeSecDisplay.textContent = `${state.devTimeSec}s`;
-            els.devDeltaTempDisplay.textContent = `+${state.devDeltaTemp.toFixed(1)}°C`;
-            els.rorFCDisplay.textContent = state.rorFC > 0 ? `${state.rorFC.toFixed(1)}` : '--';
-            els.effectiveAUCDisplay.textContent = `${state.effectiveAUC.toFixed(1)}`;
-            els.rorDisplay.textContent = state.currentEmaRoR > 0 ? `+${state.currentEmaRoR.toFixed(1)}` : '--';
+            els.devTimeSecDisplay.textContent = `${state.metrics.devTimeSec}s`;
+            els.devDeltaTempDisplay.textContent = `+${state.metrics.devDeltaTemp.toFixed(1)}°C`;
+            els.rorFCDisplay.textContent = state.metrics.rorFC > 0 ? `${state.metrics.rorFC.toFixed(1)}` : '--';
+            els.effectiveAUCDisplay.textContent = `${state.metrics.effectiveAUC.toFixed(1)}`;
+            els.rorDisplay.textContent = state.metrics.currentEmaRoR > 0 ? `+${state.metrics.currentEmaRoR.toFixed(1)}` : '--';
 
             const curTime = state.endTime || state.elapsed;
             if (state.crackTime) {
@@ -1530,7 +1774,7 @@
                 if (document.activeElement !== els.dtrInput) els.dtrInput.value = '';
             }
 
-            let maxTemp = state.recordedTemps.length > 0 ? state.recordedTemps[state.recordedTemps.length-1].temp : 0;
+            let maxTemp = state.samples.length > 0 ? state.samples[state.samples.length-1].tempC : 0;
             let isDrying = state.elapsed > 0 && maxTemp < 150 && !state.crackTime;
             let isMaillard = maxTemp >= 150 && !state.crackTime;
             let isDev = !!state.crackTime;
@@ -1545,10 +1789,10 @@
         function updateLog() {
             if (!state.elapsed && !state.endTime) { els.log.textContent = "아직 기록이 없습니다. 스페이스바를 눌러 시작하세요."; return; }
             
-            let t = `☕ SAMUEL KIM ROASTING REPORT\n`;
+            let t = `☕ SAMUEL KIM ROASTING REPORT V6.1\n`;
             t += `═══════════════════════════════════════\n`;
             t += ` 📅 일시 : ${new Date().toLocaleString('ko-KR')}\n`;
-            t += ` ☕ 원두 : [${state.processMethod}] ${els.bean.value || '미입력 원두'}\n`;
+            t += ` ☕ 원두 : [${state.config.processMethod}] ${state.config.beanName || '미입력 원두'}\n`;
             if (els.gw.value && els.rw.value) {
                 t += ` ⚖️ 중량 : 투입 ${els.gw.value}g  ➔  배출 ${els.rw.value}g  (WL: ${els.wl.textContent}%)\n`;
             }
@@ -1556,7 +1800,7 @@
             
             t += `📍 주요 이벤트 시점\n`;
             if (state.crackTime) {
-                t += `   • 💥 1차 크랙 : ${fmtShort(state.crackTime)}  (${state.crackTemp}°C | RoR_FC: +${state.rorFC.toFixed(1)}°/m)\n`;
+                t += `   • 💥 1차 크랙 : ${fmtShort(state.crackTime)}  (${state.crackTemp}°C | RoR_FC: +${state.metrics.rorFC.toFixed(1)}°/m)\n`;
             } else {
                 t += `   • 💥 1차 크랙 : 미기록\n`;
             }
@@ -1566,30 +1810,30 @@
                 t += `   • 🏁 배출 완료 : 진행 중...\n`;
             }
 
-            if (els.chkShowIntervals.checked && state.recordedTemps.length > 0) {
-                t += `\n📌 구간 상세 온도 기록\n`;
-                state.recordedTemps.forEach(item => {
-                    t += `   - ${String(item.temp).padStart(3, ' ')}°C  │  시간: ${fmtShort(item.time)}  │  EMA RoR: +${item.emaRoR}°/m\n`;
+            if (state.ui.showIntervals && state.samples.length > 0) {
+                t += `\n📌 시간순 관측 이벤트 기록\n`;
+                state.samples.forEach(item => {
+                    t += `   - ${String(item.tempC).padStart(3, ' ')}°C  │  시간: ${fmtShort(item.tMs)}  │  EMA RoR: +${item.emaRoR ?? 0}°/m\n`;
                 });
             }
 
             if (state.crackTime && (state.endTime || state.elapsed)) {
                 t += `\n🎯 절대 개발 지표 (Nucleus Metrics)\n`;
-                t += `   • ⏱️ 절대 개발시간 (t_dev)  : ${state.devTimeSec} 초\n`;
-                t += `   • 🔥 개발 상승온도 (ΔT_dev) : +${state.devDeltaTemp} °C\n`;
-                t += `   • ⚡ 크랙 관성 (RoR_FC)     : ${state.rorFC.toFixed(1)} °C/min\n`;
-                t += `   • 📊 실질 적분열량 (Eff.AUC): ${state.effectiveAUC} °C·s\n`;
+                t += `   • ⏱️ 절대 개발시간 (t_dev)  : ${state.metrics.devTimeSec} 초\n`;
+                t += `   • 🔥 개발 상승온도 (ΔT_dev) : +${state.metrics.devDeltaTemp} °C\n`;
+                t += `   • ⚡ 크랙 관성 (RoR_FC)     : ${state.metrics.rorFC.toFixed(1)} °C/min\n`;
+                t += `   • 📊 개발 면적 지표 (AUC)  : ${state.metrics.effectiveAUC} °C·s\n`;
                 t += `   • 📈 보조 참조 DTR          : ${els.dtrInput.value || '--'} %\n`;
             }
 
-            if (state.selectedRefData) {
-                t += `\n🎯 가이드 레퍼런스 개발 동등성\n`;
+            if (state.ui.selectedRefData) {
+                t += `\n🎯 가이드 레퍼런스 정밀 동등성\n`;
                 t += `   • 종합 Dev Match : ${els.matchScoreVal.textContent}\n`;
             }
 
-            if (els.memo.value) {
+            if (state.config.memo) {
                 t += `\n📝 로스팅 메모\n`;
-                t += `   ${els.memo.value.replace(/\n/g, '\n   ')}\n`;
+                t += `   ${state.config.memo.replace(/\n/g, '\n   ')}\n`;
             }
             t += `═══════════════════════════════════════`;
 
@@ -1612,7 +1856,9 @@
                         { label: 'EMA RoR (°C/min)', data: [], yAxisID: 'yRoR', borderColor: '#10b981', borderDash: [5, 4], borderWidth: 2, tension: 0.3, pointRadius: 0 },
                         { label: 'Ref BT', data: [], yAxisID: 'yTemp', borderColor: '#c084fc', borderDash: [3, 3], borderWidth: 1.8, tension: 0.2, pointRadius: 2.5, pointBackgroundColor: '#c084fc' },
                         { label: 'Ref RoR', data: [], yAxisID: 'yRoR', borderColor: '#38bdf8', borderDash: [2, 4], borderWidth: 1.5, tension: 0.3, pointRadius: 0 },
-                        { label: 'AI Target BT', data: [], yAxisID: 'yTemp', borderColor: '#06b6d4', borderDash: [6, 6], borderWidth: 2, tension: 0.25, pointRadius: 4, pointBackgroundColor: '#06b6d4' },
+                        { label: 'AI Target BT', data: [], yAxisID: 'yTemp', borderColor: '#06b6d4', borderDash: [6, 6], borderWidth: 2, tension: 0.25, pointRadius: 0 },
+                        { label: 'AI Target RoR', data: [], yAxisID: 'yRoR', borderColor: '#06b6d4', borderDash: [2, 2], borderWidth: 1.2, tension: 0.25, pointRadius: 0 },
+                        { label: 'Batch FC Line', data: [], yAxisID: 'yTemp', borderColor: '#f43f5e', borderDash: [4, 4], borderWidth: 1.5, pointRadius: 0, fill: false },
                         { label: 'Ref FC Line', data: [], yAxisID: 'yTemp', borderColor: '#c084fc', borderDash: [4, 4], borderWidth: 1.5, pointRadius: 0, fill: false }
                     ]
                 },
@@ -1641,71 +1887,53 @@
             });
         }
 
-        function generateTargetCurve(isAnchored, curFcTimeSec) {
-            let targetFcSec = parseMMSS(els.targetFcTimeInput.value);
-            let targetFcTemp = parseFloat(els.targetFcTempInput.value) || 192;
-            let targetDevSec = parseFloat(els.targetDevTimeInput.value) || 60;
-            let targetDeltaTemp = parseFloat(els.targetDeltaTempInput.value) || 5.5;
-
-            let targetFinishSec = targetFcSec + targetDevSec;
-            let targetFinishTemp = targetFcTemp + targetDeltaTemp;
-
-            let targetPoints = [
-                { time: 0, temp: 70 },
-                { time: targetFcSec * 0.15, temp: 100 },
-                { time: targetFcSec * 0.48, temp: 150 },
-                { time: targetFcSec * 0.72, temp: 170 },
-                { time: targetFcSec, temp: targetFcTemp },
-                { time: targetFinishSec, temp: targetFinishTemp }
-            ];
-
-            return targetPoints.map(p => {
-                let xVal = isAnchored ? (p.time - targetFcSec) : (p.time / 60);
-                return { x: xVal, y: p.temp };
-            });
-        }
-
         function updateChart() {
             if (!chartInstance) return;
-            let btData = [], rorData = [], refBtData = [], refRorData = [], refFcLineData = [];
-            let curFcTimeSec = (state.crackTime || 0) / 1000;
+            let btData = [], rorData = [], refBtData = [], refRorData = [], batchFcLine = [], refFcLine = [];
+            let curFcTimeSec = (state.crackTime || parseMMSS(state.config.targetFcTimeStr) * 1000) / 1000;
 
-            state.recordedTemps.forEach(t => {
-                let timeSec = t.time / 1000;
-                let xVal = state.isFcAnchoredMode ? (timeSec - curFcTimeSec) : (timeSec / 60);
-                btData.push({ x: xVal, y: t.temp });
-                rorData.push({ x: xVal, y: t.emaRoR });
+            state.samples.forEach(t => {
+                let timeSec = t.tMs / 1000;
+                let xVal = state.ui.isFcAnchoredMode ? (timeSec - curFcTimeSec) : (timeSec / 60);
+                btData.push({ x: xVal, y: t.tempC });
+                if (t.emaRoR !== null) rorData.push({ x: xVal, y: t.emaRoR });
             });
 
-            if (state.selectedRefData && state.selectedRefData.recordedTemps) {
-                let refFcTimeSec = (state.selectedRefData.crackTime || 0) / 1000;
-                state.selectedRefData.recordedTemps.forEach(t => {
-                    let timeSec = t.time / 1000;
-                    let xVal = state.isFcAnchoredMode ? (timeSec - refFcTimeSec) : (timeSec / 60);
-                    refBtData.push({ x: xVal, y: t.temp });
-                    refRorData.push({ x: xVal, y: t.emaRoR || 0 });
+            if (state.crackTime) {
+                let fcX = state.ui.isFcAnchoredMode ? 0 : ((state.crackTime / 1000) / 60);
+                batchFcLine = [{ x: fcX, y: 50 }, { x: fcX, y: 230 }];
+            }
+
+            if (state.ui.selectedRefData) {
+                let refRecs = state.ui.selectedRefData.samples || state.ui.selectedRefData.recordedTemps || [];
+                let refFcTimeSec = (state.ui.selectedRefData.crackTime || 380000) / 1000;
+
+                refRecs.forEach(t => {
+                    let timeSec = (t.tMs || t.time) / 1000;
+                    let xVal = state.ui.isFcAnchoredMode ? (timeSec - refFcTimeSec) : (timeSec / 60);
+                    refBtData.push({ x: xVal, y: t.tempC ?? t.temp });
+                    refRorData.push({ x: xVal, y: t.emaRoR ?? 0 });
                 });
 
-                if (state.selectedRefData.crackTime) {
-                    let refFcX = state.isFcAnchoredMode ? 0 : (refFcTimeSec / 60);
-                    refFcLineData = [
-                        { x: refFcX, y: 50 },
-                        { x: refFcX, y: 230 }
-                    ];
+                if (state.ui.selectedRefData.crackTime) {
+                    let refFcX = state.ui.isFcAnchoredMode ? 0 : (refFcTimeSec / 60);
+                    refFcLine = [{ x: refFcX, y: 50 }, { x: refFcX, y: 230 }];
                 }
             }
 
-            let targetData = state.isTargetGuideOn ? generateTargetCurve(state.isFcAnchoredMode, curFcTimeSec) : [];
+            let targetCurves = state.ui.isTargetGuideOn ? generateDynamicTargetCurve(state.ui.isFcAnchoredMode, curFcTimeSec) : { bt: [], ror: [] };
 
-            chartInstance.options.scales.x.title.text = state.isFcAnchoredMode ? '1차 크랙(FC) 기준 상대시간 (초)' : '경과 시간 (분)';
-            chartInstance.options.scales.x.ticks.callback = v => state.isFcAnchoredMode ? `${v > 0 ? '+' : ''}${v.toFixed(0)}s` : `${v.toFixed(1)}m`;
+            chartInstance.options.scales.x.title.text = state.ui.isFcAnchoredMode ? '1차 크랙(FC) 기준 상대시간 (초)' : '경과 시간 (분)';
+            chartInstance.options.scales.x.ticks.callback = v => state.ui.isFcAnchoredMode ? `${v > 0 ? '+' : ''}${v.toFixed(0)}s` : `${v.toFixed(1)}m`;
 
             chartInstance.data.datasets[0].data = btData;
             chartInstance.data.datasets[1].data = rorData;
             chartInstance.data.datasets[2].data = refBtData;
             chartInstance.data.datasets[3].data = refRorData;
-            chartInstance.data.datasets[4].data = targetData;
-            chartInstance.data.datasets[5].data = refFcLineData;
+            chartInstance.data.datasets[4].data = targetCurves.bt;
+            chartInstance.data.datasets[5].data = targetCurves.ror;
+            chartInstance.data.datasets[6].data = batchFcLine;
+            chartInstance.data.datasets[7].data = refFcLine;
             chartInstance.update('none');
         }
 
