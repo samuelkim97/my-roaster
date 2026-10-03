@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>☕ Samuel Kim // REAL-TIME ROASTER V6.3 ENGINE</title>
+    <title>☕ Samuel Kim // REAL-TIME ROASTER V6.3.1 ENGINE</title>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -697,7 +697,7 @@
         <div class="card header-card">
             <div class="brand-title">
                 <span>☕ Samuel Kim</span>
-                <span class="sync-badge">REAL-TIME V6.3</span>
+                <span class="sync-badge">REAL-TIME V6.3.1</span>
             </div>
             <div class="meta-inputs">
                 <div class="date-display" id="dateDisplay" style="font-family:var(--font-mono); font-size:0.9rem; color:var(--text-muted);">2026.00.00</div>
@@ -729,7 +729,7 @@
         <div class="cockpit-grid">
             <div class="card">
                 <div class="section-header" style="justify-content: center; margin-bottom: 0;">
-                    <span class="section-title" style="font-size: 0.85rem; letter-spacing: 1px;">REAL-TIME COCKPIT V6.3</span>
+                    <span class="section-title" style="font-size: 0.85rem; letter-spacing: 1px;">REAL-TIME COCKPIT V6.3.1</span>
                 </div>
                 <div class="timer-container">
                     <div class="timer-display" id="timerDisplay">00:00.0</div>
@@ -1076,8 +1076,8 @@
             lastRenderTime: 0,
             
             samples: [],
-            liveBT: 70.0,      // 실시간 추정 BT (°C)
-            liveRoR: 18.0,     // 실시간 추정 RoR (°C/min)
+            liveBT: 70.0,
+            liveRoR: 18.0,
             
             config: {
                 beanName: '',
@@ -1387,7 +1387,6 @@
             };
         }
 
-        // [핵심] 실시간 BT_live 기반 코파일럿 가이드
         function updateCoPilotGuidance() {
             if (!state.isRunning && state.elapsed === 0) {
                 els.pilotStatusBadge.textContent = "READY";
@@ -1465,27 +1464,49 @@
             }
         }
 
+        // [V6.3.1 실시간 연속 적분 패치] 수동 입력 없이도 liveBT 기반 실시간 AUC 연속 적분
         function calculateAUC() {
             if (!state.crackTime || !state.crackTemp) {
-                state.metrics.devTimeSec = 0; state.metrics.devDeltaTemp = 0; state.metrics.relativeAUC = 0; state.metrics.effectiveAUC = 0; return;
+                state.metrics.devTimeSec = 0; 
+                state.metrics.devDeltaTemp = 0; 
+                state.metrics.relativeAUC = 0; 
+                state.metrics.effectiveAUC = 0; 
+                return;
             }
             const curTime = state.endTime || state.elapsed;
-            state.metrics.devTimeSec = Math.max(0, Math.floor((curTime - state.crackTime) / 1000));
+            const devMs = Math.max(0, curTime - state.crackTime);
+            state.metrics.devTimeSec = Math.floor(devMs / 1000);
             
             let lastTemp = state.liveBT;
             state.metrics.devDeltaTemp = Number(Math.max(0, lastTemp - state.crackTemp).toFixed(1));
 
-            let devPoints = state.samples.filter(t => t.tMs >= state.crackTime);
+            if (devMs <= 0) {
+                state.metrics.relativeAUC = 0;
+                state.metrics.effectiveAUC = 0;
+                return;
+            }
+
+            // continuous integration nodes: [FC] -> [Intermediate Manuals] -> [LiveBT Realtime]
+            let points = [];
+            points.push({ tMs: state.crackTime, tempC: state.crackTemp });
+
+            let intermediateSamples = state.samples.filter(s => s.tMs > state.crackTime && s.tMs < curTime);
+            intermediateSamples.forEach(s => points.push({ tMs: s.tMs, tempC: s.tempC }));
+
+            points.push({ tMs: curTime, tempC: state.liveBT });
+
             let relAUC = 0;
-            if (devPoints.length >= 2) {
-                for (let i = 1; i < devPoints.length; i++) {
-                    let pPrev = devPoints[i - 1], pCurr = devPoints[i];
-                    let dtSec = (pCurr.tMs - pPrev.tMs) / 1000;
+            for (let i = 1; i < points.length; i++) {
+                let pPrev = points[i - 1];
+                let pCurr = points[i];
+                let dtSec = (pCurr.tMs - pPrev.tMs) / 1000;
+                if (dtSec > 0) {
                     let relPrev = Math.max(0, pPrev.tempC - state.crackTemp);
                     let relCurr = Math.max(0, pCurr.tempC - state.crackTemp);
                     relAUC += ((relPrev + relCurr) / 2) * dtSec;
                 }
             }
+
             state.metrics.relativeAUC = Number(relAUC.toFixed(1));
             let thermalInertiaFactor = 1 + (state.metrics.rorFC / 100);
             state.metrics.effectiveAUC = Number((state.metrics.relativeAUC * thermalInertiaFactor).toFixed(1));
@@ -1518,13 +1539,11 @@
             els.rorMatchVal.textContent = `${rorSim.toFixed(0)}%`;
         }
 
-        // [핵심 Engine V6.3] 100ms 초단위 실시간 연속 연산 및 페이즈/BT/RoR 추적
         function timerLoop(timestamp) {
             if (state.isRunning) {
                 const now = performance.now();
                 state.elapsed = now - state.startTime;
                 
-                // 1. 실시간 BT_live 연속 추계 계산
                 const lastSample = state.samples.length > 0 ? state.samples[state.samples.length - 1] : null;
                 if (lastSample) {
                     const dtMin = (state.elapsed - lastSample.tMs) / 60000;
@@ -1537,15 +1556,12 @@
                     state.liveBT = 70.0 + (18.0 * curMin);
                 }
 
-                // 2. 실시간 100ms 렌더링
                 if (now - state.lastRenderTime >= 100) {
                     els.timer.textContent = fmtMs(state.elapsed);
                     els.timer.classList.toggle('crack-phase', state.crackTime && !state.endTime && state.isRunning);
                     
-                    // 실시간 추정 BT / RoR 타일 출력
                     els.rorDisplay.textContent = `${state.liveBT.toFixed(1)}° / +${state.liveRoR.toFixed(1)}`;
 
-                    // 실시간 페이즈 감지 및 배지 변경
                     let isDrying = state.elapsed > 0 && state.liveBT < 150 && !state.crackTime;
                     let isMaillard = state.liveBT >= 150 && !state.crackTime;
                     let isDev = !!state.crackTime;
@@ -1554,10 +1570,8 @@
                     els.phaseMaillard.classList.toggle('active', isMaillard);
                     els.phaseDev.classList.toggle('active', isDev);
 
-                    // 실시간 알람 체크
                     checkTemperatureAlarms(state.liveBT);
 
-                    // 1차 크랙 이후 절대개발지표 실시간 연산
                     if (state.crackTime) {
                         calculateAUC();
                         els.devTimeSecDisplay.textContent = `${state.metrics.devTimeSec}s`;
@@ -1855,7 +1869,7 @@
         function updateLog() {
             if (!state.elapsed && !state.endTime) { els.log.textContent = "아직 기록이 없습니다. 스페이스바를 눌러 시작하세요."; return; }
             
-            let t = `☕ SAMUEL KIM ROASTING REPORT V6.3 REAL-TIME\n`;
+            let t = `☕ SAMUEL KIM ROASTING REPORT V6.3.1 REAL-TIME\n`;
             t += `═══════════════════════════════════════\n`;
             t += ` 📅 일시 : ${new Date().toLocaleString('ko-KR')}\n`;
             t += ` ☕ 원두 : [${state.config.processMethod}] ${state.config.beanName || '미입력 원두'}\n`;
@@ -1954,7 +1968,6 @@
             });
         }
 
-        // 실시간 이동 라이브 커서 점 업데이트
         function updateChartRealtimeCursor() {
             if (!chartInstance) return;
             let curFcTimeSec = (state.crackTime || parseMMSS(state.config.targetFcTimeStr) * 1000) / 1000;
