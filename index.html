@@ -1,948 +1,891 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>☕ Samuel Kim // REAL-TIME ROASTER V6.4 ENGINE</title>
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --bg-body: #090a0f;
-            --bg-card: rgba(18, 20, 29, 0.85);
-            --bg-card-solid: #12141d;
-            --bg-input: #0a0b10;
-            --border: rgba(255, 255, 255, 0.08);
-            
-            --text-main: #f3f4f6;
-            --text-muted: #9ca3af;
-            --text-dim: #6b7280;
-            
-            --amber: #f59e0b;
-            --amber-glow: rgba(245, 158, 11, 0.25);
-            --emerald: #10b981;
-            --emerald-glow: rgba(16, 185, 129, 0.25);
-            --cyan: #06b6d4;
-            --cyan-glow: rgba(6, 182, 212, 0.25);
-            --rose: #f43f5e;
-            --purple: #c084fc;
-            --drying: #eab308;
-            --maillard: #f97316;
-            
-            --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Apple SD Gothic Neo", sans-serif;
-            --font-mono: "SF Mono", "JetBrains Mono", "Menlo", monospace;
-            --radius-lg: 16px;
-            --radius-md: 10px;
-            --radius-sm: 6px;
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>☕ Samuel Kim // REAL-TIME ROASTER V6.3.1 ENGINE</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-body: #090a0f;
+            --bg-card: rgba(18, 20, 29, 0.85);
+            --bg-card-solid: #12141d;
+            --bg-input: #0a0b10;
+            --border: rgba(255, 255, 255, 0.08);
+            
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --text-dim: #6b7280;
+            
+            --amber: #f59e0b;
+            --amber-glow: rgba(245, 158, 11, 0.25);
+            --emerald: #10b981;
+            --emerald-glow: rgba(16, 185, 129, 0.25);
+            --cyan: #06b6d4;
+            --cyan-glow: rgba(6, 182, 212, 0.25);
+            --rose: #f43f5e;
+            --purple: #c084fc;
+            --drying: #eab308;
+            --maillard: #f97316;
+            
+            --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Apple SD Gothic Neo", sans-serif;
+            --font-mono: "SF Mono", "JetBrains Mono", "Menlo", monospace;
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --radius-sm: 6px;
+        }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        body {
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            font-family: var(--font-sans);
-            min-height: 100vh;
-            padding: 16px;
-            display: flex;
-            justify-content: center;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            min-height: 100vh;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+        }
 
-        .app-container {
-            width: 100%;
-            max-width: 1360px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            position: relative;
-        }
+        .app-container {
+            width: 100%;
+            max-width: 1360px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+        }
 
-        /* 공통 컴포넌트 UI */
-        .toast-popup {
-            position: fixed;
-            top: 24px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-100px);
-            background: rgba(18, 20, 29, 0.95);
-            border: 2px solid var(--amber);
-            box-shadow: 0 0 30px var(--amber-glow);
-            padding: 14px 28px;
-            border-radius: 40px;
-            color: var(--amber);
-            font-weight: 800;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            z-index: 9999;
-            opacity: 0;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            pointer-events: none;
-            backdrop-filter: blur(10px);
-        }
-        .toast-popup.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .toast-popup {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(18, 20, 29, 0.95);
+            border: 2px solid var(--amber);
+            box-shadow: 0 0 30px var(--amber-glow);
+            padding: 14px 28px;
+            border-radius: 40px;
+            color: var(--amber);
+            font-weight: 800;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 9999;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+            backdrop-filter: blur(10px);
+        }
 
-        .card {
-            background: var(--bg-card);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-        }
+        .toast-popup.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
 
-        /* 헤더 바 */
-        .header-card { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; padding: 16px 20px; }
-        .brand-title { display: flex; align-items: center; gap: 10px; font-size: 1.15rem; font-weight: 800; color: var(--amber); letter-spacing: 0.5px; }
-        .sync-badge { font-size: 0.7rem; font-family: var(--font-mono); padding: 3px 8px; border-radius: 20px; background: rgba(16, 185, 129, 0.15); color: var(--emerald); border: 1px solid rgba(16, 185, 129, 0.3); animation: pulseSync 2s infinite; }
-        @keyframes pulseSync { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
 
-        .meta-inputs { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; flex: 1; min-width: 280px; }
-        input, textarea { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); border-radius: var(--radius-md); font-family: var(--font-sans); outline: none; transition: all 0.2s ease; }
-        input:focus, textarea:focus { border-color: var(--amber); box-shadow: 0 0 0 2px var(--amber-glow); }
-        .bean-input { flex: 1; padding: 10px 14px; font-size: 0.95rem; min-width: 180px; }
-        .process-chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-        .process-chip, .weight-chip { background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border); color: var(--text-muted); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; }
-        .process-chip.active { background: rgba(6, 182, 212, 0.15); border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 10px rgba(6, 182, 212, 0.2); }
-        .weight-chip.active { background: rgba(245, 158, 11, 0.15); border-color: var(--amber); color: var(--amber); box-shadow: 0 0 10px var(--amber-glow); }
-        
-        .weight-group { display: flex; align-items: center; gap: 8px; background: var(--bg-input); padding: 6px 12px; border-radius: var(--radius-md); border: 1px solid var(--border); }
-        .weight-input { width: 60px; background: transparent; border: none; border-bottom: 1px solid var(--border); text-align: center; font-family: var(--font-mono); font-size: 0.95rem; padding: 2px; }
-        .wl-badge { font-family: var(--font-mono); font-weight: 700; color: var(--emerald); font-size: 0.95rem; margin-left: 4px; }
+        .header-card {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+        }
 
-        /* 중앙 패널 레이아웃 */
-        .cockpit-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
-        @media (min-width: 900px) { .cockpit-grid { grid-template-columns: 1.35fr 1fr; } }
+        .brand-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--amber);
+            letter-spacing: 0.5px;
+        }
 
-        /* 타이머 & 코파일럿 */
-        .timer-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 0 15px; }
-        .timer-display { font-size: 4.8rem; font-weight: 800; font-family: var(--font-mono); letter-spacing: -2px; color: #ffffff; line-height: 1; }
-        .timer-display.crack-phase { color: var(--rose); text-shadow: 0 0 25px rgba(244, 63, 94, 0.4); }
+        .sync-badge {
+            font-size: 0.7rem;
+            font-family: var(--font-mono);
+            padding: 3px 8px;
+            border-radius: 20px;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--emerald);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            animation: pulseSync 2s infinite;
+        }
 
-        .copilot-card { background: rgba(10, 11, 16, 0.95); border: 1px solid var(--cyan); box-shadow: 0 0 20px rgba(6, 182, 212, 0.15); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 6px; transition: all 0.3s ease; }
-        .copilot-head { display: flex; justify-content: space-between; align-items: center; }
-        .copilot-title { font-size: 0.78rem; font-weight: 800; color: var(--cyan); letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
-        .copilot-status-badge { font-size: 0.7rem; font-family: var(--font-mono); font-weight: 800; padding: 3px 10px; border-radius: 12px; background: rgba(16, 185, 129, 0.2); color: var(--emerald); border: 1px solid var(--emerald); }
-        .copilot-cmd-text { font-size: 1.15rem; font-weight: 800; color: #ffffff; line-height: 1.3; }
-        .copilot-sub-text { font-size: 0.8rem; font-family: var(--font-mono); color: var(--text-muted); }
+        @keyframes pulseSync {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
 
-        /* 매트릭스 타일 및 Dev Match */
-        .metrics-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
-        .tile { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 8px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
-        .tile-label { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; }
-        .tile-val { font-size: 1.25rem; font-weight: 700; font-family: var(--font-mono); color: var(--amber); }
-        .tile-val.rose { color: var(--rose); }
-        .tile-val.cyan { color: var(--cyan); }
-        .tile-val.emerald { color: var(--emerald); }
-        #dtrInput { width: 50px; background: transparent; border: none; border-bottom: 1px dashed var(--amber); color: var(--amber); font-family: var(--font-mono); font-size: 1.25rem; font-weight: bold; text-align: center; }
+        .meta-inputs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            flex: 1;
+            min-width: 280px;
+        }
 
-        .dev-match-card { background: rgba(16, 185, 129, 0.05); border: 1px dashed var(--emerald); border-radius: var(--radius-md); padding: 12px; margin-bottom: 12px; display: none; }
-        .dev-match-card.active { display: block; }
-        .dev-match-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .dev-match-title { font-size: 0.8rem; font-weight: 700; color: var(--emerald); }
-        .dev-match-score { font-size: 1.5rem; font-weight: 800; font-family: var(--font-mono); color: var(--emerald); }
-        .match-bars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-        .match-bar-item { text-align: center; font-size: 0.68rem; color: var(--text-muted); }
-        .match-bar-val { font-family: var(--font-mono); font-weight: bold; color: var(--text-main); font-size: 0.9rem; margin-top: 2px; }
+        input, textarea {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            border-radius: var(--radius-md);
+            font-family: var(--font-sans);
+            outline: none;
+            transition: all 0.2s ease;
+        }
 
-        .phase-tracker { display: flex; gap: 6px; background: var(--bg-input); padding: 6px; border-radius: var(--radius-md); border: 1px solid var(--border); margin-top: auto; }
-        .phase-badge { flex: 1; text-align: center; font-size: 0.75rem; padding: 8px 0; border-radius: var(--radius-sm); color: var(--text-dim); font-weight: 700; transition: all 0.3s ease; }
-        .phase-badge.active.drying { background: var(--drying); color: #000; box-shadow: 0 0 10px rgba(234, 179, 8, 0.4); }
-        .phase-badge.active.maillard { background: var(--maillard); color: #fff; box-shadow: 0 0 10px rgba(249, 115, 22, 0.4); }
-        .phase-badge.active.dev { background: var(--rose); color: #fff; box-shadow: 0 0 10px rgba(244, 63, 94, 0.4); }
+        input:focus, textarea:focus {
+            border-color: var(--amber);
+            box-shadow: 0 0 0 2px var(--amber-glow);
+        }
 
-        /* 컨트롤 버튼 및 온도 입력 */
-        .btn-action { min-height: 52px; padding: 12px 18px; border-radius: var(--radius-md); border: none; cursor: pointer; font-size: 1rem; font-weight: 700; transition: all 0.2s ease; display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 10px; }
-        .btn-start { background: var(--emerald); color: #fff; justify-content: center; }
-        .btn-start.running { background: rgba(244, 63, 94, 0.15); border: 1px solid var(--rose); color: var(--rose); }
-        .btn-crack { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--rose); color: var(--rose); }
-        .btn-crack.done { background: var(--rose); color: #fff; }
-        .btn-end { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--cyan); color: var(--cyan); margin-bottom: 0; }
-        .btn-end.done { background: var(--cyan); color: #fff; }
-        .btn-key { font-size: 0.72rem; font-family: var(--font-mono); opacity: 0.8; background: rgba(0,0,0,0.4); padding: 3px 6px; border-radius: 4px; }
+        .bean-input {
+            flex: 1;
+            padding: 10px 14px;
+            font-size: 0.95rem;
+            min-width: 180px;
+        }
 
-        .temp-ctrl-box { margin-top: auto; padding-top: 12px; }
-        .temp-step-row { display: flex; gap: 6px; margin-top: 6px; }
-        .btn-step { flex: 1; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: var(--amber); font-weight: 700; font-family: var(--font-mono); padding: 8px 0; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.85rem; transition: all 0.1s ease; }
-        .btn-step:hover, .btn-step:active { background: var(--amber); color: #000; transform: scale(0.97); }
-        .temp-input-row { display: flex; gap: 8px; margin-top: 8px; background: var(--bg-input); padding: 6px; border-radius: var(--radius-md); border: 1px solid var(--border); }
-        .temp-input-ctrl { flex: 1; text-align: center; font-size: 1.25rem; font-weight: 700; font-family: var(--font-mono); border: none; background: transparent; color: #fff; }
-        .btn-record-temp { background: var(--amber); color: #000; font-weight: 800; border: none; padding: 0 20px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.95rem; }
+        .process-chips {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
 
-        .dynamic-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; max-height: 100px; overflow-y: auto; }
-        .tag { background: rgba(245, 158, 11, 0.1); border: 1px solid var(--amber); padding: 5px 10px; border-radius: var(--radius-sm); font-size: 0.85rem; display: flex; align-items: center; gap: 6px; animation: fadeInTag 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes fadeInTag { from { transform: translateY(-6px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .tag-time { color: var(--amber); font-family: var(--font-mono); font-weight: bold; }
-        .tag-del { background: none; border: none; color: var(--rose); cursor: pointer; font-size: 1.1rem; padding: 0 2px; }
+        .process-chip, .weight-chip {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
 
-        /* 타겟 컨피그 */
-        .target-config-card { background: rgba(6, 182, 212, 0.05); border: 1px solid rgba(6, 182, 212, 0.25); border-radius: var(--radius-md); padding: 10px 14px; margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
-        .target-config-title { font-size: 0.82rem; font-weight: 800; color: var(--cyan); display: flex; align-items: center; gap: 6px; }
-        .target-inputs { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-        .target-input-item { display: flex; align-items: center; gap: 4px; font-size: 0.75rem; color: var(--text-muted); }
-        .target-val-input { width: 55px; padding: 3px 6px; font-family: var(--font-mono); font-size: 0.85rem; text-align: center; border-color: rgba(6, 182, 212, 0.4); color: var(--cyan); }
+        .process-chip.active {
+            background: rgba(6, 182, 212, 0.15);
+            border-color: var(--cyan);
+            color: var(--cyan);
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+        }
 
-        /* 하단 차트 및 히스토리/로그 영역 */
-        .lower-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
-        @media (min-width: 900px) { .lower-grid { grid-template-columns: 1.65fr 1fr; } }
+        .weight-chip.active {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: var(--amber);
+            color: var(--amber);
+            box-shadow: 0 0 10px var(--amber-glow);
+        }
 
-        .chart-box { position: relative; height: 420px; width: 100%; background: var(--bg-input); border-radius: var(--radius-md); border: 1px solid var(--border); padding: 8px; }
-        .side-panel { display: flex; flex-direction: column; gap: 16px; }
+        .weight-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-input);
+            padding: 6px 12px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+        }
 
-        .log-content { flex: 1; font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.7; color: var(--text-main); background: var(--bg-input); padding: 14px; border-radius: var(--radius-md); overflow-y: auto; white-space: pre-wrap; border: 1px solid var(--border); height: 160px; }
+        .weight-input {
+            width: 60px;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            padding: 2px;
+        }
 
-        .db-search-bar { display: flex; gap: 8px; margin-bottom: 10px; }
-        .db-search-input { flex: 1; padding: 8px 12px; font-size: 0.85rem; }
+        .wl-badge {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: var(--emerald);
+            font-size: 0.95rem;
+            margin-left: 4px;
+        }
 
-        #historyContainer { height: 310px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; }
-        
-        .history-item { background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; transition: 0.2s; flex-shrink: 0; }
-        .history-item.is-fav { border-color: rgba(245, 158, 11, 0.5); box-shadow: 0 0 12px rgba(245, 158, 11, 0.1); }
-        .history-item.expanded { border-color: var(--amber); }
-        
-        .hist-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; cursor: pointer; background: rgba(255,255,255,0.01); }
-        .hist-title { font-size: 0.85rem; font-weight: 700; color: var(--amber); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 55%; }
-        .hist-actions { display: flex; gap: 6px; align-items: center; }
-        
-        .btn-fav-star { background: none; border: none; font-size: 1.1rem; cursor: pointer; color: var(--text-dim); padding: 0 4px; transition: transform 0.2s; }
-        .btn-fav-star.active { color: var(--amber); text-shadow: 0 0 8px var(--amber-glow); }
-        .btn-fav-star:active { transform: scale(1.3); }
+        .cockpit-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
 
-        .hist-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text-main); padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600; transition: all 0.2s ease; }
-        .hist-btn.ref { border-color: var(--purple); color: var(--purple); }
-        .hist-btn.ref:hover { background: rgba(192, 132, 252, 0.1); }
-        .hist-btn.ref.active { background: var(--purple); color: #fff; box-shadow: 0 0 10px rgba(192, 132, 252, 0.4); }
-        
-        .hist-btn.target { border-color: var(--cyan); color: var(--cyan); }
-        .hist-btn.target.active { background: var(--cyan); color: #000; font-weight: bold; }
+        @media (min-width: 900px) {
+            .cockpit-grid { grid-template-columns: 1.35fr 1fr; }
+        }
 
-        .hist-body { padding: 10px 12px; font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted); white-space: pre-wrap; line-height: 1.5; border-top: 1px solid var(--border); display: none; }
+        .timer-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 0 15px;
+        }
 
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--amber); }
-    </style>
+        .timer-display {
+            font-size: 4.8rem;
+            font-weight: 800;
+            font-family: var(--font-mono);
+            letter-spacing: -2px;
+            color: #ffffff;
+            line-height: 1;
+        }
+
+        .timer-display.crack-phase {
+            color: var(--rose);
+            text-shadow: 0 0 25px rgba(244, 63, 94, 0.4);
+        }
+
+        .copilot-card {
+            background: rgba(10, 11, 16, 0.95);
+            border: 1px solid var(--cyan);
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.15);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .copilot-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .copilot-title {
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: var(--cyan);
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .copilot-status-badge {
+            font-size: 0.7rem;
+            font-family: var(--font-mono);
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 12px;
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--emerald);
+            border: 1px solid var(--emerald);
+        }
+
+        .copilot-cmd-text {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.3;
+        }
+
+        .copilot-sub-text {
+            font-size: 0.8rem;
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+        }
+
+        .metrics-tiles {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .tile {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 10px 8px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .tile-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .tile-val {
+            font-size: 1.25rem;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            color: var(--amber);
+        }
+
+        .tile-val.rose { color: var(--rose); }
+        .tile-val.cyan { color: var(--cyan); }
+        .tile-val.emerald { color: var(--emerald); }
+
+        #dtrInput {
+            width: 50px;
+            background: transparent;
+            border: none;
+            border-bottom: 1px dashed var(--amber);
+            color: var(--amber);
+            font-family: var(--font-mono);
+            font-size: 1.25rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .dev-match-card {
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px dashed var(--emerald);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            margin-bottom: 12px;
+            display: none;
+        }
+
+        .dev-match-card.active { display: block; }
+        .dev-match-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .dev-match-title { font-size: 0.8rem; font-weight: 700; color: var(--emerald); }
+        .dev-match-score { font-size: 1.5rem; font-weight: 800; font-family: var(--font-mono); color: var(--emerald); }
+        
+        .match-bars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+        .match-bar-item { text-align: center; font-size: 0.68rem; color: var(--text-muted); }
+        .match-bar-val { font-family: var(--font-mono); font-weight: bold; color: var(--text-main); font-size: 0.9rem; margin-top: 2px; }
+
+        .phase-tracker {
+            display: flex;
+            gap: 6px;
+            background: var(--bg-input);
+            padding: 6px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            margin-top: auto;
+        }
+
+        .phase-badge {
+            flex: 1;
+            text-align: center;
+            font-size: 0.75rem;
+            padding: 8px 0;
+            border-radius: var(--radius-sm);
+            color: var(--text-dim);
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .phase-badge.active.drying { background: var(--drying); color: #000; box-shadow: 0 0 10px rgba(234, 179, 8, 0.4); }
+        .phase-badge.active.maillard { background: var(--maillard); color: #fff; box-shadow: 0 0 10px rgba(249, 115, 22, 0.4); }
+        .phase-badge.active.dev { background: var(--rose); color: #fff; box-shadow: 0 0 10px rgba(244, 63, 94, 0.4); }
+
+        .btn-action {
+            min-height: 52px;
+            padding: 12px 18px;
+            border-radius: var(--radius-md);
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .btn-start { background: var(--emerald); color: #fff; justify-content: center; }
+        .btn-start.running { background: rgba(244, 63, 94, 0.15); border: 1px solid var(--rose); color: var(--rose); }
+        .btn-crack { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--rose); color: var(--rose); }
+        .btn-crack.done { background: var(--rose); color: #fff; }
+        .btn-end { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--cyan); color: var(--cyan); margin-bottom: 0; }
+        .btn-end.done { background: var(--cyan); color: #fff; }
+        .btn-key { font-size: 0.72rem; font-family: var(--font-mono); opacity: 0.8; background: rgba(0,0,0,0.4); padding: 3px 6px; border-radius: 4px; }
+
+        .temp-ctrl-box { margin-top: auto; padding-top: 12px; }
+
+        .temp-step-row { display: flex; gap: 6px; margin-top: 6px; }
+
+        .btn-step {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--amber);
+            font-weight: 700;
+            font-family: var(--font-mono);
+            padding: 8px 0;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.1s ease;
+        }
+
+        .btn-step:hover, .btn-step:active { background: var(--amber); color: #000; transform: scale(0.97); }
+
+        .temp-input-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            background: var(--bg-input);
+            padding: 6px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+        }
+
+        .temp-input-ctrl {
+            flex: 1;
+            text-align: center;
+            font-size: 1.25rem;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            border: none;
+            background: transparent;
+            color: #fff;
+        }
+
+        .btn-record-temp {
+            background: var(--amber);
+            color: #000;
+            font-weight: 800;
+            border: none;
+            padding: 0 20px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .dynamic-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .tag {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--amber);
+            padding: 5px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            animation: fadeInTag 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes fadeInTag {
+            from { transform: translateY(-6px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .tag-time { color: var(--amber); font-family: var(--font-mono); font-weight: bold; }
+        .tag-del { background: none; border: none; color: var(--rose); cursor: pointer; font-size: 1.1rem; padding: 0 2px; }
+
+        .target-config-card {
+            background: rgba(6, 182, 212, 0.05);
+            border: 1px solid rgba(6, 182, 212, 0.25);
+            border-radius: var(--radius-md);
+            padding: 10px 14px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .target-config-title {
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: var(--cyan);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .target-inputs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .target-input-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .target-val-input {
+            width: 55px;
+            padding: 3px 6px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            text-align: center;
+            border-color: rgba(6, 182, 212, 0.4);
+            color: var(--cyan);
+        }
+
+        .lower-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        @media (min-width: 900px) {
+            .lower-grid { grid-template-columns: 1.65fr 1fr; }
+        }
+
+        .chart-box {
+            position: relative;
+            height: 420px;
+            width: 100%;
+            background: var(--bg-input);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            padding: 8px;
+        }
+
+        .side-panel { display: flex; flex-direction: column; gap: 16px; }
+
+        .log-content {
+            flex: 1;
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            line-height: 1.7;
+            color: var(--text-main);
+            background: var(--bg-input);
+            padding: 14px;
+            border-radius: var(--radius-md);
+            overflow-y: auto;
+            white-space: pre-wrap;
+            border: 1px solid var(--border);
+            height: 160px;
+        }
+
+        .db-search-bar { display: flex; gap: 8px; margin-bottom: 10px; }
+        .db-search-input { flex: 1; padding: 8px 12px; font-size: 0.85rem; }
+
+        #historyContainer {
+            height: 310px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-right: 4px;
+        }
+
+        .history-item {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            transition: 0.2s;
+            flex-shrink: 0;
+        }
+
+        .history-item.is-fav {
+            border-color: rgba(245, 158, 11, 0.5);
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.1);
+        }
+
+        .history-item.expanded { border-color: var(--amber); }
+        
+        .hist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.01);
+        }
+
+        .hist-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--amber);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 45%;
+        }
+
+        .hist-actions { display: flex; gap: 4px; align-items: center; }
+        
+        .btn-fav-star {
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            cursor: pointer;
+            color: var(--text-dim);
+            padding: 0 4px;
+            transition: transform 0.2s;
+        }
+
+        .btn-fav-star.active {
+            color: var(--amber);
+            text-shadow: 0 0 8px var(--amber-glow);
+        }
+
+        .btn-fav-star:active { transform: scale(1.3); }
+
+        .hist-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        .hist-btn.ref { border-color: var(--amber); color: var(--amber); }
+        .hist-btn.ref.active { background: var(--amber); color: #000; font-weight: bold; }
+        .hist-btn.target { border-color: var(--cyan); color: var(--cyan); }
+        .hist-btn.target.active { background: var(--cyan); color: #000; font-weight: bold; }
+        .hist-btn.delete:hover { border-color: var(--rose); color: var(--rose); }
+
+        .hist-body {
+            padding: 10px 12px;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            white-space: pre-wrap;
+            line-height: 1.5;
+            border-top: 1px solid var(--border);
+            display: none;
+        }
+
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--amber); }
+    </style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Toast 알림 -->
-        <div id="toastPopup" class="toast-popup">
-            <span id="toastIcon">🔔</span>
-            <span id="toastMsg">엔진 V6.4 활성화 완료</span>
-        </div>
+    <div class="app-container">
+        <div id="toastPopup" class="toast-popup">
+            <span id="toastIcon">🔔</span>
+            <span id="toastMsg">150°C Maillard Phase Entry!</span>
+        </div>
 
-        <div class="card header-card">
-            <div class="brand-title">
-                <span>☕ Samuel Kim</span>
-                <span class="sync-badge">REAL-TIME V6.4</span>
-            </div>
-            <div class="meta-inputs">
-                <div class="date-display" id="dateDisplay" style="font-family:var(--font-mono); font-size:0.9rem; color:var(--text-muted);">2026.00.00</div>
-                <input type="text" id="beanInput" class="bean-input" placeholder="생두 프로파일 / 로스팅 목표 입력">
-                
-                <div class="process-chips">
-                    <button class="process-chip active" data-process="Washed">워시드</button>
-                    <button class="process-chip" data-process="Natural">내추럴</button>
-                    <button class="process-chip" data-process="Decaf">디카페인</button>
-                    <button class="process-chip" data-process="Anaerobic">무산소</button>
-                    <button class="process-chip" data-process="Infused">인퓨즈드</button>
-                </div>
+        <div class="card header-card">
+            <div class="brand-title">
+                <span>☕ Samuel Kim</span>
+                <span class="sync-badge">REAL-TIME V6.3.1</span>
+            </div>
+            <div class="meta-inputs">
+                <div class="date-display" id="dateDisplay" style="font-family:var(--font-mono); font-size:0.9rem; color:var(--text-muted);">2026.00.00</div>
+                <input type="text" id="beanInput" class="bean-input" placeholder="생두 프로파일 / 로스팅 목표 입력">
+                
+                <div class="process-chips">
+                    <button class="process-chip active" data-process="Washed">워시드</button>
+                    <button class="process-chip" data-process="Natural">내추럴</button>
+                    <button class="process-chip" data-process="Decaf">디카페인</button>
+                    <button class="process-chip" data-process="Anaerobic">무산소</button>
+                    <button class="process-chip" data-process="Infused">인퓨즈드</button>
+                </div>
 
-                <div class="weight-group">
-                    <span style="font-size:0.8rem; color:var(--text-muted)">중량:</span>
-                    <input type="number" id="greenWeight" class="weight-input" placeholder="생두" value="200">
-                    
-                    <button class="weight-chip" data-weight="100">100g</button>
-                    <button class="weight-chip active" data-weight="200">200g</button>
-                    <button class="weight-chip" data-weight="300">300g</button>
+                <div class="weight-group">
+                    <span style="font-size:0.8rem; color:var(--text-muted)">중량:</span>
+                    <input type="number" id="greenWeight" class="weight-input" placeholder="생두" value="200">
+                    
+                    <button class="weight-chip" data-weight="100">100g</button>
+                    <button class="weight-chip active" data-weight="200">200g</button>
+                    <button class="weight-chip" data-weight="300">300g</button>
 
-                    <span style="color:var(--text-dim)">▶</span>
-                    <input type="number" id="roastedWeight" class="weight-input" placeholder="원두">
-                    <div class="wl-badge">WL <span id="wlValue">--</span>%</div>
-                </div>
-            </div>
-        </div>
+                    <span style="color:var(--text-dim)">▶</span>
+                    <input type="number" id="roastedWeight" class="weight-input" placeholder="원두">
+                    <div class="wl-badge">WL <span id="wlValue">--</span>%</div>
+                </div>
+            </div>
+        </div>
 
-        <div class="cockpit-grid">
-            <!-- 좌측 콕핏 영역 -->
-            <div class="card">
-                <div class="section-header" style="justify-content: center; margin-bottom: 0;">
-                    <span class="section-title" style="font-size: 0.85rem; letter-spacing: 1px; font-weight: bold; color: #fff; padding-bottom: 12px; display: block; text-align: center;">REAL-TIME COCKPIT V6.4 ENGINE</span>
-                </div>
-                <div class="timer-container">
-                    <div class="timer-display" id="timerDisplay">00:00.0</div>
-                </div>
+        <div class="cockpit-grid">
+            <div class="card">
+                <div class="section-header" style="justify-content: center; margin-bottom: 0;">
+                    <span class="section-title" style="font-size: 0.85rem; letter-spacing: 1px;">REAL-TIME COCKPIT V6.3.1</span>
+                </div>
+                <div class="timer-container">
+                    <div class="timer-display" id="timerDisplay">00:00.0</div>
+                </div>
 
-                <div class="copilot-card" id="coPilotCard">
-                    <div class="copilot-head">
-                        <div class="copilot-title">
-                            <span>👨‍✈️️ AI REAL-TIME CO-PILOT GUIDANCE</span>
-                        </div>
-                        <div class="copilot-status-badge" id="pilotStatusBadge">READY</div>
-                    </div>
-                    <div class="copilot-cmd-text" id="pilotCommandText">로스팅 시작 대기 중입니다. 스페이스바를 누르세요.</div>
-                    <div class="copilot-sub-text" id="pilotDetailText">목표 타겟 곡선과 실시간 수치 적분 모델을 연동합니다.</div>
-                </div>
+                <div class="copilot-card" id="coPilotCard">
+                    <div class="copilot-head">
+                        <div class="copilot-title">
+                            <span>👨‍✈️ AI REAL-TIME CO-PILOT GUIDANCE</span>
+                        </div>
+                        <div class="copilot-status-badge" id="pilotStatusBadge">READY</div>
+                    </div>
+                    <div class="copilot-cmd-text" id="pilotCommandText">로스팅 시작 대기 중입니다. 스페이스바를 누르세요.</div>
+                    <div class="copilot-sub-text" id="pilotDetailText">목표 타겟 곡선과 실시간 수치 적분 모델을 연동합니다.</div>
+                </div>
 
-                <div class="metrics-tiles">
-                    <div class="tile">
-                        <span class="tile-label">절대개발시간 (t_dev)</span>
-                        <span class="tile-val rose" id="devTimeSecDisplay">0s</span>
-                    </div>
-                    <div class="tile">
-                        <span class="tile-label">개발 상승온도 (ΔT)</span>
-                        <span class="tile-val rose" id="devDeltaTempDisplay">0.0°C</span>
-                    </div>
-                    <div class="tile">
-                        <span class="tile-label">크랙 관성 (RoR_FC)</span>
-                        <span class="tile-val cyan" id="rorFCDisplay">--</span>
-                    </div>
-                    <div class="tile">
-                        <span class="tile-label">개발 면적지표 (Dev.Area)</span>
-                        <span class="tile-val cyan" id="effectiveAUCDisplay">0.0</span>
-                    </div>
-                    <div class="tile">
-                        <span class="tile-label">실시간 추정 BT / RoR</span>
-                        <span class="tile-val emerald" id="rorDisplay">--</span>
-                    </div>
-                    <div class="tile">
-                        <span class="tile-label">보조 DTR (%)</span>
-                        <div style="display: flex; justify-content: center; align-items: baseline;">
-                            <input type="number" id="dtrInput" placeholder="--.-" step="0.1">
-                            <span style="font-size: 0.8rem; color: var(--amber);">%</span>
-                        </div>
-                    </div>
-                </div>
+                <div class="metrics-tiles">
+                    <div class="tile">
+                        <span class="tile-label">절대개발시간 (t_dev)</span>
+                        <span class="tile-val rose" id="devTimeSecDisplay">0s</span>
+                    </div>
+                    <div class="tile">
+                        <span class="tile-label">개발 상승온도 (ΔT)</span>
+                        <span class="tile-val rose" id="devDeltaTempDisplay">0.0°C</span>
+                    </div>
+                    <div class="tile">
+                        <span class="tile-label">크랙 관성 (RoR_FC)</span>
+                        <span class="tile-val cyan" id="rorFCDisplay">--</span>
+                    </div>
+                    <div class="tile">
+                        <span class="tile-label">개발 면적지표 (Dev.Area)</span>
+                        <span class="tile-val cyan" id="effectiveAUCDisplay">0.0</span>
+                    </div>
+                    <div class="tile">
+                        <span class="tile-label">실시간 추정 BT / RoR</span>
+                        <span class="tile-val emerald" id="rorDisplay">--</span>
+                    </div>
+                    <div class="tile">
+                        <span class="tile-label">보조 DTR (%)</span>
+                        <div style="display: flex; justify-content: center; align-items: baseline;">
+                            <input type="number" id="dtrInput" placeholder="--.-" step="0.1">
+                            <span style="font-size: 0.8rem; color: var(--amber);">%</span>
+                        </div>
+                    </div>
+                </div>
 
-                <div class="dev-match-card" id="devMatchCard">
-                    <div class="dev-match-head">
-                        <span class="dev-match-title">🎯 레퍼런스 정밀 동등성 (Dev Match)</span>
-                        <span class="dev-match-score" id="matchScoreVal">0.0%</span>
-                    </div>
-                    <div class="match-bars">
-                        <div class="match-bar-item">시간 일치<div class="match-bar-val" id="timeMatchVal">--%</div></div>
-                        <div class="match-bar-item">상승온도 일치<div class="match-bar-val" id="tempMatchVal">--%</div></div>
-                        <div class="match-bar-item">면적지표 일치<div class="match-bar-val" id="aucMatchVal">--%</div></div>
-                        <div class="match-bar-item">RoR_FC 일치<div class="match-bar-val" id="rorMatchVal">--%</div></div>
-                    </div>
-                </div>
+                <div class="dev-match-card" id="devMatchCard">
+                    <div class="dev-match-head">
+                        <span class="dev-match-title">🎯 레퍼런스 정밀 동등성 (Dev Match)</span>
+                        <span class="dev-match-score" id="matchScoreVal">0.0%</span>
+                    </div>
+                    <div class="match-bars">
+                        <div class="match-bar-item">시간 일치<div class="match-bar-val" id="timeMatchVal">--%</div></div>
+                        <div class="match-bar-item">상승온도 일치<div class="match-bar-val" id="tempMatchVal">--%</div></div>
+                        <div class="match-bar-item">면적지표 일치<div class="match-bar-val" id="aucMatchVal">--%</div></div>
+                        <div class="match-bar-item">RoR_FC 일치<div class="match-bar-val" id="rorMatchVal">--%</div></div>
+                    </div>
+                </div>
 
-                <div class="phase-tracker">
-                    <div class="phase-badge drying active" id="phaseDrying">1. DRYING</div>
-                    <div class="phase-badge maillard" id="phaseMaillard">2. MAILLARD</div>
-                    <div class="phase-badge dev" id="phaseDev">3. DEVELOPMENT</div>
-                </div>
-            </div>
+                <div class="phase-tracker">
+                    <div class="phase-badge drying" id="phaseDrying">1. DRYING</div>
+                    <div class="phase-badge maillard" id="phaseMaillard">2. MAILLARD</div>
+                    <div class="phase-badge dev" id="phaseDev">3. DEVELOPMENT</div>
+                </div>
+            </div>
 
-            <!-- 우측 액션 & 온도 컨트롤 -->
-            <div class="card">
-                <button class="btn-action btn-start" id="btnStart">
-                    <span id="startBtnText">▶ START / PAUSE</span>
-                    <span class="btn-key">Space</span>
-                </button>
-                <button class="btn-action btn-crack" id="btnCrack">
-                    <span>💥 1ST CRACK</span>
-                    <span class="btn-key">C</span>
-                </button>
-                <button class="btn-action btn-end" id="btnEnd">
-                    <span>🏁 DROP / FINISH</span>
-                    <span class="btn-key">E</span>
-                </button>
+            <div class="card">
+                <button class="btn-action btn-start" id="btnStart">
+                    <span>▶ START / PAUSE</span>
+                    <span class="btn-key">Space</span>
+                </button>
+                <button class="btn-action btn-crack" id="btnCrack">
+                    <span>💥 1ST CRACK</span>
+                    <span class="btn-key">C</span>
+                </button>
+                <button class="btn-action btn-end" id="btnEnd">
+                    <span>🏁 DROP / FINISH</span>
+                    <span class="btn-key">E</span>
+                </button>
 
-                <div class="temp-ctrl-box">
-                    <div class="section-title" style="font-size:0.8rem; display:flex; justify-content:space-between; margin-bottom: 8px;">
-                        <span style="color: #fff; font-weight: bold;">📍 관측 이벤트 수동 기록 (최신순)</span>
-                        <span style="color:var(--text-muted); font-size:0.75rem;">기본 70°C 시작</span>
-                    </div>
+                <div class="temp-ctrl-box">
+                    <div class="section-title" style="font-size:0.8rem; display:flex; justify-content:space-between;">
+                        <span>📍 관측 이벤트 수동 기록 (최신순 상단 노출)</span>
+                        <span style="color:var(--text-muted); font-size:0.75rem;">기본 70°C 시작</span>
+                    </div>
 
-                    <div class="temp-step-row">
-                        <button class="btn-step" id="btnSub1">- 1°C</button>
-                        <button class="btn-step" id="btnAdd1">+ 1°C</button>
-                        <button class="btn-step" id="btnAdd2">+ 2°C</button>
-                        <button class="btn-step" id="btnAdd5">+ 5°C</button>
-                    </div>
+                    <div class="temp-step-row">
+                        <button class="btn-step" id="btnSub1">- 1°C</button>
+                        <button class="btn-step" id="btnAdd1">+ 1°C</button>
+                        <button class="btn-step" id="btnAdd2">+ 2°C</button>
+                        <button class="btn-step" id="btnAdd5">+ 5°C</button>
+                    </div>
 
-                    <div class="temp-input-row">
-                        <input type="number" id="customTempInput" class="temp-input-ctrl" value="70" step="1">
-                        <span style="display:flex; align-items:center; font-weight:bold; color:var(--text-muted);">°C</span>
-                        <button id="btnRecordTemp" class="btn-record-temp">기록 (Enter)</button>
-                    </div>
-                    <div id="dynamicTags" class="dynamic-tags"></div>
-                </div>
-            </div>
-        </div>
+                    <div class="temp-input-row">
+                        <input type="number" id="customTempInput" class="temp-input-ctrl" value="70" step="1">
+                        <span style="display:flex; align-items:center; font-weight:bold; color:var(--text-muted);">°C</span>
+                        <button id="btnRecordTemp" class="btn-record-temp">기록 (Enter)</button>
+                    </div>
+                    <div id="dynamicTags" class="dynamic-tags"></div>
+                </div>
+            </div>
+        </div>
 
-        <div class="target-config-card">
-            <div class="target-config-title">
-                <span>🎯 AI 타겟 파라미터 (실시간 수치적분 보정)</span>
-            </div>
-            <div class="target-inputs">
-                <div class="target-input-item">
-                    <span>예열:</span>
-                    <input type="number" id="chargeTempInput" class="target-val-input" value="170">
-                    <span>°C</span>
-                </div>
-                <div class="target-input-item">
-                    <span>FC시간:</span>
-                    <input type="text" id="targetFcTimeInput" class="target-val-input" value="06:20">
-                </div>
-                <div class="target-input-item">
-                    <span>FC온도:</span>
-                    <input type="number" id="targetFcTempInput" class="target-val-input" value="192">
-                    <span>°C</span>
-                </div>
-                <div class="target-input-item">
-                    <span>t_dev:</span>
-                    <input type="number" id="targetDevTimeInput" class="target-val-input" value="60">
-                    <span>초</span>
-                </div>
-                <div class="target-input-item">
-                    <span>ΔT_dev:</span>
-                    <input type="number" id="targetDeltaTempInput" class="target-val-input" value="5.5" step="0.5">
-                    <span>°C</span>
-                </div>
-            </div>
-        </div>
+        <div class="target-config-card">
+            <div class="target-config-title">
+                <span>🎯 AI 타겟 파라미터 (실시간 수치적분 보정)</span>
+            </div>
+            <div class="target-inputs">
+                <div class="target-input-item">
+                    <span>예열온도:</span>
+                    <input type="number" id="chargeTempInput" class="target-val-input" value="170">
+                    <span>°C</span>
+                </div>
+                <div class="target-input-item">
+                    <span>함수율:</span>
+                    <input type="number" id="moistureInput" class="target-val-input" value="12" step="0.5">
+                    <span>%</span>
+                </div>
+                <div class="target-input-item">
+                    <span>FC시간:</span>
+                    <input type="text" id="targetFcTimeInput" class="target-val-input" value="06:20">
+                </div>
+                <div class="target-input-item">
+                    <span>FC온도:</span>
+                    <input type="number" id="targetFcTempInput" class="target-val-input" value="192">
+                    <span>°C</span>
+                </div>
+                <div class="target-input-item">
+                    <span>t_dev:</span>
+                    <input type="number" id="targetDevTimeInput" class="target-val-input" value="60">
+                    <span>초</span>
+                </div>
+                <div class="target-input-item">
+                    <span>ΔT_dev:</span>
+                    <input type="number" id="targetDeltaTempInput" class="target-val-input" value="5.5" step="0.5">
+                    <span>°C</span>
+                </div>
+            </div>
+        </div>
 
-        <div class="lower-grid">
-            <!-- 하단 차트 -->
-            <div class="card">
-                <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <span class="section-title" id="chartTitleText" style="font-weight: bold; color: #fff;">📉 실시간 프로파일 프로젝션</span>
-                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                        <button id="btnToggleTargetGuide" class="hist-btn target active">🎯 AI 추천 타겟: ON</button>
-                        <button id="btnToggleFCAnchor" class="hist-btn" style="border-color:var(--amber); color:var(--amber);">⚓ FC Anchored 정렬: OFF</button>
-                        <span style="font-size:0.75rem; font-weight:bold; color:var(--purple); display:none;" id="refLegend">● 선택된 레퍼런스(Ref)</span>
-                        <span style="font-size:0.75rem; color:var(--cyan);" id="targetLegend">--- AI 수치적분 곡선</span>
-                    </div>
-                </div>
-                <div class="chart-box">
-                    <canvas id="roastChart"></canvas>
-                </div>
-            </div>
+        <div class="lower-grid">
+            <div class="card">
+                <div class="section-header">
+                    <span class="section-title" id="chartTitleText">📉 실시간 프로파일 프로젝션</span>
+                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                        <button id="btnToggleTargetGuide" class="hist-btn target">🎯 AI 추천 타겟: ON</button>
+                        <button id="btnToggleFCAnchor" class="hist-btn" style="border-color:var(--amber); color:var(--amber);">⚓ FC Anchored 정렬: OFF</button>
+                        <span style="font-size:0.75rem; color:var(--purple); display:none;" id="refLegend">● 히스토리 가이드</span>
+                        <span style="font-size:0.75rem; color:var(--cyan);" id="targetLegend">--- AI 수치적분 BT/RoR</span>
+                    </div>
+                </div>
+                <div class="chart-box">
+                    <canvas id="roastChart"></canvas>
+                </div>
+            </div>
 
-            <!-- 하단 사이드 (로그 및 DB) -->
-            <div class="side-panel">
-                <div class="card" style="padding:16px;">
-                    <div class="section-header" style="margin-bottom: 8px; font-size: 0.85rem; font-weight: bold; color: var(--amber);">
-                        <span>📋 이벤트 로그 (System Log)</span>
-                    </div>
-                    <div class="log-content" id="sysLog">[SYSTEM] Samuel Kim 로스터 엔진 V6.4 초기화 완료.
-[AI COPILOT] 수치적분 엔진 연동 완료. 로스팅 파라미터를 입력하세요.
-[CHART] 프로파일 프로젝션 렌더링 완료.</div>
-                </div>
-                
-                <div class="card" style="padding:16px; flex: 1;">
-                    <div class="section-header" style="margin-bottom: 12px; font-size: 0.85rem; font-weight: bold; color: var(--amber);">
-                        <span>📚 로스팅 히스토리 (History DB)</span>
-                    </div>
-                    <div class="db-search-bar">
-                        <!-- 검색 필터 인풋 -->
-                        <input type="text" class="db-search-input" placeholder="원두명, 프로세싱, 노트 검색..." id="dbSearchInput">
-                    </div>
-                    <div id="historyContainer">
-                        <!-- DB Item 1 -->
-                        <div class="history-item is-fav">
-                            <div class="hist-header">
-                                <span class="hist-title">Blessbean Signature Blend (블레스빈 시그니처)</span>
-                                <div class="hist-actions">
-                                    <button class="btn-fav-star active">★</button>
-                                    <button class="hist-btn ref">Ref</button>
-                                </div>
-                            </div>
-                            <div class="hist-body">배치: 200g → 172g (WL 14.0%)
-FC: 06:15 @ 193°C
-Drop: 07:20 @ 201°C
-DTR: 14.7%
-[노트] 초콜릿, 묵직한 바디감, 스윗 애프터</div>
-                        </div>
-
-                        <!-- DB Item 2 -->
-                        <div class="history-item">
-                            <div class="hist-header">
-                                <span class="hist-title">에티오피아 예가체프 G1 워시드</span>
-                                <div class="hist-actions">
-                                    <button class="btn-fav-star">☆</button>
-                                    <button class="hist-btn ref">Ref</button>
-                                </div>
-                            </div>
-                            <div class="hist-body">배치: 200g → 174g (WL 13.0%)
-FC: 06:40 @ 194°C
-Drop: 08:00 @ 203°C
-DTR: 16.6%
-[노트] 플로럴, 쟈스민, 베르가못</div>
-                        </div>
-
-                        <!-- DB Item 3 (New) -->
-                        <div class="history-item">
-                            <div class="hist-header">
-                                <span class="hist-title">과테말라 안티구아 SHB 핀카 메디나</span>
-                                <div class="hist-actions">
-                                    <button class="btn-fav-star active">★</button>
-                                    <button class="hist-btn ref">Ref</button>
-                                </div>
-                            </div>
-                            <div class="hist-body">배치: 300g → 255g (WL 15.0%)
-FC: 07:10 @ 196°C
-Drop: 08:45 @ 206°C
-DTR: 18.0%
-[노트] 구운 아몬드, 스모키, 흑설탕의 단맛</div>
-                        </div>
-
-                        <!-- DB Item 4 (New) -->
-                        <div class="history-item">
-                            <div class="hist-header">
-                                <span class="hist-title">콜롬비아 수프리모 후일라 디카페인 (EA)</span>
-                                <div class="hist-actions">
-                                    <button class="btn-fav-star">☆</button>
-                                    <button class="hist-btn ref">Ref</button>
-                                </div>
-                            </div>
-                            <div class="hist-body">배치: 200g → 168g (WL 16.0%)
-FC: 05:50 @ 189°C (빠른 크랙 전개)
-Drop: 07:05 @ 198°C
-DTR: 17.6%
-[노트] 사탕수수, 마일드한 산미, 부드러운 질감</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- V6.4 FULL ENGINE LOGIC WITH REFS & DB -->
-    <script>
-        // --- 1. Global State Management ---
-        const state = {
-            isRunning: false,
-            seconds: 0,
-            timerInterval: null,
-            phase: 'DRYING',
-            hasFirstCrack: false,
-            fcTimeSec: 0,
-            fcTemp: 0,
-            currentTemp: 70,
-            currentRoR: 20.0,
-            devTimeSec: 0,
-            devDeltaTemp: 0,
-            effectiveAUC: 0,
-            rorAtFC: 0,
-            targetGuideOn: true,
-            fcAnchorOn: false,
-            logs: []
-        };
-
-        const dateOptions = { year: 'numeric', month: '2-digit', day: '2-digit' };
-        document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('ko-KR', dateOptions);
-
-        // --- 2. Chart.js Initialization (Added Ref Dataset) ---
-        const ctx = document.getElementById('roastChart').getContext('2d');
-        const defaultXLabels = ['0:00', '1:00', '2:00', '3:00', '4:00', '5:00', '6:00', '7:00', '8:00'];
-        
-        const roastChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: defaultXLabels,
-                datasets: [
-                    {
-                        label: 'Bean Temp (BT)',
-                        data: [70, 95, 120, 145, 165, 180, 192, 201, 205],
-                        borderColor: '#f59e0b',
-                        backgroundColor: 'rgba(245, 158, 11, 0.08)',
-                        borderWidth: 2.5,
-                        tension: 0.35,
-                        yAxisID: 'y'
-                    },
-                    {
-                        label: 'Rate of Rise (RoR)',
-                        data: [25, 20, 15, 12, 10, 8, 5, 3, 2],
-                        borderColor: '#06b6d4',
-                        borderWidth: 2,
-                        borderDash: [4, 4],
-                        tension: 0.35,
-                        yAxisID: 'y1'
-                    },
-                    {
-                        label: 'AI Target BT Curve',
-                        data: [70, 93, 118, 143, 164, 180, 192, 197.5, 202],
-                        borderColor: 'rgba(6, 182, 212, 0.6)',
-                        borderWidth: 1.5,
-                        borderDash: [2, 2],
-                        pointRadius: 0,
-                        tension: 0.35,
-                        yAxisID: 'y',
-                        hidden: false // Toggleable
-                    },
-                    {
-                        label: 'Reference Profile (History)',
-                        data: [70, 98, 125, 152, 172, 187, 196, 206, 210], // Mock DB Ref curve
-                        borderColor: '#c084fc', // Purple
-                        borderWidth: 2,
-                        backgroundColor: 'rgba(192, 132, 252, 0.1)',
-                        borderDash: [5, 5],
-                        tension: 0.35,
-                        yAxisID: 'y',
-                        hidden: true // Hidden by default until 'Ref' is clicked
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: { duration: 250 },
-                interaction: { mode: 'index', intersect: false },
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: {
-                        grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: { color: '#9ca3af', font: { family: 'SF Mono, monospace' } }
-                    },
-                    y: {
-                        type: 'linear',
-                        position: 'left',
-                        grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: { color: '#f59e0b', font: { family: 'SF Mono, monospace' } },
-                        suggestedMin: 50,
-                        suggestedMax: 220
-                    },
-                    y1: {
-                        type: 'linear',
-                        position: 'right',
-                        grid: { drawOnChartArea: false },
-                        ticks: { color: '#06b6d4', font: { family: 'SF Mono, monospace' } },
-                        suggestedMin: 0,
-                        suggestedMax: 30
-                    }
-                }
-            }
-        });
-
-        // --- 3. Logging & Toast System ---
-        function addLog(msg) {
-            const timestamp = new Date().toLocaleTimeString('ko-KR', { hour12: false });
-            const logEntry = `[${timestamp}] ${msg}`;
-            state.logs.push(logEntry);
-            const logBox = document.getElementById('sysLog');
-            logBox.innerText += `\n${logEntry}`;
-            logBox.scrollTop = logBox.scrollHeight;
-        }
-
-        function showToast(msg) {
-            const toast = document.getElementById('toastPopup');
-            document.getElementById('toastMsg').innerText = msg;
-            toast.classList.add('show');
-            setTimeout(() => { toast.classList.remove('show'); }, 3000);
-        }
-
-        // --- 4. Weight Loss (WL%) Calculation ---
-        function calcWeightLoss() {
-            const green = parseFloat(document.getElementById('greenWeight').value) || 0;
-            const roasted = parseFloat(document.getElementById('roastedWeight').value) || 0;
-            if (green > 0 && roasted > 0) {
-                const loss = ((green - roasted) / green) * 100;
-                document.getElementById('wlValue').innerText = loss.toFixed(1);
-            } else {
-                document.getElementById('wlValue').innerText = '--';
-            }
-        }
-        document.getElementById('greenWeight').addEventListener('input', calcWeightLoss);
-        document.getElementById('roastedWeight').addEventListener('input', calcWeightLoss);
-
-        // --- 5. Real-Time Numerical Integration & Metrics Engine ---
-        function updateRoastEngine() {
-            const tMin = state.seconds / 60;
-            state.currentTemp = Math.round(70 + (135 * (1 - Math.exp(-tMin / 3.2))));
-            state.currentRoR = parseFloat((25 * Math.exp(-tMin / 2.8)).toFixed(1));
-            
-            document.getElementById('rorDisplay').innerText = `${state.currentTemp}°C / ${state.currentRoR}`;
-
-            if (state.phase === 'DRYING' && state.currentTemp >= 150) {
-                state.phase = 'MAILLARD';
-                document.getElementById('phaseDrying').classList.remove('active');
-                document.getElementById('phaseMaillard').classList.add('active');
-                showToast('150°C 마이야르 구간 진입');
-                addLog('PHASE CHANGE: Drying -> Maillard (150°C)');
-            }
-
-            if (state.hasFirstCrack) {
-                state.devTimeSec = state.seconds - state.fcTimeSec;
-                state.devDeltaTemp = parseFloat((state.currentTemp - state.fcTemp).toFixed(1));
-                
-                // Trapezoidal AUC Integral Approximation
-                state.effectiveAUC = parseFloat((state.effectiveAUC + (state.devDeltaTemp * 0.1)).toFixed(1));
-
-                document.getElementById('devTimeSecDisplay').innerText = `${state.devTimeSec}s`;
-                document.getElementById('devDeltaTempDisplay').innerText = `${state.devDeltaTemp}°C`;
-                document.getElementById('effectiveAUCDisplay').innerText = `${state.effectiveAUC}`;
-
-                if (state.seconds > 0) {
-                    const dtr = ((state.devTimeSec / state.seconds) * 100).toFixed(1);
-                    document.getElementById('dtrInput').value = dtr;
-                }
-                updateDevMatch();
-            }
-            updateCoPilotGuidance();
-        }
-
-        // --- 6. Dev Match Precision Scoring Engine ---
-        function updateDevMatch() {
-            const targetDevTime = parseFloat(document.getElementById('targetDevTimeInput').value) || 60;
-            const targetDeltaTemp = parseFloat(document.getElementById('targetDeltaTempInput').value) || 5.5;
-
-            const timeScore = Math.max(0, 100 - Math.abs(state.devTimeSec - targetDevTime) * 1.5);
-            const tempScore = Math.max(0, 100 - Math.abs(state.devDeltaTemp - targetDeltaTemp) * 8.0);
-            const aucScore = Math.min(100, Math.max(0, (state.effectiveAUC / 15) * 100));
-            const rorScore = state.rorAtFC > 0 ? Math.max(0, 100 - Math.abs(state.currentRoR - state.rorAtFC) * 5) : 95.0;
-
-            const totalScore = ((timeScore * 0.35) + (tempScore * 0.35) + (aucScore * 0.15) + (rorScore * 0.15)).toFixed(1);
-
-            document.getElementById('matchScoreVal').innerText = `${totalScore}%`;
-            document.getElementById('timeMatchVal').innerText = `${timeScore.toFixed(0)}%`;
-            document.getElementById('tempMatchVal').innerText = `${tempScore.toFixed(0)}%`;
-            document.getElementById('aucMatchVal').innerText = `${aucScore.toFixed(0)}%`;
-            document.getElementById('rorMatchVal').innerText = `${rorScore.toFixed(0)}%`;
-        }
-
-        // --- 7. AI Co-Pilot Guidance Updater ---
-        function updateCoPilotGuidance() {
-            const statusBadge = document.getElementById('pilotStatusBadge');
-            const cmdText = document.getElementById('pilotCommandText');
-            const detailText = document.getElementById('pilotDetailText');
-
-            if (!state.isRunning && state.seconds === 0) {
-                statusBadge.innerText = 'READY';
-                cmdText.innerText = '로스팅 시작 대기 중입니다. 스페이스바를 누르세요.';
-                detailText.innerText = '목표 타겟 곡선과 실시간 수치 적분 모델을 연동합니다.';
-                return;
-            }
-
-            if (state.hasFirstCrack) {
-                statusBadge.innerText = 'DEV PHASE';
-                statusBadge.style.color = 'var(--rose)';
-                statusBadge.style.borderColor = 'var(--rose)';
-                cmdText.innerText = `1차 크랙 진행 중: t_dev ${state.devTimeSec}초 / ΔT +${state.devDeltaTemp}°C`;
-                detailText.innerText = '목표 t_dev(60초) 및 ΔT(+5.5°C) 수치 적분 추적 중. 배출 준비를 해주세요.';
-            } else if (state.phase === 'MAILLARD') {
-                statusBadge.innerText = 'MAILLARD';
-                statusBadge.style.color = 'var(--maillard)';
-                statusBadge.style.borderColor = 'var(--maillard)';
-                cmdText.innerText = '메일라드 반응 촉진 구간. RoR의 완만한 감쇠를 유지하세요.';
-                detailText.innerText = '1차 크랙 예상 시점(06:20 / 192°C)에 접근 중입니다.';
-            } else {
-                statusBadge.innerText = 'DRYING';
-                statusBadge.style.color = 'var(--drying)';
-                statusBadge.style.borderColor = 'var(--drying)';
-                cmdText.innerText = '건조 및 열풍 인가 구간. Turning Point 안정화 확인.';
-                detailText.innerText = '150°C 진입 전까지 일정한 열량을 공급합니다.';
-            }
-        }
-
-        // --- 8. Control Actions (Timer, FC, End) ---
-        function formatTimer(sec) {
-            const m = Math.floor(sec / 60).toString().padStart(2, '0');
-            const s = (sec % 60).toString().padStart(2, '0');
-            return `${m}:${s}.0`;
-        }
-
-        document.getElementById('btnStart').addEventListener('click', function() {
-            if (state.isRunning) {
-                clearInterval(state.timerInterval);
-                state.isRunning = false;
-                this.classList.remove('running');
-                document.getElementById('startBtnText').innerText = '▶ RESUME';
-                addLog('ROASTING PAUSED');
-            } else {
-                state.isRunning = true;
-                this.classList.add('running');
-                document.getElementById('startBtnText').innerText = '⏸ PAUSE';
-                addLog('ROASTING STARTED / RESUMED');
-
-                state.timerInterval = setInterval(() => {
-                    state.seconds++;
-                    document.getElementById('timerDisplay').innerText = formatTimer(state.seconds);
-                    updateRoastEngine();
-                }, 1000);
-            }
-        });
-
-        document.getElementById('btnCrack').addEventListener('click', function() {
-            if (state.hasFirstCrack) return;
-            state.hasFirstCrack = true;
-            state.fcTimeSec = state.seconds;
-            state.fcTemp = state.currentTemp;
-            state.rorAtFC = state.currentRoR;
-            state.phase = 'DEV';
-            this.classList.add('done');
-            document.getElementById('timerDisplay').classList.add('crack-phase');
-            document.getElementById('phaseMaillard').classList.remove('active');
-            document.getElementById('phaseDev').classList.add('active');
-            document.getElementById('rorFCDisplay').innerText = `${state.rorAtFC}`;
-            document.getElementById('devMatchCard').classList.add('active');
-
-            const timeStr = formatTimer(state.fcTimeSec);
-            showToast(`💥 1ST CRACK! (${timeStr} @ ${state.fcTemp}°C)`);
-            addLog(`1ST CRACK TRIGGERED at ${timeStr} (${state.fcTemp}°C, RoR ${state.rorAtFC})`);
-        });
-
-        document.getElementById('btnEnd').addEventListener('click', function() {
-            if (!state.isRunning && state.seconds === 0) return;
-            clearInterval(state.timerInterval);
-            state.isRunning = false;
-            document.getElementById('btnStart').classList.remove('running');
-            document.getElementById('startBtnText').innerText = '▶ FINISHED';
-            this.classList.add('done');
-            calcWeightLoss();
-            const timeStr = formatTimer(state.seconds);
-            showToast(`🏁 로스팅 완료! (배출: ${timeStr} @ ${state.currentTemp}°C)`);
-            addLog(`ROAST FINISHED at ${timeStr}. Temp: ${state.currentTemp}°C`);
-        });
-
-        // --- 9. Event Manual Record Buttons & Shortcuts ---
-        const customTempInput = document.getElementById('customTempInput');
-        document.getElementById('btnSub1').addEventListener('click', () => { customTempInput.value = parseInt(customTempInput.value) - 1; });
-        document.getElementById('btnAdd1').addEventListener('click', () => { customTempInput.value = parseInt(customTempInput.value) + 1; });
-        document.getElementById('btnAdd2').addEventListener('click', () => { customTempInput.value = parseInt(customTempInput.value) + 2; });
-        document.getElementById('btnAdd5').addEventListener('click', () => { customTempInput.value = parseInt(customTempInput.value) + 5; });
-
-        document.getElementById('btnRecordTemp').addEventListener('click', function() {
-            const val = customTempInput.value;
-            const timeStr = document.getElementById('timerDisplay').innerText;
-            const tagContainer = document.getElementById('dynamicTags');
-
-            const tag = document.createElement('div');
-            tag.className = 'tag';
-            tag.innerHTML = `<span class="tag-time">${timeStr}</span> <span>${val}°C</span> <button class="tag-del">×</button>`;
-            tag.querySelector('.tag-del').addEventListener('click', () => tag.remove());
-            tagContainer.prepend(tag);
-
-            addLog(`MANUAL EVENT: ${timeStr} - ${val}°C Recorded`);
-            showToast(`온도 기록 완료: ${timeStr} (${val}°C)`);
-        });
-
-        // Keyboard Shortcuts
-        document.addEventListener('keydown', (e) => {
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-            if (e.code === 'Space') { e.preventDefault(); document.getElementById('btnStart').click(); }
-            else if (e.code === 'KeyC') { e.preventDefault(); document.getElementById('btnCrack').click(); }
-            else if (e.code === 'KeyE') { e.preventDefault(); document.getElementById('btnEnd').click(); }
-        });
-        customTempInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') { e.preventDefault(); document.getElementById('btnRecordTemp').click(); }
-        });
-
-        // --- 10. Chips, Display Toggles, and History DB Logic ---
-        document.querySelectorAll('.process-chip').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.process-chip').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
-
-        document.querySelectorAll('.weight-chip').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.weight-chip').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                document.getElementById('greenWeight').value = this.dataset.weight;
-                calcWeightLoss();
-            });
-        });
-
-        document.getElementById('btnToggleTargetGuide').addEventListener('click', function() {
-            state.targetGuideOn = !state.targetGuideOn;
-            roastChart.data.datasets[2].hidden = !state.targetGuideOn;
-            roastChart.update();
-            this.classList.toggle('active', state.targetGuideOn);
-            this.innerText = `🎯 AI 추천 타겟: ${state.targetGuideOn ? 'ON' : 'OFF'}`;
-        });
-
-        document.getElementById('btnToggleFCAnchor').addEventListener('click', function() {
-            state.fcAnchorOn = !state.fcAnchorOn;
-            this.innerText = `⚓ FC Anchored 정렬: ${state.fcAnchorOn ? 'ON' : 'OFF'}`;
-            this.style.background = state.fcAnchorOn ? 'var(--amber)' : 'transparent';
-            this.style.color = state.fcAnchorOn ? '#000' : 'var(--amber)';
-            showToast(`FC Anchored 기준점 정렬 ${state.fcAnchorOn ? '활성화' : '비활성화'}`);
-            addLog(`CHART ANCHOR: Alignment set to ${state.fcAnchorOn}`);
-        });
-
-        // ==========================================
-        // [복원/수정됨] History DB UI 및 검색 기능 로직
-        // ==========================================
-        
-        // 검색 필터링 로직
-        document.getElementById('dbSearchInput').addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            document.querySelectorAll('.history-item').forEach(item => {
-                const titleText = item.querySelector('.hist-title').innerText.toLowerCase();
-                const bodyText = item.querySelector('.hist-body').innerText.toLowerCase();
-                
-                if (titleText.includes(searchTerm) || bodyText.includes(searchTerm)) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        });
-
-        // 아코디언 메뉴 여닫기
-        document.querySelectorAll('.hist-header').forEach(header => {
-            header.addEventListener('click', function(e) {
-                // Ref 버튼이나 별표를 클릭했을 때는 아코디언이 토글되지 않도록 방어
-                if(e.target.tagName === 'BUTTON' || e.target.classList.contains('hist-btn')) return;
-                
-                const item = this.parentElement;
-                item.classList.toggle('expanded');
-                const body = item.querySelector('.hist-body');
-                body.style.display = item.classList.contains('expanded') ? 'block' : 'none';
-            });
-        });
-
-        // 즐겨찾기(별) 토글
-        document.querySelectorAll('.btn-fav-star').forEach(star => {
-            star.addEventListener('click', function(e) {
-                e.stopPropagation();
-                this.classList.toggle('active');
-                this.innerText = this.classList.contains('active') ? '★' : '☆';
-                
-                // 해당 아이템 테두리 강조
-                const parentItem = this.closest('.history-item');
-                parentItem.classList.toggle('is-fav', this.classList.contains('active'));
-            });
-        });
-
-        // [핵심 보완] 레퍼런스(Ref) 버튼 클릭 시 차트 연동 로직
-        document.querySelectorAll('.hist-btn.ref').forEach(refBtn => {
-            refBtn.addEventListener('click', function(e) {
-                e.stopPropagation(); // 아코디언 토글 방지
-
-                const isActive = this.classList.contains('active');
-                
-                // 단일 레퍼런스 뷰를 위해 모든 Ref 버튼 초기화
-                document.querySelectorAll('.hist-btn.ref').forEach(btn => btn.classList.remove('active'));
-                
-                if (!isActive) {
-                    this.classList.add('active'); // 현재 버튼 활성화
-                    const titleName = this.closest('.history-item').querySelector('.hist-title').innerText;
-                    
-                    // 차트의 4번째 데이터셋(인덱스 3) 표시
-                    roastChart.data.datasets[3].hidden = false;
-                    roastChart.update();
-                    
-                    document.getElementById('refLegend').style.display = 'inline-block';
-                    showToast(`[${titleName}] 레퍼런스 적용 완료`);
-                    addLog(`REFERENCE APPLIED: ${titleName}`);
-                } else {
-                    // 차트의 4번째 데이터셋(인덱스 3) 숨김
-                    roastChart.data.datasets[3].hidden = true;
-                    roastChart.update();
-                    
-                    document.getElementById('refLegend').style.display = 'none';
-                    showToast('레퍼런스 차트 투영이 해제되었습니다.');
-                    addLog('REFERENCE CLEARED');
-                }
-            });
-        });
-    </script>
-</body>
-</html>
+            <div class="side-panel">
+                <div class="card" style="padding:16px;">
+                    <div class="section-header" sty
